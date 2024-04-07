@@ -1,7 +1,7 @@
-from transformers import GPT2LMHeadModel
-from transformers import PreTrainedTokenizerFast
 import os
+
 import torch
+from transformers import GPT2LMHeadModel, PreTrainedTokenizerFast
 
 
 class LoadModel:

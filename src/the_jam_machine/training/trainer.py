@@ -4,20 +4,22 @@
 # $ pip install transformers tokenizers wandb huggingface_hub datasets
 
 import os
+
+import wandb
+from datasets import load_dataset
+from huggingface_hub import HfApi, create_repo
 from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
     DataCollatorForLanguageModeling,
     GPT2Config,
     GPT2LMHeadModel,
-    TrainingArguments,
     Trainer,
-    AutoTokenizer,
-    AutoModelForCausalLM,
+    TrainingArguments,
 )
-import wandb
-from datasets import load_dataset
-from trainer_utils import *
-from huggingface_hub import create_repo, HfApi
-from passwords import HF_READ_TOKEN, HF_WRITE_TOKEN
+
+from ..passwords import HF_READ_TOKEN, HF_WRITE_TOKEN
+from .trainer_utils import TokenizeDataset, get_history, plot_history, train_tokenizer
 
 # CONFIG:
 DATASET_NAME = "improved_4bars"

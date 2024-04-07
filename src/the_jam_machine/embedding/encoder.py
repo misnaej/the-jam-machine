@@ -1,10 +1,11 @@
-from miditoolkit import MidiFile
-from miditok import Event
-from utils import *
 import numpy as np
+from miditok import Event
+from miditoolkit import MidiFile
 from scipy import stats
-from familizer import Familizer
-from constants import BEATS_PER_BAR
+
+from ..constants import BEATS_PER_BAR
+from ..utils import *
+from .familizer import Familizer
 
 # TODO HIGH PRIORITY
 # TODO: The Density calculation does not match that of Tristan's Encoding. Ask Tristan about it.
@@ -78,7 +79,6 @@ class MIDIEncoder:
             bar_index, beat_count = 0, 0
             bar_end = False
             for i, event in enumerate(inst_events):
-
                 # when bar_end reached, adding the remainder note-off events
                 # adding bar end event and bar start event
                 # only if event is not the last event of the track
@@ -167,7 +167,6 @@ class MIDIEncoder:
         for inst_events in midi_events:
             new_inst_events = []
             for event in inst_events:
-
                 if event.type == "Bar-Start":
                     note_onset_count_in_bar = 0  # initialize not count
                     new_inst_events.append(event)  # append Bar-Start event
@@ -195,7 +194,6 @@ class MIDIEncoder:
 
     @staticmethod
     def define_instrument(midi_tok_instrument, familize=False):
-
         """Define the instrument token from the midi token instrument and whether the instrument needs to be famnilized"""
         # get program number
         instrument = (

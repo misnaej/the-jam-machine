@@ -6,13 +6,13 @@ It then searches for all midi files in the input folder and subfolders and copie
 """
 
 from pathlib import Path
+
 import pandas as pd
-from utils import get_files, copy_file
-from joblib import Parallel, delayed
+
+from ..utils import copy_file, get_files
 
 
 def pick_midis(input_dir, output_dir, reference_file):
-
     # create output folder if it does not already exist
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -31,7 +31,6 @@ def pick_midis(input_dir, output_dir, reference_file):
 
 
 if __name__ == "__main__":
-
     # Select paths
     input_dir = Path("data/lmd_full/").resolve()
     output_dir = Path("data/lmd_new/").resolve()

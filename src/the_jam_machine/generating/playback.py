@@ -1,7 +1,6 @@
-import matplotlib.pyplot as plt
 import librosa.display
+import matplotlib.pyplot as plt
 from pretty_midi import PrettyMIDI
-
 
 # Note: these functions are meant to be played within an interactive Python shell
 # Please refer to the synth.ipynb for an example of how to use them

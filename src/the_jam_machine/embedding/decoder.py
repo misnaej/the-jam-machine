@@ -1,6 +1,7 @@
-from utils import *
-from familizer import Familizer
 from miditok import Event
+
+from ..utils import *
+from .familizer import Familizer
 
 
 class TextDecoder:
@@ -332,7 +333,6 @@ class TextDecoder:
 
 
 if __name__ == "__main__":
-
     # filename = "midi/generated/JammyMachina/elec-gmusic-familized-model-13-12__17-35-53/20230221_235439"
     filename = "source/tests/20230305_150554"  # investigating the duplicates issues
     encoded_json = readFromFile(

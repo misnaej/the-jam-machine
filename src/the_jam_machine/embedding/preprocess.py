@@ -1,8 +1,10 @@
-from miditoolkit import MidiFile
-from miditok import MIDILike
-from utils import writeToFile
-from encoder import MIDIEncoder
 import os
+
+from miditok import MIDILike
+from miditoolkit import MidiFile
+
+from ..utils import writeToFile
+from .encoder import MIDIEncoder
 
 pitch_range = range(21, 109)
 beat_res = {(0, 400): 8}

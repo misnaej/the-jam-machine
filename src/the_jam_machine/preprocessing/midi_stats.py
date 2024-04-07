@@ -1,10 +1,11 @@
-from joblib import Parallel, delayed
 from pathlib import Path
-import pandas as pd
-from pretty_midi import program_to_instrument_name, PrettyMIDI
 
-from constants import INSTRUMENT_CLASSES
-from utils import compute_list_average, get_files
+import pandas as pd
+from joblib import Parallel, delayed
+from pretty_midi import PrettyMIDI, program_to_instrument_name
+
+from ..constants import INSTRUMENT_CLASSES
+from ..utils import compute_list_average, get_files
 
 # TODO : add data enrichment
 # TODO : include types
@@ -443,7 +444,6 @@ class MidiStats:
 
 
 if __name__ == "__main__":
-
     # Select the path to the MIDI files
     input_directory = Path("data/music_picks/electronic_artists").resolve()
     print(input_directory)

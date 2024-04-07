@@ -1,13 +1,11 @@
 # classic python
 import matplotlib.pyplot as plt
+import mido
+import note_seq
 import numpy as np
+import pretty_midi
 
 # midi stuff
-from miditoolkit import MidiFile
-import mido
-import pretty_midi
-import note_seq
-from miditok import REMI, get_midi_programs
 from miditoolkit import MidiFile
 
 # path
@@ -61,7 +59,7 @@ def stats_on_track(midi_filename="the_strokes-reptilia", verbose=True):
 
     print("-----------------------------")
     print(
-        f"miditooldkit instruments: {len(midi.instruments)}",
+        f"miditooldkit instruments: {len(midi_mido.instruments)}",
     )
     print(
         f"mido tracks: {len(midi_mido.tracks)}",
@@ -124,7 +122,7 @@ def stats_on_track(midi_filename="the_strokes-reptilia", verbose=True):
             print("-----------------------------")
 
     stats = dict(
-        track_count_in_mido=len(miditoolk_data_mido.tracks),
+        track_count_in_mido=len(miditoolk_data.tracks),
         instrument_count_in_miditooldkit=len(miditoolk_data.instruments),
         beat_count=beat_count,
         note_counts_all_instrument=note_counts_all_instrument,
@@ -145,7 +143,7 @@ def stats_on_track(midi_filename="the_strokes-reptilia", verbose=True):
             print(f"{ui} is split in instrument {where_unique_inst}")
 
             for i, t in enumerate(where_unique_inst):
-                for notes in midi.instruments[t].notes:
+                for notes in miditoolk_data.instruments[t].notes:
                     all_notes_starts.append(notes.start)
                     all_notes_instrument.append(i)
             all_notes_starts = np.array(all_notes_starts)

@@ -22,7 +22,7 @@ dependencies = [
     "note-seq",
     "huggingface-hub",
     "ipykernel",
-    "pyfluidsynth",
+    "pyFluidSynth",
     "pydub",
     "ffmpeg",
     "wandb",
@@ -34,7 +34,8 @@ dependencies = [
     "torch",
     "torchvision",
     "accelerate",
-    "bertviz"
+    "bertviz",
+    "fuzzywuzzy"
 ]
 
 dynamic = ["version"]
@@ -43,5 +44,8 @@ dynamic = ["version"]
 ci = ["ruff", "pytest", "pytest-cov", "pytest-html"]
 
 [tool.setuptools.packages.find]
-where = ["source"]
+where = ["src"]
+
+[tool.setuptools.package-data]
+the_jam_machine = ["*.csv", "*.json"]
 

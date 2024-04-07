@@ -5,11 +5,12 @@ and add it to the statistics file.
 It uses the fuzzywuzzy library to compare strings and find duplicates.
 """
 
+import re
+
 import pandas as pd
 from fuzzywuzzy import fuzz
-import re
-from utils import load_jsonl
 
+from ..utils import load_jsonl
 
 # TODO : Make an object
 # TODO : Use pathlib
@@ -75,7 +76,7 @@ class MetadataExtractor:
         for i, s in enumerate(str_list):
             if (
                 similar_strs[i] is None
-                and not "," in s
+                and "," not in s
                 and not any(
                     [
                         fuzz.partial_ratio(s, wrong_str) > self.threshold
@@ -111,9 +112,7 @@ class MetadataExtractor:
         # load stats file
         stats = pd.read_csv(self.stats_path)
         # merge the names and scraped genre dataframes
-        name_genres_df = self.names_df.merge(
-            self.genre_df, on="md5", how="left"
-        )
+        name_genres_df = self.names_df.merge(self.genre_df, on="md5", how="left")
         # merge the name_genres_df with the stats dataframe on md5
         self.stats = stats.merge(name_genres_df, on="md5", how="left")
 
@@ -161,7 +160,7 @@ class MetadataExtractor:
             # replace values in the original dataframe at the specified index
             self.stats.loc[df_titles.index, "title"] = df_titles["title_new"]
 
-    def deduplicate_all(self):       
+    def deduplicate_all(self):
         self.deduplicate_artists()
         self.deduplicate_genre()
         self.deduplicate_titles()
@@ -191,24 +190,30 @@ class MetadataExtractor:
         self.stats.to_csv(output_path, index=False)
 
     def list_duplicates(self):
-        """Find songs that have multiple versions in the dataset and return a dataframe 
+        """Find songs that have multiple versions in the dataset and return a dataframe
         ordered by the song with the most duplicates."""
-        self.duplicates = self.stats.groupby(['artist', 'title']).size().sort_values(ascending=False)
+        self.duplicates = (
+            self.stats.groupby(["artist", "title"]).size().sort_values(ascending=False)
+        )
 
-    def filter_midis(self, n_instruments=12, four_to_the_floor=True, single_version=True):
+    def filter_midis(
+        self, n_instruments=12, four_to_the_floor=True, single_version=True
+    ):
         """
-        Filter the dataset to only include songs with a certain number of instruments and 
+        Filter the dataset to only include songs with a certain number of instruments and
         that are in 4/4 time.
         n_instruments: the maximum number of instruments to include (int).
         four_to_the_floor: whether to include only songs in 4/4 time (bool).
         single_version: whether to include only the best version of a song (bool).
             The best version is the one with the highest note density.
         """
-        self.stats = self.stats[self.stats['n_instruments'] <= n_instruments]
+        self.stats = self.stats[self.stats["n_instruments"] <= n_instruments]
         if four_to_the_floor:
-            self.stats = self.stats[self.stats['four_to_the_floor'] == True]
+            self.stats = self.stats[self.stats["four_to_the_floor"] == True]
         if single_version:
-            self.stats.sort_values('number_of_notes_per_second', ascending=False).groupby(['title', 'artist']).first()
+            self.stats.sort_values(
+                "number_of_notes_per_second", ascending=False
+            ).groupby(["title", "artist"]).first()
 
 
 if __name__ == "__main__":
@@ -223,4 +228,3 @@ if __name__ == "__main__":
     meta.extract(threshold=75)
     meta.filter_midis(n_instruments=12, four_to_the_floor=True, single_version=True)
     meta.export_to_csv(output_path)
-    

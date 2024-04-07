@@ -162,3 +162,11 @@ wandb
 # Temporary MIDI files
 tmp/*.mid
 source/tmp/*.mid
+
+
+# test and example files results
+test/results
+test/*.mid
+test/*.png
+test/*.json
+run.sh

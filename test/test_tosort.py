@@ -1,15 +1,22 @@
-import logging
-import gradio
+import os
 import subprocess
-from generate import *
-from generation_utils import WriteTextMidiToFile
-from utils import get_miditok
-from load import LoadModel
-from decoder import TextDecoder
-from encoder import *
-from playback import get_music
 
-# TODO Use logging to create a log file
+from the_jam_machine.embedding.decoder import TextDecoder
+from the_jam_machine.embedding.encoder import (
+    from_MIDI_to_sectionned_text,
+    readFromFile,
+    writeToFile,
+)
+from the_jam_machine.generating.generate import GenerateMidiText
+from the_jam_machine.generating.playback import get_music
+from the_jam_machine.generating.utils import (
+    WriteTextMidiToFile,
+    check_if_prompt_inst_in_tokenizer_vocab,
+    define_generation_dir,
+    plot_piano_roll,
+)
+from the_jam_machine.preprocessing.load import LoadModel
+from the_jam_machine.utils import get_miditok
 
 USE_FAMILIZED_MODEL = True
 force_sequence_length = True
@@ -19,7 +26,7 @@ model_repo = "JammyMachina/elec-gmusic-familized-model-13-12__17-35-53"
 n_bar_generated = 8
 
 # define test directory
-test_dir = define_generation_dir("source/tests")
+test_dir = define_generation_dir("test/results")
 
 
 def test_generate():
@@ -57,7 +64,7 @@ def test_generate():
 
     # print the generated sequence in terminal
     print("=========================================")
-    print(generate_midi.generated_piece)
+    print(f"{generate_midi.generated_piece[:1000]} ...")
     print("=========================================")
 
     filename = WriteTextMidiToFile(
@@ -79,9 +86,8 @@ def check_for_duplicated_subsequent_tokens(generated_text):
             print(f"{generated_text.split(' ')[i - min([i,3]): i + 3]}")
 
 
-def test_decode(filename=None):
-    if filename is None:
-        filename = "source/tests/test_decode.json"
+def test_decode():
+    filename = "test/test_decode.json"
 
     filename = filename.split(".")[0]  # remove extension
 
@@ -99,9 +105,8 @@ def test_decode(filename=None):
     return filename
 
 
-def test_encode(midi_filename=None):
-    if midi_filename is None:
-        midi_filename = "midi/the_strokes-reptilia"
+def test_encode():
+    midi_filename = "midi/the_strokes-reptilia"
 
     piece_text = from_MIDI_to_sectionned_text(
         f"{midi_filename}", familized=USE_FAMILIZED_MODEL
@@ -183,60 +188,8 @@ def test_compare_generated_encoded(generated_text, encoded_text):
         print("Generated and encoded MIDI_text sequences are the same")
 
 
-def check_encoder_decoder_consistency():
-    midi_text_generated, filename = test_generate()
-    check_for_duplicated_subsequent_tokens(midi_text_generated.generated_piece)
-    midi_file = test_decode(filename)
-    midi_text_from_file = test_encode(midi_file)
-
-    test_compare_generated_encoded(
-        midi_text_generated.generated_piece, midi_text_from_file
-    )
-
-
 def test_gradio():
-    current_wd = os.getcwd()
+    # current_wd = os.getcwd()
     os.chdir("./source")
     subprocess.run(["gradio playground.py"], shell=True)
     # os.chdir(current_wd)
-
-
-def run_test(func, *args, **kwargs):
-    for kwarg in kwargs:
-        match kwarg:
-            case "tested_process":
-                testing_process = kwargs[kwarg]
-    # func(*args)
-    try:
-        print("==================================")
-        print(f"Testing: {testing_process}")
-        func(*args)
-        print("----------------------------------")
-        print(f"{testing_process} successful")
-    except:
-        print("----------------------------------")
-        print(f"{testing_process} failed")
-
-    print("----------------------------------")
-
-
-if __name__ == "__main__":
-
-    # test encoding
-    run_test(test_encode, "midi/the_strokes-reptilia", tested_process="Encoding")
-
-    # test generation
-    run_test(test_generate, tested_process="Generation")
-
-    # test decoding
-    run_test(test_decode, tested_process="Decoding")
-
-    # " Test Run : 1 generate, 2 decode, 3 encode, compare 1 generated and 3 encoded
-    run_test(
-        check_encoder_decoder_consistency, tested_process="Encoder-Decoder Consistency"
-    )
-
-    # test launch gradio app
-    run_test(test_gradio, tested_process="Launching Gradio App")
-    # Here the radio app will be started and needs to be tested manually, then closed
-    # The message will report that the test failed because the process was killed, but this can be ignored

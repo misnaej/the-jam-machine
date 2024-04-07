@@ -1,5 +1,6 @@
-from generation_utils import *
 import random
+
+from .utils import bar_count_check, forcing_bar_count
 
 
 class GenerateMidiText:
@@ -330,16 +331,15 @@ class GenerateMidiText:
                     for bar in track["bars"][-self.model_n_bar :]:
                         pre_promt += bar
                     pre_promt += "TRACK_END "
-                elif (
-                    False
-                ):  # len_diff <= 0: # THIS DOES NOT WORK - It just adds empty bars
+                else:  # len_diff <= 0: # THIS DOES NOT WORK - It just adds empty bars
                     # adding an empty bars at the end of the other tracks if they have not been processed yet
-                    pre_promt += othertracks["bars"][0]
-                    for bar in track["bars"][-(self.model_n_bar - 1) :]:
-                        pre_promt += bar
-                    for _ in range(abs(len_diff) + 1):
-                        pre_promt += "BAR_START BAR_END "
-                    pre_promt += "TRACK_END "
+                    pass
+                    # pre_promt += othertracks["bars"][0]
+                    # for bar in track["bars"][-(self.model_n_bar - 1) :]:
+                    #     pre_promt += bar
+                    # for _ in range(abs(len_diff) + 1):
+                    #     pre_promt += "BAR_START BAR_END "
+                    # pre_promt += "TRACK_END "
 
         # for the bar to prolong
         # initialization e.g TRACK_START INST=DRUMS DENSITY=2
@@ -376,7 +376,7 @@ class GenerateMidiText:
             tracks = self.get_tracks_from_a_piece(prompt)
             selected_tracks = random.sample(tracks, len(tracks) - 1)
             truncated_prompt = self.get_piece_from_track_list(selected_tracks)
-            print(f"Prompt too long - deleting one track")
+            print("Prompt too long - deleting one track")
 
         return truncated_prompt
 
@@ -403,7 +403,7 @@ class GenerateMidiText:
         if only_this_track is None:
             only_this_track
 
-        print(f"================== ")
+        print("================== ")
         print(f"Adding {n_bars} more bars to the piece ")
         for bar_id in range(n_bars):
             print(f"----- added bar #{bar_id+1} --")
@@ -414,7 +414,6 @@ class GenerateMidiText:
         self.check_the_piece_for_errors()
 
     def check_the_piece_for_errors(self, piece: str = None):
-
         if piece is None:
             piece = self.get_whole_piece_from_bar_dict()
         errors = []

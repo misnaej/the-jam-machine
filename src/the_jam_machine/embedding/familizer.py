@@ -1,8 +1,10 @@
 import random
-from joblib import Parallel, delayed
 from pathlib import Path
-from constants import INSTRUMENT_CLASSES, INSTRUMENT_TRANSFER_CLASSES
-from utils import get_files, timeit, FileCompressor
+
+from joblib import Parallel, delayed
+
+from ..constants import INSTRUMENT_CLASSES, INSTRUMENT_TRANSFER_CLASSES
+from ..utils import FileCompressor, get_files, timeit
 
 
 class Familizer:
@@ -115,7 +117,6 @@ class Familizer:
 
 
 if __name__ == "__main__":
-
     # Choose number of jobs for parallel processing
     n_jobs = -1
 

@@ -1,15 +1,17 @@
-from datetime import datetime
-from miditok import Event, MIDILike
-import os
 import json
-from time import perf_counter
-from constants import DRUMS_BEAT_QUANTIZATION, NONE_DRUMS_BEAT_QUANTIZATION
-from joblib import Parallel, delayed
-from zipfile import ZipFile, ZIP_DEFLATED
-from scipy.io.wavfile import write
-import numpy as np
-from pydub import AudioSegment
+import os
 import shutil
+from datetime import datetime
+from time import perf_counter
+from zipfile import ZIP_DEFLATED, ZipFile
+
+import numpy as np
+from joblib import Parallel, delayed
+from miditok import Event, MIDILike
+from pydub import AudioSegment
+from scipy.io.wavfile import write
+
+from .constants import DRUMS_BEAT_QUANTIZATION, NONE_DRUMS_BEAT_QUANTIZATION
 
 """ Diverse utils"""
 
@@ -104,7 +106,7 @@ def get_text(event, instrument="drums"):
             return "TRACK_END "
         case "Instrument":
             if str(event.value).lower() == "drums":
-                return f"INST=DRUMS "
+                return "INST=DRUMS "
             else:
                 return f"INST={event.value} "
         case "Density":

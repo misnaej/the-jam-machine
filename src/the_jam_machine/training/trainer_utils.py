@@ -1,12 +1,12 @@
-import matplotlib.pyplot as plt
-import numpy as np
 import os
 
-from transformers import PreTrainedTokenizerFast
+import matplotlib.pyplot as plt
+import numpy as np
 from tokenizers import Tokenizer
 from tokenizers.models import WordLevel
 from tokenizers.pre_tokenizers import WhitespaceSplit
 from tokenizers.trainers import WordLevelTrainer
+from transformers import PreTrainedTokenizerFast
 
 
 class TokenizeDataset:

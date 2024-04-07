@@ -1,11 +1,11 @@
 import os
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib
-from utils import writeToFile, get_datetime
 
-from constants import INSTRUMENT_CLASSES
-from playback import get_music, show_piano_roll
+import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
+
+from ..constants import INSTRUMENT_CLASSES
+from ..utils import get_datetime, writeToFile
 
 # matplotlib settings
 matplotlib.use("Agg")  # for server
@@ -17,7 +17,6 @@ matplotlib.rcParams["axes.edgecolor"] = "grey"
 
 class WriteTextMidiToFile:  # utils saving miditext from teh class GenerateMidiText to file
     def __init__(self, generate_midi, output_path):
-
         self.generated_midi = generate_midi.generated_piece
         self.output_path = output_path
         self.hyperparameter_and_bars = generate_midi.piece_by_track
@@ -110,7 +109,7 @@ def forcing_bar_count(input_prompt, generated, bar_count, expected_length):
     elif bar_count - expected_length < 0:  # Do nothing it the sequence if too short
         full_piece = input_prompt + generated
         bar_count_checks = False
-        print(f"--- Generated sequence is too short - Force Regeration ---")
+        print("--- Generated sequence is too short - Force Regeration ---")
 
     return full_piece, bar_count_checks
 

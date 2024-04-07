@@ -1,15 +1,15 @@
-import gradio as gr
-from load import LoadModel
-from generate import GenerateMidiText
-from constants import INSTRUMENT_TRANSFER_CLASSES
-from decoder import TextDecoder
-from utils import get_miditok
-from playback import get_music
-from matplotlib import pylab
 import sys
-import os
+
+import gradio as gr
 import matplotlib
-from generation_utils import plot_piano_roll
+from matplotlib import pylab
+from the_jam_machine.constants import INSTRUMENT_TRANSFER_CLASSES
+from the_jam_machine.embedding.decoder import TextDecoder
+from the_jam_machine.generating.generate import GenerateMidiText
+from the_jam_machine.generating.playback import get_music
+from the_jam_machine.generating.utils import plot_piano_roll
+from the_jam_machine.preprocessing.load import LoadModel
+from the_jam_machine.utils import get_miditok
 
 matplotlib.use("Agg")
 
@@ -184,7 +184,7 @@ with gr.Blocks() as demo:
         """
     )
 
-    aud_md = gr.Markdown(f""" ## Mixed Audio, Piano Roll and MIDI Download """)
+    aud_md = gr.Markdown(""" ## Mixed Audio, Piano Roll and MIDI Download """)
     with gr.Row(variant="default"):
         mixed_audio = gr.Audio(label="Mixed Audio", show_label=False)
         output_file = gr.File(
