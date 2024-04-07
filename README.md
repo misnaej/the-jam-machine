@@ -1,6 +1,6 @@
 # The-Jam-Machine - a Generative AI composing MIDI music
 
-*This project is still under development*.
+*This README needs updates*.
 
 ## Summary
 

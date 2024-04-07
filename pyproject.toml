@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools", "setuptools.scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "the-jam-machine"
+description = "generative AI assitant for composing music"
+readme = "README.md"
+requires-python = ">=3.11"
+
+
+dependencies = [
+    "miditok==1.3.2",
+    "miditoolkit",
+    "pylab-sdk",
+    "matplotlib",
+    "numpy",
+    "pandas",
+    "mido",
+    "python-rtmidi",
+    "pretty-midi",
+    "note-seq",
+    "huggingface-hub",
+    "ipykernel",
+    "pyfluidsynth",
+    "pydub",
+    "ffmpeg",
+    "wandb",
+    "tokenizers",
+    "datetime",
+    "datasets==2.6.1",
+    "gradio==3.13.1",
+    "transformers",
+    "torch",
+    "torchvision",
+    "accelerate",
+    "bertviz"
+]
+
+dynamic = ["version"]
+
+[project.optional-dependencies]
+ci = ["ruff", "pytest", "pytest-cov", "pytest-html"]
+
+[tool.setuptools.packages.find]
+where = ["source"]
+
