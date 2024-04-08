@@ -29,13 +29,14 @@ dependencies = [
     "tokenizers",
     "datetime",
     "datasets==2.6.1",
-    "gradio==3.13.1",
+    "gradio",
     "transformers",
     "torch",
     "torchvision",
     "accelerate",
     "bertviz",
-    "fuzzywuzzy"
+    "fuzzywuzzy",
+    "httpx==0.24.1"
 ]
 
 dynamic = ["version"]

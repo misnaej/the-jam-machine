@@ -125,7 +125,7 @@ def generated_text_from_state(state):
 
 
 def instrument_col(default_inst, col_id):
-    inst_label = gr.Variable(col_id)
+    inst_label = gr.State(col_id)
     with gr.Column(scale=1, min_width=100):
         track_md = gr.Markdown(f"""## TRACK {col_id+1}""")
         inst = gr.Dropdown(
