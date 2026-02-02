@@ -359,23 +359,43 @@ When working on multi-phase refactoring or long tasks:
 - **Update progress:** Mark phases as complete (✅) and update the "Current State" table
 - **Decision log:** Record important decisions with rationale in the plan's Decision Log section
 
-### Context Preservation
+### CRITICAL: Keep Plans Updated
 
-Before context gets auto-compacted (or when clearing context with `/clear`):
+**Plan files must be updated continuously, not just at session end.** This ensures work can always resume smoothly, even after unexpected context resets.
 
-1. **Update the plan document** with current progress and any new findings
-2. **Write a continuation prompt** at the end of the plan summarizing:
-   - What was just completed
-   - What to do next
-   - Any blockers or decisions needed
+**Update `.plans/CONTINUATION-PROMPT.md` whenever:**
+- You complete a task or phase
+- You discover new information that affects the plan
+- You make a decision that should be remembered
+- Before any long-running operation (tests, builds, etc.)
 
-Example continuation prompt format:
+**Update frequency:** After every significant action, not just at the end of a session.
+
+### Continuation Prompt Format
+
+The `.plans/CONTINUATION-PROMPT.md` file should always contain:
+- Current branch and its purpose
+- What was just completed
+- What to do next (with specific file/function references)
+- Any blockers, open questions, or decisions needed
+
+Example:
 ```markdown
-## Continuation Prompt
+# Continuation Prompt
 
-**Last completed:** Phase 1 - Added postponed annotations to all files
-**Next step:** Phase 2 - Fix broken tests (see Tasks section)
-**Notes:** Found 2 additional files needing updates in examples/
+**Branch:** `main` (all work merges to `main`)
+
+## Current Status
+- Phase 1 (Postponed Annotations) ✅ Complete
+- Phase 2 in progress: fixing encoder.py
+
+## Next Steps
+1. Fix remaining type hints in `src/the_jam_machine/embedding/encoder.py:145-200`
+2. Run tests to verify changes
+3. Update MASTER-PLAN.md with completion status
+
+## Notes
+- Found circular import issue between encoder.py and familizer.py - resolved with TYPE_CHECKING
 ```
 
 This ensures work can resume smoothly after context resets.
