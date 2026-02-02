@@ -3,15 +3,15 @@
 from __future__ import annotations
 
 import sys
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import gradio as gr
 import matplotlib
+import numpy as np  # noqa: TC002 - needed at runtime for Gradio type introspection
 from matplotlib import pylab
-
-if TYPE_CHECKING:
-    import numpy as np
-    from matplotlib.figure import Figure
+from matplotlib.figure import (
+    Figure,  # noqa: TC002 - needed at runtime for Gradio type introspection
+)
 
 from the_jam_machine.constants import INSTRUMENT_TRANSFER_CLASSES
 from the_jam_machine.embedding.decoder import TextDecoder
