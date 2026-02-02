@@ -14,8 +14,9 @@ import numpy as np
 from miditok import Event
 from scipy import stats
 
-from ..constants import BEATS_PER_BAR
-from ..utils import (
+from jammy.constants import BEATS_PER_BAR
+from jammy.embedding.familizer import Familizer
+from jammy.utils import (
     beat_to_int_dec_base,
     chain,
     get_miditok,
@@ -24,7 +25,6 @@ from ..utils import (
     split_dots,
     writeToFile,
 )
-from .familizer import Familizer
 
 if TYPE_CHECKING:
     from miditok import MIDILike

@@ -10,8 +10,8 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
-from ..constants import INSTRUMENT_CLASSES
-from ..utils import get_datetime, writeToFile
+from jammy.constants import INSTRUMENT_CLASSES
+from jammy.utils import get_datetime, writeToFile
 
 if TYPE_CHECKING:
     import pretty_midi

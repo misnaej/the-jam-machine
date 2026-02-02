@@ -1,114 +1,94 @@
-from the_jam_machine.embedding.decoder import TextDecoder
-from the_jam_machine.generating.generate import GenerateMidiText
-from the_jam_machine.generating.playback import get_music
-from the_jam_machine.generating.utils import (
+"""Example script demonstrating MIDI generation with The Jam Machine."""
+
+from jammy.embedding.decoder import TextDecoder
+from jammy.generating.generate import GenerateMidiText
+from jammy.generating.playback import get_music
+from jammy.generating.utils import (
     WriteTextMidiToFile,
     check_if_prompt_inst_in_tokenizer_vocab,
     define_generation_dir,
-    get_max_time,
     plot_piano_roll,
 )
-from the_jam_machine.preprocessing.load import LoadModel
-from the_jam_machine.utils import get_miditok
+from jammy.preprocessing.load import LoadModel
+from jammy.utils import get_miditok
+
+# Instrument family mapping:
+# DRUMS = drums, 0 = piano, 1 = chromatic percussion, 2 = organ, 3 = guitar,
+# 4 = bass, 5 = strings, 6 = ensemble, 7 = brass, 8 = reed, 9 = pipe,
+# 10 = synth lead, 11 = synth pad, 12 = synth effects, 13 = ethnic,
+# 14 = percussive, 15 = sound effects
 
 
-def main():
-    # worker
-    DEVICE = "cpu"
+def main() -> None:
+    """Run the MIDI generation example."""
+    # Configuration
+    n_files_to_generate = 1
+    temperatures_to_try = [0.7]
+    use_familized_model = True
 
-    # define generation parameters
-    N_FILES_TO_GENERATE = 1
-    Temperatures_to_try = [0.7]
-
-    USE_FAMILIZED_MODEL = True
-    force_sequence_length = True
-
-    if USE_FAMILIZED_MODEL:
-        # model_repo = "misnaej/the-jam-machine-elec-famil"
-        # model_repo = "misnaej/the-jam-machine-elec-famil-ft32"
-
+    if use_familized_model:
         model_repo = "JammyMachina/elec-gmusic-familized-model-13-12__17-35-53"
         n_bar_generated = 8
-
-        # model_repo = "JammyMachina/improved_4bars-mdl"
-        # n_bar_generated = 4
-        instrument_promt_list = ["DRUMS", "4", "3"]
-        # DRUMS = drums, 0 = piano, 1 = chromatic percussion, 2 = organ, 3 = guitar, 4 = bass, 5 = strings, 6 = ensemble, 7 = brass, 8 = reed, 9 = pipe, 10 = synth lead, 11 = synth pad, 12 = synth effects, 13 = ethnic, 14 = percussive, 15 = sound effects
+        instrument_prompt_list = ["DRUMS", "4", "3"]
         density_list = [3, 2, 2]
-        # temperature_list = [0.7, 0.7, 0.75]
     else:
         model_repo = "misnaej/the-jam-machine"
-        instrument_promt_list = ["30"]  # , "DRUMS", "0"]
-        density_list = [3]  # , 2, 3]
-        # temperature_list = [0.7, 0.5, 0.75]
-        pass
+        n_bar_generated = 8
+        instrument_prompt_list = ["30"]
+        density_list = [3]
 
-    # define generation directory
-    generated_sequence_files_path = define_generation_dir(
-        f"midi/generated/{model_repo}"
-    )
+    # Define generation directory
+    generated_sequence_files_path = define_generation_dir(f"midi/generated/{model_repo}")
 
-    # load model and tokenizer
-    model, tokenizer = LoadModel(
-        model_repo, from_huggingface=True
-    ).load_model_and_tokenizer()
+    # Load model and tokenizer
+    model, tokenizer = LoadModel(model_repo, from_huggingface=True).load_model_and_tokenizer()
 
-    # does the prompt make sense
-    check_if_prompt_inst_in_tokenizer_vocab(tokenizer, instrument_promt_list)
+    # Validate prompt instruments
+    check_if_prompt_inst_in_tokenizer_vocab(tokenizer, instrument_prompt_list)
 
-    for temperature in Temperatures_to_try:
-        print(f"================= TEMPERATURE {temperature} =======================")
-        for _ in range(N_FILES_TO_GENERATE):
-            print("========================================")
-            # 1 - instantiate
-            piece_by_track = []  # reset the piece by track
+    for temperature in temperatures_to_try:
+        print(f"================= TEMPERATURE {temperature} =======================")  # noqa: T201
+        for _ in range(n_files_to_generate):
+            print("========================================")  # noqa: T201
+
+            # Instantiate generator
+            piece_by_track: list[str] = []
             generate_midi = GenerateMidiText(model, tokenizer, piece_by_track)
-            # 0 - set the n_bar for this model
             generate_midi.set_nb_bars_generated(n_bars=n_bar_generated)
-            # 1 - defines the instruments, densities and temperatures
-            # 2 - generate the first 8 bars for each instrument
-            # generate_midi.set_improvisation_level(0)
+
+            # Generate piece
             generate_midi.generate_piece(
-                instrument_promt_list,
+                instrument_prompt_list,
                 density_list,
                 [temperature for _ in density_list],
             )
-            # 3 - force the model to improvise
-            # generate_midi.set_improvisation_level(6)
-            # # 4 - generate the next 4 bars for each instrument
-            # generate_midi.generate_n_more_bars(2)
-            # generate_midi.set_improvisation_level(12)
-            # generate_midi.generate_n_more_bars(16)
 
-            generate_midi.generated_piece = (
-                generate_midi.get_whole_piece_from_bar_dict()
-            )
+            generate_midi.generated_piece = generate_midi.get_whole_piece_from_bar_dict()
 
-            # print the generated sequence in terminal
-            print("=========================================")
-            print(generate_midi.generated_piece)
-            print("=========================================")
+            # Print generated sequence
+            print("=========================================")  # noqa: T201
+            print(generate_midi.generated_piece)  # noqa: T201
+            print("=========================================")  # noqa: T201
 
-            # write to JSON file
+            # Write to JSON file
             filename = WriteTextMidiToFile(
                 generate_midi,
                 generated_sequence_files_path,
             ).text_midi_to_file()
 
-            # decode the sequence to MIDI """
+            # Decode to MIDI
             decode_tokenizer = get_miditok()
-            TextDecoder(decode_tokenizer, USE_FAMILIZED_MODEL).get_midi(
+            TextDecoder(decode_tokenizer, use_familized_model).get_midi(
                 generate_midi.generated_piece, filename=filename.split(".")[0] + ".mid"
             )
-            inst_midi, mixed_audio = get_music(f"{filename.split('.')[0]}.mid")
-            max_time = get_max_time(inst_midi)
+
+            # Generate piano roll visualization
+            inst_midi, _ = get_music(f"{filename.split('.')[0]}.mid")
             piano_roll_fig = plot_piano_roll(inst_midi)
-            piano_roll_fig.savefig(
-                filename.split(".")[0] + "_piano_roll.png", bbox_inches="tight"
-            )
+            piano_roll_fig.savefig(filename.split(".")[0] + "_piano_roll.png", bbox_inches="tight")
             piano_roll_fig.clear()
 
-            print("Et voilà! Your MIDI file is ready! GO JAM!")
+            print("Et voilà! Your MIDI file is ready! GO JAM!")  # noqa: T201
 
 
 if __name__ == "__main__":

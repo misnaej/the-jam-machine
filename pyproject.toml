@@ -46,7 +46,7 @@ ci = ["ruff", "pytest", "pytest-cov", "pytest-html", "pip-audit"]
 where = ["src"]
 
 [tool.setuptools.package-data]
-the_jam_machine = ["*.csv", "*.json"]
+jammy = ["*.csv", "*.json"]
 
 [tool.ruff]
 target-version = "py311"
@@ -72,6 +72,7 @@ select = [
     "S",      # flake8-bandit (security)
     "N",      # pep8-naming
     "T20",    # flake8-print
+    "TID252", # banned-relative-imports (enforce absolute imports)
 ]
 ignore = [
     "D100",   # missing module docstring (can be noisy initially)
@@ -82,7 +83,7 @@ ignore = [
 convention = "google"
 
 [tool.ruff.lint.isort]
-known-first-party = ["the_jam_machine"]
+known-first-party = ["jammy"]
 
 [tool.ruff.format]
 quote-style = "double"

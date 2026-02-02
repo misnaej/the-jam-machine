@@ -5,18 +5,18 @@ from __future__ import annotations
 import os
 import subprocess
 
-from the_jam_machine.embedding.decoder import TextDecoder
-from the_jam_machine.embedding.encoder import from_midi_to_sectioned_text
-from the_jam_machine.generating.generate import GenerateMidiText
-from the_jam_machine.generating.playback import get_music
-from the_jam_machine.generating.utils import (
+from jammy.embedding.decoder import TextDecoder
+from jammy.embedding.encoder import from_midi_to_sectioned_text
+from jammy.generating.generate import GenerateMidiText
+from jammy.generating.playback import get_music
+from jammy.generating.utils import (
     WriteTextMidiToFile,
     check_if_prompt_inst_in_tokenizer_vocab,
     define_generation_dir,
     plot_piano_roll,
 )
-from the_jam_machine.preprocessing.load import LoadModel
-from the_jam_machine.utils import get_miditok, read_from_file, write_to_file
+from jammy.preprocessing.load import LoadModel
+from jammy.utils import get_miditok, read_from_file, write_to_file
 
 USE_FAMILIZED_MODEL = True
 force_sequence_length = True

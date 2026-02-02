@@ -13,8 +13,8 @@ from typing import TYPE_CHECKING, Any
 from joblib import Parallel, delayed
 from pretty_midi import PrettyMIDI, program_to_instrument_name
 
-from ..constants import INSTRUMENT_CLASSES
-from ..utils import compute_list_average, get_files
+from jammy.constants import INSTRUMENT_CLASSES
+from jammy.utils import compute_list_average, get_files
 
 if TYPE_CHECKING:
     import pandas as pd

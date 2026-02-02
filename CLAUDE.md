@@ -37,7 +37,7 @@ Custom agents are defined in `agents/` (symlinked to `.claude/agents/`). **You M
 ## Project Structure
 
 ```
-src/the_jam_machine/       # Main package
+src/jammy/                 # Main package
 ├── embedding/             # MIDI <-> text token encoding/decoding
 ├── generating/            # Music generation engine (GPT-2)
 ├── preprocessing/         # Model loading from HuggingFace
@@ -281,43 +281,65 @@ class Generator:
 
 ### Development Workflow
 
-1. **Create a feature branch from `main`:**
+1. **Plan the work:**
+   - For non-trivial tasks, enter plan mode to explore the codebase and design an approach
+   - Update `.plans/CONTINUATION-PROMPT.md` with the planned work
+   - Get user approval before implementing
+
+2. **Create a feature branch from `main`:**
    ```bash
    git checkout main
    git pull origin main
    git checkout -b feature/your-feature-name
    ```
 
-2. **Branch naming conventions:**
+   **Branch naming conventions:**
    - `feature/` - New features
    - `fix/` - Bug fixes
    - `refactor/` - Code refactoring
    - `docs/` - Documentation changes
    - `test/` - Test additions/fixes
 
-3. **Make changes and commit:**
+3. **Make changes:**
+   - Write code following the standards in this document
+   - Keep documentation updated (docstrings, type hints, comments)
+   - Update `.plans/CONTINUATION-PROMPT.md` after completing each task
+   - Run `docs-reviewer` agent after code changes to verify documentation
+
+4. **Verify before commit:**
    ```bash
+   # Run tests
+   pipenv run pytest test/ -v
+
+   # Run linter (auto-fixes where possible)
+   pipenv run ruff check src/ test/ --fix
+   pipenv run ruff format src/ test/
+
    # Stage specific files (preferred over git add -A)
-   git add src/the_jam_machine/file.py
+   git add src/jammy/file.py
 
    # Commit with descriptive message
    git commit -m "Add feature X to module Y"
    ```
 
-4. **Push and create PR:**
+5. **Push and create PR:**
    ```bash
    git push -u origin feature/your-feature-name
    gh pr create --base main --title "Add feature X" --body "Description..."
    ```
 
-5. **PR Requirements:**
+6. **Before merging - run PR wrap-up:**
+   - Run the `pr-reviewer` agent to review changes and generate squash merge message
+   - This checks design, documentation, and creates a proper commit message
+
+7. **PR Requirements (verified by pr-reviewer):**
    - All tests must pass (`pipenv run pytest test/`)
    - Ruff checks must pass (`pipenv run ruff check src/ test/`)
    - Code must be formatted (`pipenv run ruff format src/ test/`)
    - PR description must explain changes
 
-6. **After PR approval:**
-   - Squash and merge into `main`
+8. **After PR approval:**
+   - Squash and merge into `main` using the generated commit message
    - Delete the feature branch
 
 ### Git Hooks

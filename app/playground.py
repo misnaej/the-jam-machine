@@ -13,14 +13,14 @@ from matplotlib.figure import (
     Figure,  # noqa: TC002 - needed at runtime for Gradio type introspection
 )
 
-from the_jam_machine.constants import INSTRUMENT_TRANSFER_CLASSES
-from the_jam_machine.embedding.decoder import TextDecoder
-from the_jam_machine.generating.generate import GenerateMidiText
-from the_jam_machine.generating.playback import get_music
-from the_jam_machine.generating.utils import plot_piano_roll
-from the_jam_machine.logging_config import setup_logging
-from the_jam_machine.preprocessing.load import LoadModel
-from the_jam_machine.utils import get_miditok
+from jammy.constants import INSTRUMENT_TRANSFER_CLASSES
+from jammy.embedding.decoder import TextDecoder
+from jammy.generating.generate import GenerateMidiText
+from jammy.generating.playback import get_music
+from jammy.generating.utils import plot_piano_roll
+from jammy.logging_config import setup_logging
+from jammy.preprocessing.load import LoadModel
+from jammy.utils import get_miditok
 
 matplotlib.use("Agg")
 

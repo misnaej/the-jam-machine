@@ -6,8 +6,8 @@ from pathlib import Path
 
 from joblib import Parallel, delayed
 
-from ..constants import INSTRUMENT_CLASSES, INSTRUMENT_TRANSFER_CLASSES
-from ..utils import FileCompressor, get_files, timeit
+from jammy.constants import INSTRUMENT_CLASSES, INSTRUMENT_TRANSFER_CLASSES
+from jammy.utils import FileCompressor, get_files, timeit
 
 logger = logging.getLogger(__name__)
 
