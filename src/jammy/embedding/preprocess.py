@@ -6,8 +6,8 @@ from pathlib import Path
 from miditok import MIDILike
 from miditoolkit import MidiFile
 
-from ..utils import writeToFile
-from .encoder import MIDIEncoder
+from jammy.embedding.encoder import MIDIEncoder
+from jammy.utils import writeToFile
 
 logger = logging.getLogger(__name__)
 

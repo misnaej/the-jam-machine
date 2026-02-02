@@ -22,8 +22,13 @@ from transformers import (
     TrainingArguments,
 )
 
-from ..passwords import HF_READ_TOKEN, HF_WRITE_TOKEN
-from .trainer_utils import TokenizeDataset, get_history, plot_history, train_tokenizer
+from jammy.passwords import HF_READ_TOKEN, HF_WRITE_TOKEN
+from jammy.training.trainer_utils import (
+    TokenizeDataset,
+    get_history,
+    plot_history,
+    train_tokenizer,
+)
 
 logger = logging.getLogger(__name__)
 

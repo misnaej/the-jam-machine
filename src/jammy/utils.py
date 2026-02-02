@@ -17,7 +17,7 @@ from miditok import Event, MIDILike
 from pydub import AudioSegment
 from scipy.io.wavfile import write
 
-from .constants import DRUMS_BEAT_QUANTIZATION, NONE_DRUMS_BEAT_QUANTIZATION
+from jammy.constants import DRUMS_BEAT_QUANTIZATION, NONE_DRUMS_BEAT_QUANTIZATION
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence

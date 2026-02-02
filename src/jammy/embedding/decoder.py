@@ -7,15 +7,15 @@ from typing import TYPE_CHECKING, Any
 
 from miditok import Event
 
-from ..constants import DRUMS_BEAT_QUANTIZATION, NONE_DRUMS_BEAT_QUANTIZATION
-from ..utils import (
+from jammy.constants import DRUMS_BEAT_QUANTIZATION, NONE_DRUMS_BEAT_QUANTIZATION
+from jammy.embedding.familizer import Familizer
+from jammy.utils import (
     beat_to_int_dec_base,
     get_event,
     get_miditok,
     int_dec_base_to_beat,
     readFromFile,
 )
-from .familizer import Familizer
 
 if TYPE_CHECKING:
     from miditok import MIDILike
