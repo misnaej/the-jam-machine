@@ -166,6 +166,7 @@ source/tmp/
 
 # test and example files results
 test/results
+*.mid
 test/*.mid
 test/*.png
 test/*.json
