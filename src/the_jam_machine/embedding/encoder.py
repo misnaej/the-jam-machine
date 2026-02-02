@@ -1,53 +1,122 @@
+"""MIDI to text encoding module.
+
+This module provides functionality to convert MIDI files into a text token
+representation suitable for training and generation with transformer models.
+"""
+
 from __future__ import annotations
+
+import contextlib
+import logging
+from typing import TYPE_CHECKING
 
 import numpy as np
 from miditok import Event
-from miditoolkit import MidiFile
 from scipy import stats
 
 from ..constants import BEATS_PER_BAR
-from ..utils import *
+from ..utils import (
+    beat_to_int_dec_base,
+    chain,
+    get_miditok,
+    get_text,
+    int_dec_base_to_beat,
+    split_dots,
+    writeToFile,
+)
 from .familizer import Familizer
 
+if TYPE_CHECKING:
+    from miditok import MIDILike
+    from miditoolkit import Instrument, MidiFile
+
+logger = logging.getLogger(__name__)
+
 # TODO HIGH PRIORITY
-# TODO: The Density calculation does not match that of Tristan's Encoding. Ask Tristan about it.
+# TODO: The Density calculation does not match that of Tristan's Encoding.
+#       Ask Tristan about it.
 # TODO: Data augmentation:
-#   - hopping K bars and re-encode almost same notes: needs to keep track of sequence length
+#   - hopping K bars and re-encode almost same notes: needs to keep track of
+#     sequence length
 #   - computing track key
 #       - octave shifting
 #       - pitch shifting
-# TODO: Solve the one-instrument tracks problem - > needs a external function that converts the one track midi to multi-track midi based on the "channel information"
-# TODO: Solve the one instrument spread to many channels problem -> it creates several intruments instead of one
+# TODO: Solve the one-instrument tracks problem -> needs an external function
+#       that converts the one track midi to multi-track midi based on the
+#       "channel information"
+# TODO: Solve the one instrument spread to many channels problem -> it creates
+#       several instruments instead of one
 
 # LOW PRIORITY
 # TODO: Improve method comments
-# TODO: Density Bins - Calculation Done - Not sure if it the best way - MMM paper uses a normalized density based on the entire instrument density in the dataset.
-# They say that density for a given instrument does not mean the same for another. However, I am expecting that the instrument token is already implicitely taking care of that.
-# Question: How to determine difference between 8 very long notes in 8 bar and 6 empty bar + 8 very short notes in last 2 bar?
+# TODO: Density Bins - Calculation Done - Not sure if it the best way - MMM
+#       paper uses a normalized density based on the entire instrument density
+#       in the dataset. They say that density for a given instrument does not
+#       mean the same for another. However, I am expecting that the instrument
+#       token is already implicitly taking care of that.
+# Question: How to determine difference between 8 very long notes in 8 bar and
+#           6 empty bar + 8 very short notes in last 2 bar?
 # TODO: Should empty sections be filled with bar start and bar end events?
-# TODO: changing the methods to avoid explicit loops and use the map function instead?
+# TODO: changing the methods to avoid explicit loops and use the map function
+#       instead?
 
 # NEW IDEAS
-# TODO: Changing Generation approach : encoding all tracks in the same key and choose the key while generating, so we just shift the key after generation.
+# TODO: Changing Generation approach: encoding all tracks in the same key and
+#       choose the key while generating, so we just shift the key after
+#       generation.
 
 
 class MIDIEncoder:
-    def __init__(self, tokenizer, familized=False):
+    """Encoder for converting MIDI files to text token representation.
+
+    This class handles the conversion of MIDI events to a text format suitable
+    for training transformer models. It processes velocity, time shifts, bars,
+    density, and sections.
+
+    Attributes:
+        tokenizer: The MIDILike tokenizer instance.
+        familized: Whether to familize instruments.
+    """
+
+    def __init__(self, tokenizer: MIDILike, familized: bool = False) -> None:
+        """Initialize the MIDI encoder.
+
+        Args:
+            tokenizer: The MIDILike tokenizer instance for MIDI processing.
+            familized: Whether to group instruments by family. Defaults to False.
+        """
         self.tokenizer = tokenizer
         self.familized = familized
 
     @staticmethod
-    def remove_velocity(midi_events):
+    def remove_velocity(midi_events: list[list[Event]]) -> list[list[Event]]:
+        """Remove velocity events from MIDI events.
+
+        Args:
+            midi_events: List of instrument event lists.
+
+        Returns:
+            MIDI events with velocity events removed.
+        """
         return [
             [event for event in inst_events if event.type != "Velocity"]
             for inst_events in midi_events
         ]
 
     @staticmethod
-    def set_timeshifts_to_min_length(midi_events):
-        """Convert existing time-shifts events to multiple time-shift events,
-        which sum equals the original time shift event
-        --> Simplifies the bar encoding process
+    def set_timeshifts_to_min_length(
+        midi_events: list[list[Event]],
+    ) -> list[list[Event]]:
+        """Convert time-shift events to multiple minimal time-shift events.
+
+        This simplifies the bar encoding process by breaking down time shifts
+        into their smallest components.
+
+        Args:
+            midi_events: List of instrument event lists.
+
+        Returns:
+            MIDI events with time shifts converted to minimal length.
         """
         new_midi_events = []
         for inst_events in midi_events:
@@ -61,9 +130,7 @@ class MIDIEncoder:
                     # generating and appending new time-shift events
                     while values[1] > 1:
                         values[1] -= 1
-                        new_inst_events.append(
-                            Event("Time-Shift", "0.1." + str(values[2]))
-                        )
+                        new_inst_events.append(Event("Time-Shift", "0.1." + str(values[2])))
                     event.value = ".".join(map(str, values))
 
                 new_inst_events.append(event)
@@ -71,9 +138,16 @@ class MIDIEncoder:
         return new_midi_events
 
     @staticmethod
-    def add_bars(midi_events):
-        """Adding bar-start and bar-end events to the midi events
-        Uses BEATS_PER_BAR constant to determine the bar length
+    def add_bars(midi_events: list[list[Event]]) -> list[list[Event]]:
+        """Add bar-start and bar-end events to MIDI events.
+
+        Uses BEATS_PER_BAR constant to determine the bar length.
+
+        Args:
+            midi_events: List of instrument event lists.
+
+        Returns:
+            MIDI events with bar markers added.
         """
         new_midi_events = []
         for inst_events in midi_events:
@@ -111,8 +185,15 @@ class MIDIEncoder:
         return new_midi_events
 
     @staticmethod
-    def combine_timeshifts_in_bar(midi_events):
-        """Combining adjacent time-shifts within the same bar"""
+    def combine_timeshifts_in_bar(midi_events: list[list[Event]]) -> list[list[Event]]:
+        """Combine adjacent time-shifts within the same bar.
+
+        Args:
+            midi_events: List of instrument event lists.
+
+        Returns:
+            MIDI events with combined time shifts.
+        """
         new_midi_events = []
         for inst_events in midi_events:
             new_inst_events = []
@@ -134,9 +215,19 @@ class MIDIEncoder:
         return new_midi_events
 
     @staticmethod
-    def remove_timeshifts_preceeding_bar_end(midi_events):
-        """Useless time-shift removed, i.e. when bar are empty, or afgter the last event of a bar is there is a remainder time-shift
-        This helps reducing the sequence length
+    def remove_timeshifts_preceeding_bar_end(
+        midi_events: list[list[Event]],
+    ) -> list[list[Event]]:
+        """Remove useless time-shifts preceding bar end events.
+
+        Removes time-shifts when bars are empty or after the last event of a
+        bar if there is a remainder time-shift. This helps reduce sequence length.
+
+        Args:
+            midi_events: List of instrument event lists.
+
+        Returns:
+            MIDI events with unnecessary time shifts removed.
         """
         verbose = False
         new_midi_events = []
@@ -149,21 +240,28 @@ class MIDIEncoder:
                     and inst_events[i + 1].type == "Bar-End"
                 ):
                     if verbose:
-                        print(f"---- {i} - {event} ----")
-                        [print(a) for a in inst_events[i - 3 : i + 3]]
+                        logger.debug("---- %d - %s ----", i, event)
+                        for a in inst_events[i - 3 : i + 3]:
+                            logger.debug("%s", a)
                     continue
 
                 new_inst_events.append(event)
-            inst_events
             new_midi_events.append(new_inst_events)
 
         return new_midi_events
 
     @staticmethod
-    def add_density_to_bar(midi_events):
-        """For each bar:
-        - calculate the note density as the number of note onset divided by the number of beats per bar
-        - add the note density as a new event type "Bar-Density"
+    def add_density_to_bar(midi_events: list[list[Event]]) -> list[list[Event]]:
+        """Add note density to each bar.
+
+        For each bar, calculates the note density as the number of note onsets
+        divided by the number of beats per bar, then adds it as a Bar-Density event.
+
+        Args:
+            midi_events: List of instrument event lists.
+
+        Returns:
+            MIDI events with density information added to each bar.
         """
         new_midi_events = []
         for inst_events in midi_events:
@@ -186,30 +284,47 @@ class MIDIEncoder:
                             round(note_onset_count_in_bar / BEATS_PER_BAR),
                         )
                     )
-                    [
+                    for temp_event in temp_event_list:
                         new_inst_events.append(temp_event)
-                        for temp_event in temp_event_list
-                    ]
 
             new_midi_events.append(new_inst_events)
         return new_midi_events
 
     @staticmethod
-    def define_instrument(midi_tok_instrument, familize=False):
-        """Define the instrument token from the midi token instrument and whether the instrument needs to be famnilized"""
+    def define_instrument(midi_tok_instrument: Instrument, familize: bool = False) -> int | str:
+        """Define the instrument token from the MIDI token instrument.
+
+        Args:
+            midi_tok_instrument: The miditoolkit Instrument object.
+            familize: Whether the instrument needs to be familized.
+
+        Returns:
+            The instrument identifier (program number, family number, or "Drums").
+        """
         # get program number
-        instrument = (
+        instrument: int | str = (
             midi_tok_instrument.program if not midi_tok_instrument.is_drum else "Drums"
         )
         # familize instrument
         if familize and not midi_tok_instrument.is_drum:
             familizer = Familizer()
-            instrument = familizer.get_family_number(instrument)
+            family_number = familizer.get_family_number(int(instrument))
+            if family_number is not None:
+                instrument = family_number
 
         return instrument
 
     @staticmethod
-    def initiate_track_in_section(instrument, track_index):
+    def initiate_track_in_section(instrument: int | str, track_index: int) -> list[Event]:
+        """Initialize a track section with start and instrument events.
+
+        Args:
+            instrument: The instrument identifier (program number or "Drums").
+            track_index: The index of the track.
+
+        Returns:
+            List of events starting a new track section.
+        """
         section = [
             Event("Track-Start", track_index),
             Event("Instrument", instrument),
@@ -217,15 +332,40 @@ class MIDIEncoder:
         return section
 
     @staticmethod
-    def terminate_track_in_section(section, track_index):
+    def terminate_track_in_section(
+        section: list[Event], track_index: int
+    ) -> tuple[list[Event], int]:
+        """Terminate a track section with an end event.
+
+        Args:
+            section: The current section event list.
+            track_index: The current track index.
+
+        Returns:
+            Tuple of (updated section, incremented track index).
+        """
         section.append(Event("Track-End", track_index))
         track_index += 1
         return section, track_index
 
-    def make_sections(self, midi_events, instruments, n_bar=8):
-        """For each instrument, make sections of n_bar bars each
-        --> midi_sections[inst_sections][sections]
-        because files can be encoded in many sections of n_bar
+    def make_sections(
+        self,
+        midi_events: list[list[Event]],
+        instruments: list[Instrument],
+        n_bar: int = 8,
+    ) -> list[list[list[Event]]]:
+        """Make sections of n_bar bars for each instrument.
+
+        Creates midi_sections[inst_sections][sections] structure because files
+        can be encoded in many sections of n_bar.
+
+        Args:
+            midi_events: List of instrument event lists.
+            instruments: List of miditoolkit Instrument objects.
+            n_bar: Number of bars per section. Defaults to 8.
+
+        Returns:
+            Nested list of sections per instrument.
         """
         midi_sections = []
         for i, inst_events in enumerate(midi_events):
@@ -239,25 +379,29 @@ class MIDIEncoder:
                     event.type == "Bar-End" and int(event.value + 1) % n_bar == 0
                 ):
                     # finish the section with track-end event
-                    section, track_index = self.terminate_track_in_section(
-                        section, track_index
-                    )
+                    section, track_index = self.terminate_track_in_section(section, track_index)
                     # append the section to the section list
                     inst_section.append(section)
 
                     # start new section if not the last event
                     if ev_idx < len(inst_events) - 1:
-                        section = self.initiate_track_in_section(
-                            instrument, track_index
-                        )
+                        section = self.initiate_track_in_section(instrument, track_index)
 
             midi_sections.append(inst_section)
 
         return midi_sections
 
     @staticmethod
-    def add_density_to_sections(midi_sections):
-        """Add density to each section as the mode of bar density within that section
+    def add_density_to_sections(
+        midi_sections: list[list[list[Event]]],
+    ) -> list[list[list[Event]]]:
+        """Add density to each section as the mode of bar density.
+
+        Args:
+            midi_sections: Nested list of sections per instrument.
+
+        Returns:
+            Sections with density information added.
         """
         new_midi_sections = []
         for inst_sections in midi_sections:
@@ -282,17 +426,24 @@ class MIDIEncoder:
         return new_midi_sections
 
     @staticmethod
-    def sections_to_piece(midi_events):
-        """Combine all sections into one piece
-        Section are combined in a string as follows:
+    def sections_to_piece(midi_events: list[list[list[Event]]]) -> list[Event]:
+        """Combine all sections into one piece.
+
+        Sections are combined as follows:
         'Piece_Start
         Section 1 Instrument 1
         Section 1 Instrument 2
         Section 1 Instrument 3
         Section 2 Instrument 1
         ...'
+
+        Args:
+            midi_events: Nested list of sections per instrument.
+
+        Returns:
+            Flat list of events representing the complete piece.
         """
-        piece = []
+        piece: list[Event] = []
         max_total_sections = max(map(len, midi_events))
         for i in range(max_total_sections):
             # adding piece start event at the beggining of each section
@@ -304,8 +455,15 @@ class MIDIEncoder:
         return piece
 
     @staticmethod
-    def events_to_text(events):
-        """Convert miditok events to text"""
+    def events_to_text(events: list[Event]) -> str:
+        """Convert miditok events to text.
+
+        Args:
+            events: List of miditok Event objects.
+
+        Returns:
+            Text representation of the events.
+        """
         text = ""
         current_instrument = "undefined"
         for event in events:
@@ -316,19 +474,31 @@ class MIDIEncoder:
             text += get_text(event, current_instrument)
         return text
 
-    def get_midi_events(self, midi):
+    def get_midi_events(self, midi: MidiFile) -> list[list[Event]]:
+        """Get MIDI events from a MIDI file.
+
+        Args:
+            midi: The MidiFile object to process.
+
+        Returns:
+            List of event lists, one per instrument.
+        """
         return [
             self.tokenizer.tokens_to_events(inst_tokens)
             for inst_tokens in self.tokenizer.midi_to_tokens(midi)
         ]
 
-    def get_piece_sections(self, midi):
-        """Modifies the miditok events to our needs:
-        Removes velocity, add bars, density and make sections for training and generation
+    def get_piece_sections(self, midi: MidiFile) -> list[list[list[Event]]]:
+        """Get piece sections from a MIDI file.
+
+        Modifies the miditok events to our needs: removes velocity, adds bars,
+        density and makes sections for training and generation.
+
         Args:
-            - midi: miditok object
+            midi: The MidiFile object to process.
+
         Returns:
-            - piece_sections: list (instruments) of lists (sections) of miditok events
+            List (instruments) of lists (sections) of miditok events.
         """
         midi_events = self.get_midi_events(midi)
 
@@ -349,13 +519,16 @@ class MIDIEncoder:
 
         return piece_sections
 
-    def get_piece_text(self, midi):
-        """Converts the miditok events to text,
-        The text is organized in sections of 8 bars of instrument
+    def get_piece_text(self, midi: MidiFile) -> str:
+        """Convert a MIDI file to text representation.
+
+        The text is organized in sections of 8 bars of instrument.
+
         Args:
-            - midi: miditok object
+            midi: The MidiFile object to process.
+
         Returns:
-            - piece_text: string
+            Text representation of the MIDI piece.
         """
         piece_text = chain(
             midi,
@@ -369,12 +542,14 @@ class MIDIEncoder:
 
         return piece_text
 
-    def get_text_by_section(self, midi):
-        """Returns a list of sections of text
+    def get_text_by_section(self, midi: MidiFile) -> list[str]:
+        """Get text representation organized by section.
+
         Args:
-            midi: miditok object
+            midi: The MidiFile object to process.
+
         Returns:
-            sections_as_text: list of sections of text
+            List of text strings, one per section.
         """
         sectioned_instruments = self.get_piece_sections(midi)
         max_sections = max(list(map(len, sectioned_instruments)))
@@ -382,26 +557,37 @@ class MIDIEncoder:
 
         for sections in sectioned_instruments:
             for idx in range(max_sections):
-                try:
+                with contextlib.suppress(IndexError):
                     sections_as_text[idx] += self.events_to_text(sections[idx])
-                except:
-                    pass
 
         return sections_as_text
 
 
-def from_MIDI_to_sectionned_text(midi_filename, familized=False):
-    """Convert a MIDI file to a MidiText input prompt"""
+def from_midi_to_sectioned_text(midi_filename: str, familized: bool = False) -> str:
+    """Convert a MIDI file to a MidiText input prompt.
+
+    Args:
+        midi_filename: Path to the MIDI file (without .mid extension).
+        familized: Whether to familize instruments. Defaults to False.
+
+    Returns:
+        Text representation of the MIDI file.
+    """
+    from miditoolkit import MidiFile
+
     midi = MidiFile(f"{midi_filename}.mid")
     midi_like = get_miditok()
     piece_text = MIDIEncoder(midi_like, familized=familized).get_piece_text(midi)
-    # piece_text_split_by_section = MIDIEncoder(midi_like).get_text_by_section(midi)
     return piece_text
+
+
+# Backward compatibility alias (deprecated, use from_midi_to_sectioned_text instead)
+_from_midi_to_sectionned_text = from_midi_to_sectioned_text
 
 
 if __name__ == "__main__":
     # Encode Strokes for debugging purposes:
     # midi_filename = "midi/the_strokes-reptilia"
     midi_filename = "source/tests/20230306_140430"
-    piece_text = from_MIDI_to_sectionned_text(f"{midi_filename}")
+    piece_text = from_midi_to_sectioned_text(f"{midi_filename}")
     writeToFile(f"{midi_filename}.txt", piece_text)

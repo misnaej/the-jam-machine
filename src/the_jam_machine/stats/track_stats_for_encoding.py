@@ -51,22 +51,46 @@ path_midi = f"./midi/{midi_filename}.mid"
 # )
 
 
-def stats_on_track(midi_filename="the_strokes-reptilia", verbose=True):
+def stats_on_track(
+    midi_filename: str = "the_strokes-reptilia",
+    verbose: bool = True,
+) -> dict[str, int | float | list[int] | list[float]]:
+    """Analyze track statistics for MIDI encoding.
+
+    This function loads a MIDI file and computes various statistics about its
+    instruments and notes, useful for understanding track structure before encoding.
+
+    Args:
+        midi_filename: Name of the MIDI file (without .mid extension) in ./midi/.
+        verbose: If True, prints detailed statistics for each instrument.
+
+    Returns:
+        A dictionary containing track statistics including:
+            - track_count_in_mido: Number of tracks in the MIDI file
+            - instrument_count_in_miditooldkit: Number of instruments
+            - beat_count: Total number of beats
+            - note_counts_all_instrument: Note counts per instrument
+            - note_coverage_all_instrument: Coverage percentage per instrument
+            - note_coverage_true_all_instrument: True coverage (no overlap) per instrument
+            - min_start_all_instruments: First note start time per instrument
+            - max_end_all_instruments: Last note end time per instrument
+    """
     path_midi = f"./midi/{midi_filename}.mid"
 
     miditoolk_data = MidiFile(path_midi)
     midi_mido = mido.MidiFile(path_midi)
-    pretty_midi_data = pretty_midi.PrettyMIDI(path_midi)
-    note_seq_data = note_seq.midi_file_to_note_sequence(path_midi)
+    # Load with other libraries for potential future use
+    _ = pretty_midi.PrettyMIDI(path_midi)
+    _ = note_seq.midi_file_to_note_sequence(path_midi)
 
-    print("-----------------------------")
-    print(
+    print("-----------------------------")  # noqa: T201
+    print(  # noqa: T201
         f"miditooldkit instruments: {len(midi_mido.instruments)}",
     )
-    print(
+    print(  # noqa: T201
         f"mido tracks: {len(midi_mido.tracks)}",
     )
-    print("-----------------------------")
+    print("-----------------------------")  # noqa: T201
     # midi_mido.tracks
     # print(midi_mido.tracks)
     # print(midi.instruments)
@@ -108,32 +132,31 @@ def stats_on_track(midi_filename="the_strokes-reptilia", verbose=True):
         note_counts_all_instrument.append(len(instruments.notes))
 
         if verbose:
-            print(instruments.name)
-            print(
+            print(instruments.name)  # noqa: T201
+            print(  # noqa: T201
                 f"There are {note_counts_all_instrument[idx]} notes from {instruments.name}"
             )
-            print(
-                f"{instruments.name} covers {note_coverage_true_all_instrument[idx]:.0f} % of the the track "
-            )
-            print(
+            coverage = note_coverage_true_all_instrument[idx]
+            print(f"{instruments.name} covers {coverage:.0f} % of the track")  # noqa: T201
+            print(  # noqa: T201
                 f"{instruments.name}",
                 f"First note at: {min_start_all_instruments[idx]:.1f} beats;",
                 f"Fast note at: {max_end_all_instruments[idx]:.1f} beats",
             )
 
-            print("-----------------------------")
+            print("-----------------------------")  # noqa: T201
 
-    stats = dict(
-        track_count_in_mido=len(miditoolk_data.tracks),
-        instrument_count_in_miditooldkit=len(miditoolk_data.instruments),
-        beat_count=beat_count,
-        note_counts_all_instrument=note_counts_all_instrument,
-        note_coverage_all_instrument=note_coverage_all_instrument,
-        note_coverage_true_all_instrument=note_coverage_true_all_instrument,
-        min_start_all_instruments=min_start_all_instruments,
-        max_end_all_instruments=max_end_all_instruments,
-    )
-    print(stats)
+    stats = {
+        "track_count_in_mido": len(miditoolk_data.tracks),
+        "instrument_count_in_miditooldkit": len(miditoolk_data.instruments),
+        "beat_count": beat_count,
+        "note_counts_all_instrument": note_counts_all_instrument,
+        "note_coverage_all_instrument": note_coverage_all_instrument,
+        "note_coverage_true_all_instrument": note_coverage_true_all_instrument,
+        "min_start_all_instruments": min_start_all_instruments,
+        "max_end_all_instruments": max_end_all_instruments,
+    }
+    print(stats)  # noqa: T201
 
     for ui in np.unique(instrument_names):
         all_notes_starts = []
@@ -142,7 +165,7 @@ def stats_on_track(midi_filename="the_strokes-reptilia", verbose=True):
             idx for idx, ins in enumerate(instrument_names) if ins == ui
         ]
         if len(where_unique_inst) > 1:
-            print(f"{ui} is split in instrument {where_unique_inst}")
+            print(f"{ui} is split in instrument {where_unique_inst}")  # noqa: T201
 
             for i, t in enumerate(where_unique_inst):
                 for notes in miditoolk_data.instruments[t].notes:
@@ -157,12 +180,10 @@ def stats_on_track(midi_filename="the_strokes-reptilia", verbose=True):
                 all_notes_instrument[id] for id in right_order
             ]
 
-            fig, ax = plt.subplots()
+            _fig, _ax = plt.subplots()
             plt.plot(all_notes_starts, all_notes_instrument, "o")
             plt.plot(all_notes_starts_reordered, all_notes_instrument_reordered, "-")
             plt.show()
-            # plt.close()
-            all_notes_starts
     return stats
 
 
