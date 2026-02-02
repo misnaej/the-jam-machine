@@ -224,6 +224,8 @@ pipenv run ruff format src/ app/
 
 See [CLAUDE.md](CLAUDE.md) for development guidelines.
 
+Development of this repository is supported by [Claude Code](https://claude.ai/claude-code).
+
 ---
 
 ## Contributors
