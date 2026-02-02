@@ -47,6 +47,25 @@ You are a Design Review Agent. Analyze the provided code for violations of softw
 - Are there overly clever solutions that hurt readability?
 - Could nested logic be flattened?
 
+### Prefer Functions Over Classes
+
+- Are there classes with only `@staticmethod` or `@classmethod` methods?
+  - These should be module-level functions instead
+- Are there classes that don't hold instance state?
+  - If no `self.x` attributes, it should probably be functions
+- Are classes being used just for namespacing?
+  - Python modules are already namespaces
+
+**Use classes when:**
+- Objects have instance state (attributes that vary per instance)
+- Objects have a lifecycle (init, configure, use, cleanup)
+- You need multiple instances with different configurations
+
+**Use functions when:**
+- Operations are stateless transformations
+- You'd end up with all `@staticmethod`
+- Data flows in, transformed data flows out
+
 ## Additional Checks
 
 ### Error Handling

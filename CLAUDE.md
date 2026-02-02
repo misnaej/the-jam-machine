@@ -389,27 +389,26 @@ This keeps PRs focused and makes code review easier.
 
 When working on multi-phase refactoring or long tasks:
 
-### CRITICAL: Use Agents for Complex Operations
+### CRITICAL: Use Custom Agents
 
-**You MUST use the Task tool (agents) for these operations:**
+Custom agents are defined in `agents/` (symlinked to `.claude/agents/`). **You MUST use these agents for their designated tasks:**
 
-1. **PR Wrap-up** - When finalizing a PR:
-   - Use an agent to gather all commits, generate summary, and add squash merge message as PR comment
-   - Never manually piece together PR information
+| Agent | Use For |
+|-------|---------|
+| `pr_review_agent.md` | **PR wrap-up**: Review changes, check design/docs, generate squash merge message, post as PR comment |
+| `design_agent.md` | **Design review**: Check code against SOLID, DRY, YAGNI, KISS principles |
+| `documentation_agent.md` | **Documentation review**: Check docstrings, type hints, comments |
 
-2. **Codebase Exploration** - When searching for patterns, understanding architecture, or finding files:
-   - Use the Explore agent instead of running Glob/Grep directly
-   - Agents provide thorough, systematic searches
-
-3. **Multi-step Operations** - When a task requires multiple dependent steps:
-   - Use agents to maintain focus and ensure completeness
-   - Agents don't lose track of sub-tasks
+**When to use:**
+- **Before merging any PR** → Run `pr_review_agent`
+- **After writing new code** → Run `design_agent` and `documentation_agent`
+- **During code review** → Run both design and documentation agents
 
 **Why agents are critical:**
+- They follow systematic checklists and don't skip steps
+- They produce structured, consistent output
 - They maintain dedicated context for the task
-- They follow through on all steps systematically
-- They produce complete, well-structured outputs
-- They don't skip steps or forget details
+- They catch issues that ad-hoc reviews miss
 
 ### Plan Documents
 
