@@ -14,6 +14,38 @@ Documentation MUST accurately reflect the code. Check:
 
 **Stale documentation is dangerous** - it misleads developers and causes bugs.
 
+### CRITICAL: Docstring-Signature Matching (ALL Functions)
+
+For **EVERY function**, the Args and Returns sections MUST exactly match the function signature. This check is mandatory and must be performed for all functions without exception:
+
+**Args section checks:**
+- [ ] Every parameter in the signature is documented
+- [ ] No extra parameters documented that don't exist in signature
+- [ ] Parameter names match exactly (no typos, no old names)
+- [ ] Types described match the type hints
+- [ ] Default values mentioned if relevant
+
+**Returns section checks:**
+- [ ] Return type matches the signature's return type hint
+- [ ] If function returns `None`, either omit Returns or state "None"
+- [ ] If function returns a tuple, document each element
+- [ ] If return type changed during refactoring, update the docstring
+
+**Example of mismatch to catch:**
+```python
+def process(data: list[str], verbose: bool = False) -> dict[str, int]:
+    """Process the input data.
+
+    Args:
+        data: The input data.
+        # MISSING: verbose parameter not documented!
+        debug: ...  # WRONG: parameter doesn't exist!
+
+    Returns:
+        list[str]  # WRONG: actually returns dict[str, int]
+    """
+```
+
 ## Documentation Standards
 
 ### Docstrings (Google Style)
@@ -149,9 +181,10 @@ Tests require **minimal but accurate** documentation:
    - Bad: `test_encoder` (too vague)
    - Bad: `test_1`, `test_stuff` (meaningless)
 
-2. **Test docstrings are optional but names are not**
-   - If the test name is clear, no docstring needed
-   - Add docstring only for complex test scenarios
+2. **Test docstrings ARE required** (enforced by ruff D103)
+   - Keep them brief - one line is fine if the name is clear
+   - Example: `"""Test that encoder handles empty MIDI files gracefully."""`
+   - For complex tests, add more detail about setup or assertions
 
 3. **Test name format**: `test_<unit>_<expected_behavior>_<condition>`
    - `test_decoder_returns_midi_when_input_valid`
