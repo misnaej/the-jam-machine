@@ -1,7 +1,7 @@
 # Plan: Refactor generate.py
 
 **Date:** 2026-02-02
-**Branch:** `refactor/generate-split` (PR #2 open against `dev`)
+**Branch:** `refactor/generate-split` (merged to `main`)
 **Status:** ✅ **COMPLETE**
 **Prerequisites:** Read `CLAUDE.md` for coding standards, git workflow, and commit style
 
@@ -285,8 +285,8 @@ class GenerateMidiText:
 
 ### Step 1: Create Branch
 ```bash
-git checkout dev
-git pull origin dev
+git checkout main
+git pull origin main
 git checkout -b refactor/generate-split
 ```
 
@@ -333,7 +333,7 @@ pipenv run ruff format src/the_jam_machine/generating/
 git add src/the_jam_machine/generating/
 git commit -m "Refactor generate.py into focused classes"
 git push -u origin refactor/generate-split
-gh pr create --base dev --title "Refactor GenerateMidiText into focused classes"
+gh pr create --base main --title "Refactor GenerateMidiText into focused classes"
 ```
 
 ---
@@ -349,7 +349,7 @@ gh pr create --base dev --title "Refactor GenerateMidiText into focused classes"
 - [x] Code formatted
 - [x] Type hints on all new functions
 - [x] Docstrings on all new classes/methods
-- [x] PR created to dev branch
+- [x] PR created and merged to main branch
 
 **Note:** Some pre-existing test failures remain (missing test files, wrong paths) - these are not related to this refactor.
 

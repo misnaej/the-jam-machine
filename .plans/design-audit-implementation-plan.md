@@ -1,7 +1,7 @@
 # Design Audit Implementation Plan
 
 **Date:** 2026-02-02
-**Branch:** `refactor/design-audit` (to be created from `refactor/generate-split`)
+**Branch:** Feature branches created from `main`
 **Scope:** `src/the_jam_machine/`
 
 ---

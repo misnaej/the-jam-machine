@@ -1,18 +1,10 @@
 # Continuation Prompt
 
-**Branch:** `refactor/generate-split` (PR #2 open against `dev`)
+**Branch:** `main` (all work merges to `main`)
 
 ## Context
 
-Refactoring The Jam Machine. PR #2 completed (split `generate.py` into 4 classes).
-
-## Uncommitted Changes
-
-```bash
-git status  # Shows: README.md, .gitignore modified + new Docker files
-```
-
-Review `.plans/session-changes-20260202.md` for details.
+Refactoring The Jam Machine. Major cleanup of lint issues and documentation completed.
 
 ## Start Here
 
@@ -22,19 +14,27 @@ Read `.plans/MASTER-PLAN.md` - it's the central reference with ordered phases.
 
 | Plan | Purpose |
 |------|---------|
-| `MASTER-PLAN.md` | Order of operations |
-| `design-audit-implementation-plan.md` | Detailed implementation |
+| `MASTER-PLAN.md` | Order of operations (15 phases) |
+| `design-audit-implementation-plan.md` | Detailed implementation steps |
 | `test-coverage-audit.md` | Test improvements |
+
+## Current Status
+
+- Phase 1 (Postponed Annotations) ✅ Complete
+- All ruff lint issues fixed ✅
+- Custom agents configured in `agents/`
+- App runs successfully
 
 ## Next Steps (from MASTER-PLAN)
 
-1. Phase 1: Add `from __future__ import annotations` to all files
-2. Phase 2: Fix broken tests
-3. Phase 3: Config dataclasses (PR #2 feedback)
+1. Phase 2: Enforce absolute imports & rename package to `jammy`
+2. Phase 3: Fix broken tests
+3. Phase 4: Config dataclasses (PR #2 feedback)
 
 ## Commands
 
 ```bash
-pipenv run pytest test/ -v          # 3 pass, 2 fail, 1 error (pre-existing)
-pipenv run python app/playground.py  # App works
+pipenv run pytest test/ -v           # Run tests
+pipenv run ruff check src/ test/     # Lint (should pass)
+pipenv run python app/playground.py  # Run app
 ```

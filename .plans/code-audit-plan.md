@@ -188,15 +188,14 @@ For each issue:
 
 ### Branch Strategy
 
-- **Reference Branch:** `dev` (all feature branches are created from and merged into `dev`)
-- **Production Branch:** `main` (only receives merges from `dev` for releases)
+- **Default Branch:** `main` (all feature branches are created from and merged into `main`)
 
 ### Development Workflow
 
-1. **Create a feature branch from `dev`:**
+1. **Create a feature branch from `main`:**
    ```bash
-   git checkout dev
-   git pull origin dev
+   git checkout main
+   git pull origin main
    git checkout -b feature/your-feature-name
    ```
 
@@ -219,7 +218,7 @@ For each issue:
 4. **Push and create PR:**
    ```bash
    git push -u origin feature/your-feature-name
-   gh pr create --base dev --title "Add feature X" --body "Description..."
+   gh pr create --base main --title "Add feature X" --body "Description..."
    ```
 
 5. **PR Requirements:**
@@ -229,7 +228,7 @@ For each issue:
    - PR description must explain changes
 
 6. **After PR approval:**
-   - Squash and merge into `dev`
+   - Squash and merge into `main`
    - Delete the feature branch
 
 ---
@@ -382,18 +381,18 @@ ci = ["ruff", "pytest", "pytest-cov", "pytest-html", "pip-audit"]
 
 ```
 the-jam-machine/
-├── agents/                        # Agent prompts (gitignored)
+├── agents/                        # Agent prompts (tracked in git)
 │   ├── design_agent.md
 │   ├── documentation_agent.md
-│   └── README.md
-├── .plans/                         # Local plans (gitignored)
+│   └── pr_review_agent.md
+├── .plans/                        # Planning documents (tracked in git)
 │   └── code-audit-plan.md
 ├── scripts/
 │   └── setup-env.sh
 ├── .githooks/
 │   ├── pre-commit
 │   └── README.md
-├── CLAUDE.md                      # Development guidelines (gitignored)
+├── CLAUDE.md                      # Development guidelines (tracked in git)
 └── .gitignore
 ```
 
@@ -415,37 +414,17 @@ After implementation:
 
 ## Part 8: Decisions Made
 
-- **Reference branch:** `dev` (not `main`)
+- **Default branch:** `main` (single-branch strategy)
 - **Workflow:** Branch creation + PR for all changes
-- **Agents:** Standalone markdown files in `agents/` directory
-- **Plans:** Stored locally in `.plans/` folder (gitignored)
+- **Agents:** Standalone markdown files in `agents/` directory (tracked in git)
+- **Plans:** Stored in `.plans/` folder (tracked in git)
 
-## Next Steps (Current: fix/test-failures branch)
+## Next Steps
 
-### Immediate: Fix Test Failures (C4/C5)
-
-1. **Fix test_tosort.py**:
-   ```
-   - Rename `test_compare_generated_encoded` → `_compare_generated_encoded` (helper, not test)
-   - Delete or skip `test_gradio` (not a real test, references old paths)
-   - Fix `test_decode` to either:
-     a) Create a fixture with sample data, or
-     b) Make it depend on test_generate output
-   - Add assertions to `test_generate` and `test_encode` (don't return values)
-   ```
-
-2. **Commit and create PR to dev**
-
-### Then: Continue Phase 2
-
-3. **Fix C2**: `generate.py:43` - `self.device = ("cpu",)` tuple bug
-4. **Fix C3**: `generate.py:207` - `ValueError()` not raised
-
-### Then: Phase 3-5
-
-5. Run code audit with agents
-6. Refactoring based on audit
-7. Testing improvements
+See `MASTER-PLAN.md` for the current ordered list of phases. Key remaining work:
+- Phase 2: Enforce absolute imports & rename package to `jammy`
+- Phase 3: Fix broken tests
+- Phase 4: Config dataclasses
 
 ---
 
@@ -473,4 +452,4 @@ After implementation:
 
 ## Note: Plans Location
 
-All plans should be written to the local `.plans/` directory which is gitignored. This keeps planning documents local to your machine and not committed to the repository.
+All plans are stored in the `.plans/` directory and tracked in git.
