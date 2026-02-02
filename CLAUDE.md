@@ -252,15 +252,14 @@ indent-style = "space"
 
 ### Branch Strategy
 
-- **Reference Branch:** `dev` (all feature branches are created from and merged into `dev`)
-- **Production Branch:** `main` (only receives merges from `dev` for releases)
+- **Default Branch:** `main` (all feature branches are created from and merged into `main`)
 
 ### Development Workflow
 
-1. **Create a feature branch from `dev`:**
+1. **Create a feature branch from `main`:**
    ```bash
-   git checkout dev
-   git pull origin dev
+   git checkout main
+   git pull origin main
    git checkout -b feature/your-feature-name
    ```
 
@@ -283,7 +282,7 @@ indent-style = "space"
 4. **Push and create PR:**
    ```bash
    git push -u origin feature/your-feature-name
-   gh pr create --base dev --title "Add feature X" --body "Description..."
+   gh pr create --base main --title "Add feature X" --body "Description..."
    ```
 
 5. **PR Requirements:**
@@ -293,7 +292,7 @@ indent-style = "space"
    - PR description must explain changes
 
 6. **After PR approval:**
-   - Squash and merge into `dev`
+   - Squash and merge into `main`
    - Delete the feature branch
 
 ### Git Hooks
