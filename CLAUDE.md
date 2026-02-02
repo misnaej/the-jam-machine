@@ -169,6 +169,26 @@ Use modern Python typing syntax (Python 3.10+):
 - `str | None` instead of `Optional[str]`
 - `X | Y` instead of `Union[X, Y]`
 
+Use postponed annotation evaluation to avoid quoted type hints:
+
+```python
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from transformers import GPT2LMHeadModel
+
+class Generator:
+    def __init__(self, model: GPT2LMHeadModel) -> None:  # No quotes needed
+        self.model = model
+```
+
+- `from __future__ import annotations` makes all annotations strings at runtime (PEP 563)
+- This allows importing heavy dependencies only for type checking, avoiding circular imports
+- Without it, you'd need quotes: `model: "GPT2LMHeadModel"` - which is error-prone (typos not caught)
+- Add this import to **all** Python files in the project
+
 ### Comments
 
 - Write self-documenting code; use comments only when the "why" isn't obvious
@@ -296,6 +316,7 @@ The pre-commit hook runs:
 
 - **No AI attribution**: Do not add "Generated with Claude Code", "Co-Authored-By: Claude", or similar AI authorship markers to commits or PRs
 - Keep commit messages concise and focused on the "why"
+- **Squash and merge title**: Max 100 characters
 - PR descriptions should explain changes clearly without boilerplate
 
 ---

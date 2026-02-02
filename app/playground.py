@@ -1,25 +1,35 @@
+"""Gradio web interface for The Jam Machine."""
+
 import sys
+from typing import Any
 
 import gradio as gr
 import matplotlib
+import numpy as np
 from matplotlib import pylab
+from matplotlib.figure import Figure
+
 from the_jam_machine.constants import INSTRUMENT_TRANSFER_CLASSES
 from the_jam_machine.embedding.decoder import TextDecoder
 from the_jam_machine.generating.generate import GenerateMidiText
 from the_jam_machine.generating.playback import get_music
 from the_jam_machine.generating.utils import plot_piano_roll
+from the_jam_machine.logging_config import setup_logging
 from the_jam_machine.preprocessing.load import LoadModel
 from the_jam_machine.utils import get_miditok
 
 matplotlib.use("Agg")
 
+# Configure logging - logs will be saved to ./output/logs/
+setup_logging(output_dir="./output")
+
 sys.modules["pylab"] = pylab
 
-model_repo = "JammyMachina/elec-gmusic-familized-model-13-12__17-35-53"
-n_bar_generated = 8
+MODEL_REPO = "JammyMachina/elec-gmusic-familized-model-13-12__17-35-53"
+N_BAR_GENERATED = 8
 
 model, tokenizer = LoadModel(
-    model_repo,
+    MODEL_REPO,
     from_huggingface=True,
 ).load_model_and_tokenizer()
 
@@ -27,25 +37,49 @@ miditok = get_miditok()
 decoder = TextDecoder(miditok)
 
 
-def define_prompt(state, genesis):
+def _define_prompt(state: list[dict[str, Any]], genesis: GenerateMidiText) -> str:
+    """Get the current prompt based on state.
+
+    Args:
+        state: List of track state dictionaries.
+        genesis: The generator instance.
+
+    Returns:
+        The prompt string to use for generation.
+    """
     if len(state) == 0:
-        input_prompt = "PIECE_START "
-    else:
-        input_prompt = genesis.get_whole_piece_from_bar_dict()
-    return input_prompt
+        return "PIECE_START "
+    return genesis.get_whole_piece_from_bar_dict()
 
 
-def generator(
-    label,
-    regenerate,
-    temp,
-    density,
-    instrument,
-    state,
-    piece_by_track,
-    add_bars=False,
-    add_bar_count=1,
-):
+def _generator(
+    label: int,
+    regenerate: bool,
+    temp: float,
+    density: int,
+    instrument: str,
+    state: list[dict[str, Any]],
+    piece_by_track: list[dict[str, Any]],
+    add_bars: bool = False,
+    add_bar_count: int = 1,
+) -> tuple[str, tuple[int, np.ndarray], Figure, list, tuple[int, np.ndarray], bool, list, str]:
+    """Generate music based on the given parameters.
+
+    Args:
+        label: Track label/index.
+        regenerate: Whether to regenerate an existing track.
+        temp: Temperature for generation.
+        density: Note density level.
+        instrument: Instrument name.
+        state: Current state of all tracks.
+        piece_by_track: Piece data by track.
+        add_bars: Whether to add bars instead of new track.
+        add_bar_count: Number of bars to add.
+
+    Returns:
+        Tuple of (inst_text, inst_audio, piano_roll, state, mixed_audio,
+                  regenerate, piece_by_track, output_file).
+    """
     genesis = GenerateMidiText(model, tokenizer, piece_by_track)
     track = {
         "label": label,
@@ -54,11 +88,7 @@ def generator(
         "density": density,
     }
     inst = next(
-        (
-            inst
-            for inst in INSTRUMENT_TRANSFER_CLASSES
-            if inst["transfer_to"] == instrument
-        ),
+        (inst for inst in INSTRUMENT_TRANSFER_CLASSES if inst["transfer_to"] == instrument),
         {"family_number": "DRUMS"},
     )["family_number"]
 
@@ -74,25 +104,20 @@ def generator(
         if regenerate:
             state.pop(inst_index)
             genesis.delete_one_track(inst_index)
-
-            generated_text = (
-                genesis.get_whole_piece_from_bar_dict()
-            )  # maybe not useful here
+            genesis.get_whole_piece_from_bar_dict()  # refresh state
             inst_index = -1  # reset to last generated
 
         # NEW TRACK
-        input_prompt = define_prompt(state, genesis)
-        generated_text = genesis.generate_one_new_track(
-            inst, density, temp, input_prompt=input_prompt
-        )
+        input_prompt = _define_prompt(state, genesis)
+        genesis.generate_one_new_track(inst, density, temp, input_prompt=input_prompt)
 
         regenerate = True  # set generate to true
     else:
         # NEW BARS
         genesis.generate_n_more_bars(add_bar_count)  # for all instruments
-        generated_text = genesis.get_whole_piece_from_bar_dict()
 
     # save the mix midi and get the mix audio
+    generated_text = genesis.get_whole_piece_from_bar_dict()
     decoder.get_midi(generated_text, "mixed.mid")
     mixed_inst_midi, mixed_audio = get_music("mixed.mid")
     # get the instrument text MIDI
@@ -112,25 +137,38 @@ def generator(
         state,
         (44100, mixed_audio),
         regenerate,
-        genesis.piece_by_track,
+        genesis.piece.piece_by_track,
         output_file,
     )
 
 
-def generated_text_from_state(state):
-    generated_text_from_state = "PIECE_START "
+def _generated_text_from_state(state: list[dict[str, Any]]) -> str:
+    """Combine all track texts from state into a full piece.
+
+    Args:
+        state: List of track state dictionaries.
+
+    Returns:
+        Combined piece text.
+    """
+    result = "PIECE_START "
     for track in state:
-        generated_text_from_state += track["text"]
-    return generated_text_from_state
+        result += track["text"]
+    return result
 
 
-def instrument_col(default_inst, col_id):
+def _instrument_col(default_inst: str, col_id: int) -> None:
+    """Create a column UI for instrument controls.
+
+    Args:
+        default_inst: Default instrument name.
+        col_id: Column ID (0-indexed).
+    """
     inst_label = gr.State(col_id)
     with gr.Column(scale=1, min_width=100):
-        track_md = gr.Markdown(f"""## TRACK {col_id+1}""")
+        gr.Markdown(f"""## TRACK {col_id + 1}""")
         inst = gr.Dropdown(
-            sorted([inst["transfer_to"] for inst in INSTRUMENT_TRANSFER_CLASSES])
-            + ["Drums"],
+            [*sorted(inst["transfer_to"] for inst in INSTRUMENT_TRANSFER_CLASSES), "Drums"],
             value=default_inst,
             label="Instrument",
         )
@@ -140,9 +178,7 @@ def instrument_col(default_inst, col_id):
             label="Creativity",
         )
         density = gr.Dropdown([1, 2, 3], value=3, label="Note Density")
-        regenerate = gr.State(
-            value=False
-        )  # initial state should be to generate (not regenerate)
+        regenerate = gr.State(value=False)
         gen_btn = gr.Button("Generate")
         inst_audio = gr.Audio(label="TRACK Audio", show_label=True)
         output_txt = gr.Textbox(
@@ -150,7 +186,7 @@ def instrument_col(default_inst, col_id):
         )
 
     gen_btn.click(
-        fn=generator,
+        fn=_generator,
         inputs=[inst_label, regenerate, temp, density, inst, state, piece_by_track],
         outputs=[
             output_txt,
@@ -165,26 +201,34 @@ def instrument_col(default_inst, col_id):
     )
 
 
+DESCRIPTION = """
+For each **TRACK**, choose your **instrument** along with **creativity**
+(temperature) and **note density**.
+Then, hit the **Generate** Button, and after a few seconds a track should
+have been generated.
+Check the **piano roll** and listen to the TRACK! If you don't like it,
+hit the generate button to regenerate it.
+You can then generate more tracks and listen to the **mixed audio**!
+
+Does it sound nice? Maybe a little robotic and lacking some depth...
+Well, you can download the MIDI file and import it in your favorite DAW
+to edit the instruments and add some effects!
+
+Note: Do not try to generate several tracks simultaneously as it will
+crash the app; wait for one track to be generated before generating another one.
+"""
+
 with gr.Blocks() as demo:
     piece_by_track = gr.State([])
     state = gr.State([])
-    title = gr.Markdown(
-        """ # Demo-App of The-Jam-Machine
-    ## A Generative AI trained on text transcription of MIDI music """
+    gr.Markdown(
+        """# Demo-App of The-Jam-Machine
+## A Generative AI trained on text transcription of MIDI music"""
     )
 
-    description = gr.Markdown(
-        """
-        For each **TRACK**, choose your **instrument** along with **creativity** (temperature) and **note density**. 
-        Then, hit the **Generate** Button, and after a few seconds a track should have been generated. 
-        Check the **piano roll** and listen to the TRACK! If you don't like it, hit the generate button to regenerate it. 
-        You can then generate more tracks and listen to the **mixed audio**! \n
-        Does it sound nice? Maybe a little robotic and laking some depth... Well, you can download the MIDI file and import it in your favorite DAW to edit the instruments and add some effects!\
-        Note: Do not try to generate several tracks simultaneously as it will crash the app; wait for one track to be generated before generating another one.    
-        """
-    )
+    gr.Markdown(DESCRIPTION)
 
-    aud_md = gr.Markdown(""" ## Mixed Audio, Piano Roll and MIDI Download """)
+    gr.Markdown("""## Mixed Audio, Piano Roll and MIDI Download""")
     with gr.Row(variant="default"):
         mixed_audio = gr.Audio(label="Mixed Audio", show_label=False)
         output_file = gr.File(
@@ -195,13 +239,12 @@ with gr.Blocks() as demo:
         piano_roll = gr.Plot(label="Piano Roll", show_label=False)
 
     with gr.Row(variant="default"):
-        instrument_col("Drums", 0)
-        instrument_col("Synth Bass 1", 1)
-        instrument_col("Synth Lead Square", 2)
+        _instrument_col("Drums", 0)
+        _instrument_col("Synth Bass 1", 1)
+        _instrument_col("Synth Lead Square", 2)
 
-demo.launch(debug=True, server_name="0.0.0.0", share=False)
-"""
-TODO: add improvise button
-TODO: cleanup input output of generator
-TODO: add a way to add bars
-"""
+demo.launch(debug=True, server_name="0.0.0.0", share=False)  # noqa: S104
+
+# TODO: add improvise button
+# TODO: cleanup input output of generator
+# TODO: add a way to add bars

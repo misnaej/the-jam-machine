@@ -1,4 +1,8 @@
-import os
+"""Utility functions for MIDI generation."""
+
+import logging
+from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -7,6 +11,11 @@ import numpy as np
 from ..constants import INSTRUMENT_CLASSES
 from ..utils import get_datetime, writeToFile
 
+if TYPE_CHECKING:
+    import pretty_midi
+
+    from .generate import GenerateMidiText
+
 # matplotlib settings
 matplotlib.use("Agg")  # for server
 matplotlib.rcParams["xtick.major.size"] = 0
@@ -14,65 +23,108 @@ matplotlib.rcParams["ytick.major.size"] = 0
 matplotlib.rcParams["axes.facecolor"] = "none"
 matplotlib.rcParams["axes.edgecolor"] = "grey"
 
+logger = logging.getLogger(__name__)
 
-class WriteTextMidiToFile:  # utils saving miditext from teh class GenerateMidiText to file
-    def __init__(self, generate_midi, output_path):
+
+class WriteTextMidiToFile:
+    """Utility for saving MIDI text from GenerateMidiText to file."""
+
+    def __init__(self, generate_midi: "GenerateMidiText", output_path: str) -> None:
+        """Initialize the writer.
+
+        Args:
+            generate_midi: The generator containing the piece data.
+            output_path: Directory path to save files.
+        """
         self.generated_midi = generate_midi.generated_piece
         self.output_path = output_path
-        self.hyperparameter_and_bars = generate_midi.piece_by_track
+        self.hyperparameter_and_bars = generate_midi.piece.piece_by_track
+        self.current_time: str = ""
+        self.output_path_filename: str = ""
 
-    def hashing_seq(self):
+    def hashing_seq(self) -> None:
+        """Generate a timestamped filename."""
         self.current_time = get_datetime()
         self.output_path_filename = f"{self.output_path}/{self.current_time}.json"
 
-    def wrapping_seq_hyperparameters_in_dict(self):
-        # assert type(self.generated_midi) is str, "error: generate_midi must be a string"
-        # assert (
-        #     type(self.hyperparameter_dict) is dict
-        # ), "error: feature_dict must be a dictionnary"
+    def wrapping_seq_hyperparameters_in_dict(self) -> dict[str, Any]:
+        """Wrap the sequence and hyperparameters in a dictionary.
+
+        Returns:
+            Dictionary containing the generated MIDI and hyperparameters.
+        """
         return {
             "generated_midi": self.generated_midi,
             "hyperparameters_and_bars": self.hyperparameter_and_bars,
         }
 
-    def text_midi_to_file(self):
+    def text_midi_to_file(self) -> str:
+        """Save the MIDI text to a JSON file.
+
+        Returns:
+            Path to the saved file.
+        """
         self.hashing_seq()
         output_dict = self.wrapping_seq_hyperparameters_in_dict()
-        print(f"Token generate_midi written: {self.output_path_filename}")
+        logger.info("Token generate_midi written: %s", self.output_path_filename)
         writeToFile(self.output_path_filename, output_dict)
         return self.output_path_filename
 
 
-def define_generation_dir(generation_dir):
-    if not os.path.exists(generation_dir):
-        os.makedirs(generation_dir)
+def define_generation_dir(generation_dir: str) -> str:
+    """Create generation directory if it doesn't exist.
+
+    Args:
+        generation_dir: Path to the generation directory.
+
+    Returns:
+        The same directory path.
+    """
+    Path(generation_dir).mkdir(parents=True, exist_ok=True)
     return generation_dir
 
 
-def bar_count_check(sequence, n_bars):
-    """check if the sequence contains the right number of bars"""
-    sequence = sequence.split(" ")
-    # find occurences of "BAR_END" in a "sequence"
-    # I don't check for "BAR_START" because it is not always included in "sequence"
-    # e.g. BAR_START is included the prompt when generating one more bar
-    bar_count = 0
-    for seq in sequence:
-        if seq == "BAR_END":
-            bar_count += 1
+def bar_count_check(sequence: str, n_bars: int) -> tuple[bool, int]:
+    """Check if the sequence contains the right number of bars.
+
+    Args:
+        sequence: The MIDI text sequence to check.
+        n_bars: Expected number of bars.
+
+    Returns:
+        Tuple of (matches, actual_count).
+    """
+    tokens = sequence.split(" ")
+    bar_count = sum(1 for token in tokens if token == "BAR_END")  # noqa: S105
     bar_count_matches = bar_count == n_bars
     if not bar_count_matches:
-        print(f"Bar count is {bar_count} - but should be {n_bars}")
+        logger.info("Bar count is %d - but should be %d", bar_count, n_bars)
     return bar_count_matches, bar_count
 
 
-def print_inst_classes(INSTRUMENT_CLASSES):
-    """Print the instrument classes"""
-    for classe in INSTRUMENT_CLASSES:
-        print(f"{classe}")
+def print_inst_classes(instrument_classes: list[dict]) -> None:
+    """Log the instrument classes.
+
+    Args:
+        instrument_classes: List of instrument class definitions.
+    """
+    for classe in instrument_classes:
+        logger.info("%s", classe)
 
 
-def check_if_prompt_inst_in_tokenizer_vocab(tokenizer, inst_prompt_list):
-    """Check if the prompt instrument are in the tokenizer vocab"""
+def check_if_prompt_inst_in_tokenizer_vocab(
+    tokenizer: Any,  # noqa: ANN401
+    inst_prompt_list: list[str],
+) -> None:
+    """Check if the prompt instruments are in the tokenizer vocab.
+
+    Args:
+        tokenizer: The tokenizer to check against.
+        inst_prompt_list: List of instruments to validate.
+
+    Raises:
+        ValueError: If an instrument is not in the tokenizer vocabulary.
+    """
     for inst in inst_prompt_list:
         if f"INST={inst}" not in tokenizer.vocab:
             instruments_in_dataset = np.sort(
@@ -80,20 +132,42 @@ def check_if_prompt_inst_in_tokenizer_vocab(tokenizer, inst_prompt_list):
             )
             print_inst_classes(INSTRUMENT_CLASSES)
             raise ValueError(
-                f"""The instrument {inst} is not in the tokenizer vocabulary. 
-                Available Instruments: {instruments_in_dataset}"""
+                f"The instrument {inst} is not in the tokenizer vocabulary. "
+                f"Available Instruments: {instruments_in_dataset}"
             )
 
 
-# TODO
-def check_if_prompt_density_in_tokenizer_vocab(tokenizer, density_prompt_list):
+def check_if_prompt_density_in_tokenizer_vocab(
+    tokenizer: Any,  # noqa: ANN401
+    density_prompt_list: list[int],
+) -> None:
+    """Check if the prompt densities are in the tokenizer vocab.
+
+    Args:
+        tokenizer: The tokenizer to check against.
+        density_prompt_list: List of densities to validate.
+    """
+    # TODO: Implement density validation
     pass
 
 
-def forcing_bar_count(input_prompt, generated, bar_count, expected_length):
-    """Forcing the generated sequence to have the expected length
-    expected_length and bar_count refers to the length of newly_generated_only (without input prompt)"""
+def forcing_bar_count(
+    input_prompt: str,
+    generated: str,
+    bar_count: int,
+    expected_length: int,
+) -> tuple[str, bool]:
+    """Force the generated sequence to have the expected length.
 
+    Args:
+        input_prompt: The original input prompt.
+        generated: The generated sequence (without prompt).
+        bar_count: Actual number of bars generated.
+        expected_length: Expected number of bars.
+
+    Returns:
+        Tuple of (full_piece, bar_count_checks).
+    """
     if bar_count - expected_length > 0:  # Cut the sequence if too long
         full_piece = ""
         splited = generated.split("BAR_END ")
@@ -103,37 +177,51 @@ def forcing_bar_count(input_prompt, generated, bar_count, expected_length):
 
         full_piece += "TRACK_END "
         full_piece = input_prompt + full_piece
-        print(f"Generated sequence trunkated at {expected_length} bars")
+        logger.info("Generated sequence truncated at %d bars", expected_length)
         bar_count_checks = True
 
-    elif bar_count - expected_length < 0:  # Do nothing it the sequence if too short
+    else:  # bar_count - expected_length < 0: Sequence is too short
         full_piece = input_prompt + generated
         bar_count_checks = False
-        print("--- Generated sequence is too short - Force Regeration ---")
+        logger.info("Generated sequence is too short - Force Regeneration")
 
     return full_piece, bar_count_checks
 
 
-def get_max_time(inst_midi):
-    max_time = 0
+def get_max_time(inst_midi: "pretty_midi.PrettyMIDI") -> float:
+    """Get the maximum end time across all instruments.
+
+    Args:
+        inst_midi: PrettyMIDI object.
+
+    Returns:
+        Maximum end time in seconds.
+    """
+    max_time = 0.0
     for inst in inst_midi.instruments:
         max_time = max(max_time, inst.get_end_time())
     return max_time
 
 
-def plot_piano_roll(inst_midi):
+def plot_piano_roll(inst_midi: "pretty_midi.PrettyMIDI") -> plt.Figure:
+    """Generate a piano roll visualization of the MIDI.
+
+    Args:
+        inst_midi: PrettyMIDI object to visualize.
+
+    Returns:
+        Matplotlib figure containing the piano roll.
+    """
     piano_roll_fig = plt.figure(figsize=(25, 3 * len(inst_midi.instruments)))
     piano_roll_fig.tight_layout()
     piano_roll_fig.patch.set_alpha(0)
-    inst_count = 0
     beats_per_bar = 4
     sec_per_beat = 0.5
     next_beat = max(inst_midi.get_beats()) + np.diff(inst_midi.get_beats())[0]
-    bars_time = np.append(inst_midi.get_beats(), (next_beat))[::beats_per_bar].astype(
-        int
-    )
-    for inst in inst_midi.instruments:
-        # hardcoded for now
+    bars_time = np.append(inst_midi.get_beats(), (next_beat))[::beats_per_bar].astype(int)
+
+    for inst_count, inst in enumerate(inst_midi.instruments, start=1):
+        # hardcoded colors for now
         if inst.name == "Drums":
             color = "purple"
         elif inst.name == "Synth Bass 1":
@@ -141,7 +229,6 @@ def plot_piano_roll(inst_midi):
         else:
             color = "green"
 
-        inst_count += 1
         plt.subplot(len(inst_midi.instruments), 1, inst_count)
 
         for bar in bars_time:
