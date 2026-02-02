@@ -113,6 +113,47 @@ When contributing to this codebase, adhere to the following principles:
 - Break complex functions into smaller, well-named pieces
 - If a solution feels complicated, step back and reconsider the approach
 
+### Prefer Functions Over Classes
+
+Don't use classes when module-level functions suffice. Python modules are already namespaces.
+
+```python
+# ❌ Over-engineered - class with only static methods
+class MidiUtils:
+    @staticmethod
+    def transpose(notes: list[int], semitones: int) -> list[int]:
+        return [n + semitones for n in notes]
+
+    @staticmethod
+    def reverse(notes: list[int]) -> list[int]:
+        return notes[::-1]
+
+# ✅ Pythonic - just use module functions
+# midi_utils.py
+def transpose(notes: list[int], semitones: int) -> list[int]:
+    return [n + semitones for n in notes]
+
+def reverse(notes: list[int]) -> list[int]:
+    return notes[::-1]
+```
+
+**Use classes when:**
+- You have instance state (attributes that vary per instance)
+- Objects have a lifecycle (init, configure, use, cleanup)
+- You need multiple instances with different configurations
+- Implementing a protocol or interface
+- Multiple functions share the same arguments repeatedly (a sign they belong together)
+- Modeling real-world entities with both data and behavior
+
+**Use functions when:**
+- No shared state is needed
+- Operations are stateless transformations (data in → data out)
+- You'd end up with all `@staticmethod` or `@classmethod`
+- The logic is action-driven rather than object-driven
+- You want easier testing (pure functions need minimal setup/mocking)
+
+**Heuristic:** If you find yourself passing the same arguments to multiple functions, consider whether a class would group them better. But if those functions don't share state between calls, keep them as functions.
+
 ---
 
 ## Documentation Standards
