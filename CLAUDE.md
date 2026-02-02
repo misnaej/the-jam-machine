@@ -8,6 +8,32 @@ The Jam Machine is a generative AI music composition tool that creates MIDI sequ
 
 **Live Demo:** https://huggingface.co/spaces/JammyMachina/the-jam-machine-app
 
+---
+
+## CRITICAL: Use Custom Agents
+
+Custom agents are defined in `agents/` (symlinked to `.claude/agents/`). **You MUST use these agents for their designated tasks:**
+
+| Agent | Use For |
+|-------|---------|
+| `pr_review_agent.md` | **PR wrap-up**: Review changes, check design/docs, generate squash merge message, post as PR comment |
+| `design_agent.md` | **Design review**: Check code against SOLID, DRY, YAGNI, KISS principles |
+| `documentation_agent.md` | **Documentation review**: Check docstrings, type hints, comments |
+
+**When to use:**
+- **Before merging any PR** → Run `pr_review_agent`
+- **After ANY code change** → Run `documentation_agent` (MANDATORY - docs must match code)
+- **After writing new code** → Run `design_agent`
+- **During code review** → Run both design and documentation agents
+
+**Why agents are critical:**
+- They follow systematic checklists and don't skip steps
+- They produce structured, consistent output
+- They maintain dedicated context for the task
+- They catch issues that ad-hoc reviews miss
+
+---
+
 ## Project Structure
 
 ```
@@ -20,6 +46,7 @@ src/the_jam_machine/       # Main package
 app/playground.py          # Gradio web interface
 examples/                  # Example scripts
 test/                      # Test suite
+agents/                    # Custom agent definitions
 ```
 
 ## Environment Setup
@@ -51,24 +78,11 @@ pipenv install -e ".[ci]"
 pipenv shell
 ```
 
-## Running Tests
-
-```bash
-# Run all tests
-pipenv run pytest test/
-
-# Run specific test
-pipenv run pytest test/test_tosort.py::test_generate
-
-# Run with coverage
-pipenv run pytest test/ --cov=src/the_jam_machine
-```
+---
 
 ## Code Quality
 
-### Linting with Ruff
-
-We enforce code quality using [ruff](https://docs.astral.sh/ruff/).
+We enforce code quality using [ruff](https://docs.astral.sh/ruff/). Configuration is in `pyproject.toml`.
 
 ```bash
 # Check for issues
@@ -80,6 +94,26 @@ pipenv run ruff check --fix src/ test/
 # Format code
 pipenv run ruff format src/ test/
 ```
+
+### Pre-Work Lint Check Strategy
+
+Before modifying files, check for pre-existing lint issues that would block commits:
+
+```bash
+# Check files you plan to modify
+pipenv run ruff check src/the_jam_machine/path/to/files/
+
+# If many issues exist, fix them first
+pipenv run ruff check --fix src/the_jam_machine/path/to/files/
+pipenv run ruff format src/the_jam_machine/path/to/files/
+```
+
+**Workflow for files with many pre-existing issues:**
+1. Fix lint issues in a separate "cleanup" commit/PR first
+2. Merge the cleanup PR
+3. Then create a new PR for the actual feature/refactor work
+
+This keeps PRs focused and makes code review easier.
 
 ---
 
@@ -239,56 +273,6 @@ class Generator:
 
 ---
 
-## Ruff Configuration
-
-Add the following to `pyproject.toml` to enforce standards:
-
-```toml
-[tool.ruff]
-target-version = "py311"
-line-length = 100
-src = ["src", "test"]
-
-[tool.ruff.lint]
-select = [
-    "E",      # pycodestyle errors
-    "W",      # pycodestyle warnings
-    "F",      # Pyflakes
-    "I",      # isort
-    "B",      # flake8-bugbear
-    "C4",     # flake8-comprehensions
-    "UP",     # pyupgrade
-    "ARG",    # flake8-unused-arguments
-    "SIM",    # flake8-simplify
-    "TCH",    # flake8-type-checking
-    "PTH",    # flake8-use-pathlib
-    "RUF",    # Ruff-specific rules
-    "D",      # pydocstyle (docstrings)
-    "ANN",    # flake8-annotations (type hints)
-    "S",      # flake8-bandit (security)
-    "N",      # pep8-naming
-    "T20",    # flake8-print
-]
-ignore = [
-    "D100",   # missing module docstring (can be noisy initially)
-    "D104",   # missing package docstring
-    "ANN101", # missing self type (redundant)
-    "ANN102", # missing cls type (redundant)
-]
-
-[tool.ruff.lint.pydocstyle]
-convention = "google"
-
-[tool.ruff.lint.isort]
-known-first-party = ["the_jam_machine"]
-
-[tool.ruff.format]
-quote-style = "double"
-indent-style = "space"
-```
-
----
-
 ## Git Workflow
 
 ### Branch Strategy
@@ -356,26 +340,6 @@ The pre-commit hook runs:
 - **Never use `--no-verify`** to skip hooks unless explicitly requested by the user
 - Hooks exist to maintain code quality; work with them, not around them
 
-### Pre-Work Lint Check Strategy
-
-Before modifying files, check for pre-existing lint issues that would block commits:
-
-```bash
-# Check files you plan to modify
-pipenv run ruff check src/the_jam_machine/path/to/files/
-
-# If many issues exist, fix them first
-pipenv run ruff check --fix src/the_jam_machine/path/to/files/
-pipenv run ruff format src/the_jam_machine/path/to/files/
-```
-
-**Workflow for files with many pre-existing issues:**
-1. Fix lint issues in a separate "cleanup" commit/PR first
-2. Merge the cleanup PR
-3. Then create a new PR for the actual feature/refactor work
-
-This keeps PRs focused and makes code review easier.
-
 ### Commit and PR Style
 
 - **No AI attribution**: Do not add "Generated with Claude Code", "Co-Authored-By: Claude", or similar AI authorship markers to commits or PRs
@@ -388,28 +352,6 @@ This keeps PRs focused and makes code review easier.
 ## AI Session Management
 
 When working on multi-phase refactoring or long tasks:
-
-### CRITICAL: Use Custom Agents
-
-Custom agents are defined in `agents/` (symlinked to `.claude/agents/`). **You MUST use these agents for their designated tasks:**
-
-| Agent | Use For |
-|-------|---------|
-| `pr_review_agent.md` | **PR wrap-up**: Review changes, check design/docs, generate squash merge message, post as PR comment |
-| `design_agent.md` | **Design review**: Check code against SOLID, DRY, YAGNI, KISS principles |
-| `documentation_agent.md` | **Documentation review**: Check docstrings, type hints, comments |
-
-**When to use:**
-- **Before merging any PR** → Run `pr_review_agent`
-- **After ANY code change** → Run `documentation_agent` (MANDATORY - docs must match code)
-- **After writing new code** → Run `design_agent`
-- **During code review** → Run both design and documentation agents
-
-**Why agents are critical:**
-- They follow systematic checklists and don't skip steps
-- They produce structured, consistent output
-- They maintain dedicated context for the task
-- They catch issues that ad-hoc reviews miss
 
 ### Plan Documents
 
