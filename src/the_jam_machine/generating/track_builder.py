@@ -1,5 +1,7 @@
 """Track-level text manipulation utilities."""
 
+from __future__ import annotations
+
 
 class TrackBuilder:
     """Handles track-level text operations for MIDI text format.

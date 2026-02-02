@@ -198,7 +198,7 @@ the-jam-machine/
 │   ├── preprocessing/         # Model loading
 │   └── training/              # Model training pipelines
 ├── examples/                  # Example scripts
-├── plans/                     # Refactoring plans and audits
+├── .plans/                    # Refactoring plans and audits
 └── test/                      # Test suite
 ```
 
@@ -223,6 +223,8 @@ pipenv run ruff format src/ app/
 ```
 
 See [CLAUDE.md](CLAUDE.md) for development guidelines.
+
+Development of this repository is supported by [Claude Code](https://claude.ai/claude-code).
 
 ---
 

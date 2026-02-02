@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+import logging
 import random
 from pathlib import Path
 
@@ -6,89 +9,134 @@ from joblib import Parallel, delayed
 from ..constants import INSTRUMENT_CLASSES, INSTRUMENT_TRANSFER_CLASSES
 from ..utils import FileCompressor, get_files, timeit
 
+logger = logging.getLogger(__name__)
+
 
 class Familizer:
-    def __init__(self, n_jobs=-1, arbitrary=False):
+    """Convert between MIDI program numbers and instrument family numbers.
+
+    This class handles the conversion between specific MIDI program numbers
+    (0-127) and their broader instrument family categories (0-15).
+    """
+
+    def __init__(self, n_jobs: int = -1, arbitrary: bool = False) -> None:
+        """Initialize the Familizer.
+
+        Args:
+            n_jobs: Number of parallel jobs (-1 for all CPUs).
+            arbitrary: Whether to use transfer classes for arbitrary instruments.
+        """
         self.n_jobs = n_jobs
         self.reverse_family(arbitrary)
 
-    def get_family_number(self, program_number):
-        """
-        Given a MIDI instrument number, return its associated instrument family number.
+    def get_family_number(self, program_number: int) -> int | None:
+        """Get the instrument family number for a MIDI program number.
+
+        Args:
+            program_number: MIDI program number (0-127).
+
+        Returns:
+            Family number (0-15) or None if not found.
         """
         for instrument_class in INSTRUMENT_CLASSES:
             if program_number in instrument_class["program_range"]:
                 return instrument_class["family_number"]
+        return None
 
-    def reverse_family(self, arbitrary):
+    def reverse_family(self, arbitrary: bool) -> None:
+        """Create mapping from family numbers to program numbers.
+
+        This is used to reverse the family number tokens back to
+        program number tokens.
+
+        Args:
+            arbitrary: Whether to use transfer classes.
         """
-        Create a dictionary of family numbers to randomly assigned program numbers.
-        This is used to reverse the family number tokens back to program number tokens.
-        """
+        int_class = INSTRUMENT_TRANSFER_CLASSES if arbitrary else INSTRUMENT_CLASSES
 
-        if arbitrary is True:
-            int_class = INSTRUMENT_TRANSFER_CLASSES
-        else:
-            int_class = INSTRUMENT_CLASSES
-
-        self.reference_programs = {}
+        self.reference_programs: dict[int, int] = {}
         for family in int_class:
-            self.reference_programs[family["family_number"]] = random.choice(
+            self.reference_programs[family["family_number"]] = random.choice(  # noqa: S311
                 family["program_range"]
             )
 
-    def get_program_number(self, family_number):
-        """
-        Given given a family number return a random program number in the respective program_range.
+    def get_program_number(self, family_number: int) -> int:
+        """Get a program number for a family number.
+
+        Returns a random program number in the respective program_range.
         This is the reverse operation of get_family_number.
+
+        Args:
+            family_number: Instrument family number (0-15).
+
+        Returns:
+            A program number from that family.
+
+        Raises:
+            KeyError: If family_number is not in reference_programs.
         """
-        assert family_number in self.reference_programs
+        if family_number not in self.reference_programs:
+            raise KeyError(f"Family number {family_number} not found")
         return self.reference_programs[family_number]
 
-    # Replace instruments in text files
-    def replace_instrument_token(self, token):
-        """
-        Given a MIDI program number in a word token, replace it with the family or program
-        number token depending on the operation.
-        e.g. INST=86 -> INST=10
+    def replace_instrument_token(self, token: str) -> str:
+        """Replace a MIDI program number token with family/program number.
+
+        Args:
+            token: Token like 'INST=86'.
+
+        Returns:
+            Converted token like 'INST=10'.
         """
         inst_number = int(token.split("=")[1])
         if self.operation == "family":
             return "INST=" + str(self.get_family_number(inst_number))
         elif self.operation == "program":
             return "INST=" + str(self.get_program_number(inst_number))
+        return token
 
-    def replace_instrument_in_text(self, text):
-        """Given a text piece, replace all instrument tokens with family number tokens."""
+    def replace_instrument_in_text(self, text: str) -> str:
+        """Replace all instrument tokens in text with family number tokens.
+
+        Args:
+            text: Text containing INST= tokens.
+
+        Returns:
+            Text with replaced instrument tokens.
+        """
         return " ".join(
             [
                 self.replace_instrument_token(token)
-                if token.startswith("INST=") and not token == "INST=DRUMS"
+                if token.startswith("INST=") and token != "INST=DRUMS"  # noqa: S105
                 else token
                 for token in text.split(" ")
             ]
         )
 
-    def replace_instruments_in_file(self, file):
-        """Given a text file, replace all instrument tokens with family number tokens."""
+    def replace_instruments_in_file(self, file: Path) -> None:
+        """Replace instrument tokens in a text file.
+
+        Args:
+            file: Path to the text file.
+        """
         text = file.read_text()
         file.write_text(self.replace_instrument_in_text(text))
 
     @timeit
-    def replace_instruments(self):
-        """
-        Given a directory of text files:
-        Replace all instrument tokens with family number tokens.
-        """
+    def replace_instruments(self) -> None:
+        """Replace instrument tokens in all text files in output directory."""
         files = get_files(self.output_directory, extension="txt")
         Parallel(n_jobs=self.n_jobs)(
             delayed(self.replace_instruments_in_file)(file) for file in files
         )
 
-    def replace_tokens(self, input_directory, output_directory, operation):
-        """
-        Given a directory and an operation, perform the operation on all text files in the directory.
-        operation can be either 'family' or 'program'.
+    def replace_tokens(self, input_directory: Path, output_directory: Path, operation: str) -> None:
+        """Perform token replacement on all text files in a directory.
+
+        Args:
+            input_directory: Directory with input zip files.
+            output_directory: Directory for output zip files.
+            operation: Either 'family' or 'program'.
         """
         self.input_directory = input_directory
         self.output_directory = output_directory
@@ -99,19 +147,23 @@ class Familizer:
         fc.unzip()
         self.replace_instruments()
         fc.zip()
-        print(self.operation + " complete.")
+        logger.info("%s complete", self.operation)
 
-    def to_family(self, input_directory, output_directory):
-        """
-        Given a directory containing zip files, replace all instrument tokens with
-        family number tokens. The output is a directory of zip files.
+    def to_family(self, input_directory: Path, output_directory: Path) -> None:
+        """Convert instrument tokens to family number tokens.
+
+        Args:
+            input_directory: Directory containing zip files.
+            output_directory: Directory for output zip files.
         """
         self.replace_tokens(input_directory, output_directory, "family")
 
-    def to_program(self, input_directory, output_directory):
-        """
-        Given a directory containing zip files, replace all instrument tokens with
-        program number tokens. The output is a directory of zip files.
+    def to_program(self, input_directory: Path, output_directory: Path) -> None:
+        """Convert family tokens to program number tokens.
+
+        Args:
+            input_directory: Directory containing zip files.
+            output_directory: Directory for output zip files.
         """
         self.replace_tokens(input_directory, output_directory, "program")
 
@@ -131,7 +183,7 @@ if __name__ == "__main__":
     familizer.to_family(input_directory, output_directory)
 
     # Choose directory to process for family
-    # input_directory = Path("../data/music_picks/encoded_samples/validate/family").resolve()  # fmt: skip
+    # input_directory = Path(".../encoded_samples/validate/family").resolve()
     # output_directory = input_directory.parent / "program"
 
     # # programize files

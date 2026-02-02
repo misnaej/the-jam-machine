@@ -3,6 +3,9 @@
 # $ sudo apt install git-lfs
 # $ pip install transformers tokenizers wandb huggingface_hub datasets
 
+from __future__ import annotations
+
+import logging
 import os
 from pathlib import Path
 
@@ -22,6 +25,8 @@ from transformers import (
 from ..passwords import HF_READ_TOKEN, HF_WRITE_TOKEN
 from .trainer_utils import TokenizeDataset, get_history, plot_history, train_tokenizer
 
+logger = logging.getLogger(__name__)
+
 # CONFIG:
 DATASET_NAME = "improved_4bars"
 HF_DATASET_REPO = f"JammyMachina/{DATASET_NAME}"
@@ -35,7 +40,7 @@ GRADIENT_ACCUMULATION_STEPS = 1
 
 
 if not Path(MODEL_PATH).exists():
-    print(f"Creating model path: {MODEL_PATH}")
+    logger.info("Creating model path: %s", MODEL_PATH)
     Path(MODEL_PATH).mkdir(parents=True, exist_ok=True)
 
 if "WANDB_API_KEY" not in os.environ:
@@ -54,7 +59,7 @@ if TRAIN_FROM_CHECKPOINT:
 else:
     tokenizer = train_tokenizer(MODEL_PATH, data["train"])
 
-print("=======Tokenizing dataset========")
+logger.info("Tokenizing dataset")
 data_tokenized = TokenizeDataset(tokenizer).batch_tokenization(data)
 # check_tokenized_data(data["train"], data_tokenized["train"], plot_path=MODEL_PATH)
 # check_tokenized_data(data["eval"], data_tokenized["eval"])
@@ -114,8 +119,8 @@ with Path(f"{MODEL_PATH}/training_args.json").open("w") as f:
     f.write(training_args.to_json_string())
 
 result = trainer.train()
-print("Training finished")
-print(result)
+logger.info("Training finished")
+logger.info(result)
 
 
 tokenizer.save_pretrained(MODEL_PATH, push_to_hub=True, use_auth_token=HF_WRITE_TOKEN)

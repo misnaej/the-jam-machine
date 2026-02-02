@@ -1,32 +1,66 @@
+"""Decoder module for converting text tokens to MIDI files."""
+
+from __future__ import annotations
+
+import logging
+from typing import TYPE_CHECKING, Any
+
 from miditok import Event
 
-from ..utils import *
+from ..constants import DRUMS_BEAT_QUANTIZATION, NONE_DRUMS_BEAT_QUANTIZATION
+from ..utils import (
+    beat_to_int_dec_base,
+    get_event,
+    get_miditok,
+    int_dec_base_to_beat,
+    readFromFile,
+)
 from .familizer import Familizer
+
+if TYPE_CHECKING:
+    from miditok import MIDILike
+    from miditoolkit import MidiFile
+
+logger = logging.getLogger(__name__)
 
 
 class TextDecoder:
-    """Decodes text into:
-    1- List of events
-    2- Then converts these events to midi file via MidiTok and miditoolkit
+    """Decode text tokens into MIDI file format.
 
-    :param tokenizer: from MidiTok
+    This class converts text token representations into:
+    1. A list of MIDI events
+    2. A MIDI file via MidiTok and miditoolkit
 
-    Usage with write_to_midi method:
-        args: text(String) example ->  PIECE_START TRACK_START INST=25 DENSITY=2 BAR_START NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50...BAR_END TRACK_END
-        returns: midi file from miditoolkit
+    Attributes:
+        tokenizer: MidiTok tokenizer instance.
+        familized: Whether to use familized instrument mapping.
+
+    Example:
+        >>> decoder = TextDecoder(tokenizer)
+        >>> midi = decoder.get_midi(
+        ...     "PIECE_START TRACK_START INST=25 DENSITY=2 BAR_START..."
+        ... )
     """
 
-    def __init__(self, tokenizer, familized=True):
+    def __init__(self, tokenizer: MIDILike, familized: bool = True) -> None:
+        """Initialize the TextDecoder.
+
+        Args:
+            tokenizer: MidiTok tokenizer instance for token conversion.
+            familized: Whether to use familized instrument mapping.
+        """
         self.tokenizer = tokenizer
         self.familized = familized
 
-    def decode(self, text):
-        r"""converts from text to instrument events
+    def decode(self, text: str) -> list[dict[str, Any]]:
+        """Convert text tokens to instrument events.
+
         Args:
-            text (String): example ->  PIECE_START TRACK_START INST=25 DENSITY=2 BAR_START NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50...BAR_END TRACK_END
+            text: Text token string (e.g., "PIECE_START TRACK_START INST=25...").
 
         Returns:
-            Dict{inst_id: List[Events]}: List of events of Notes with velocities, aggregated Timeshifts, for each instrument
+            List of event dictionaries for each instrument, containing
+            'Instrument', 'channel', and 'events' keys.
         """
         piece_events = self.text_to_events(text)
         piece_events = self.get_track_ids(piece_events)
@@ -39,26 +73,29 @@ class TextDecoder:
         events = self.add_velocity(events)
         return events
 
-    def tokenize(self, events):
-        r"""converts from events to MidiTok tokens
+    def tokenize(self, events: list[dict[str, Any]]) -> list[list[str]]:
+        """Convert events to MidiTok tokens.
+
         Args:
-            events (Dict{inst_id: List[Events]}): List of events for each instrument
+            events: List of event dictionaries for each instrument.
 
         Returns:
-            List[List[Events]]: List of tokens for each instrument
+            List of token lists for each instrument.
         """
         tokens = []
         for inst in events:
             tokens.append(self.tokenizer.events_to_tokens(inst["events"]))
         return tokens
 
-    def get_midi(self, text, filename=None):
-        r"""converts from text to midi
+    def get_midi(self, text: str, filename: str | None = None) -> MidiFile:
+        """Convert text tokens to MIDI.
+
         Args:
-            text (String): example ->  PIECE_START TRACK_START INST=25 DENSITY=2 BAR_START NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50...BAR_END TRACK_END
+            text: Text token string (e.g., "PIECE_START TRACK_START INST=25...").
+            filename: Optional filename to write the MIDI file.
 
         Returns:
-            miditoolkit midi: Returns and writes to midi
+            MidiFile object from miditoolkit.
         """
         events = self.decode(text)
         tokens = self.tokenize(events)
@@ -67,16 +104,24 @@ class TextDecoder:
 
         if filename is not None:
             midi.dump(f"{filename}")
-            print(f"midi file written: {filename}")
+            logger.info("midi file written: %s", filename)
 
         return midi
 
     @staticmethod
-    def text_to_events(text, verbose=False):
-        events = []
+    def text_to_events(text: str, verbose: bool = False) -> list[Event]:
+        """Convert text tokens to a list of MidiTok events.
+
+        Args:
+            text: Text token string to parse.
+            verbose: Whether to log detailed quantization information.
+
+        Returns:
+            List of MidiTok Event objects.
+        """
+        events: list[Event] = []
         instrument = "drums"
         track_index = -1
-        # bar_value = 0
         cumul_time_delta = 0
         max_cumul_time_delta = 0
 
@@ -88,7 +133,8 @@ class TextDecoder:
             if _event[0] == "INST":
                 track_index += 1
                 bar_value = 0
-                # get the instrument for passing in get_event when time_delta for proper quantization
+                # get the instrument for passing in get_event when time_delta
+                # for proper quantization
                 instrument = get_event(_event[0], value).value
 
                 # how much delta can be added before over quantization
@@ -104,7 +150,8 @@ class TextDecoder:
                 # reseting cumul_time_delta
                 cumul_time_delta = 0
 
-            # ----- hack to prevent over quantization -> NOT IDEAL - the model should not output these events
+            # ----- hack to prevent over quantization -----
+            # NOT IDEAL - the model should not output these events
             if _event[0] == "TIME_DELTA":
                 cumul_time_delta += int(_event[1])
                 if cumul_time_delta > max_cumul_time_delta:
@@ -114,19 +161,26 @@ class TextDecoder:
             if _event[0] == "NOTE_ON" and cumul_time_delta >= max_cumul_time_delta:
                 beyond_quantization = True
 
-            if beyond_quantization:
-                print(
-                    f"instrument {instrument} - bar {bar_value} - skipping {_event[0]} because of over quantization"
-                ) if verbose else None
-            # ---------------------------------------------------------------------------------------------``
+            if beyond_quantization and verbose:
+                logger.debug(
+                    "instrument %s - bar %s - skipping %s because of over quantization",
+                    instrument,
+                    bar_value,
+                    _event[0],
+                )
+            # ---------------------------------------------
 
             # getting event
             event = get_event(_event[0], value, instrument)
             if event and not beyond_quantization:
                 if event.type == "Bar-End":
-                    print(
-                        f"instrument {instrument} - bar {bar_value} - Cumulated TIME_DELTA = {cumul_time_delta}"
-                    ) if verbose else None
+                    if verbose:
+                        logger.debug(
+                            "instrument %s - bar %s - Cumulated TIME_DELTA = %s",
+                            instrument,
+                            bar_value,
+                            cumul_time_delta,
+                        )
                     cumul_time_delta = 0
 
                 # appending event
@@ -135,8 +189,15 @@ class TextDecoder:
         return events
 
     @staticmethod
-    def get_track_ids(events):
-        """Adding tracking the track id for each track start and end event"""
+    def get_track_ids(events: list[Event]) -> list[Event]:
+        """Add track IDs to track start and end events.
+
+        Args:
+            events: List of MidiTok Event objects.
+
+        Returns:
+            Modified list of events with track IDs assigned.
+        """
         track_id = 0
         for i, event in enumerate(events):
             if event.type == "Track-Start":
@@ -147,20 +208,20 @@ class TextDecoder:
         return events
 
     @staticmethod
-    def piece_to_inst_events(piece_events):
-        """Converts piece events of 8 bars to instrument events for entire song
+    def piece_to_inst_events(piece_events: list[Event]) -> list[dict[str, Any]]:
+        """Convert piece events to instrument-grouped events.
 
         Args:
-            piece_events (List[Events]): List of events of Notes, Timeshifts, Bars, Tracks
+            piece_events: List of events with Notes, Timeshifts, Bars, Tracks.
 
         Returns:
-            Dict{inst_id: List[Events]}: List of events for each instrument
-
+            List of dictionaries, each containing 'Instrument', 'channel',
+            and 'events' keys for one instrument.
         """
-        inst_events = []
+        inst_events: list[dict[str, Any]] = []
         current_track = -1  # so does not start before Track-Start is encountered
         for event in piece_events:
-            # creates a new entry in the dictionnary when "Track-Start" event is encountered
+            # creates a new entry in the dictionary when "Track-Start" event is encountered
             if event.type == "Track-Start":
                 current_track = event.value
                 if len(inst_events) == event.value:
@@ -177,8 +238,15 @@ class TextDecoder:
         return inst_events
 
     @staticmethod
-    def get_bar_ids(inst_events):
-        """tracking bar index for each instrument and saving them in the miditok Events"""
+    def get_bar_ids(inst_events: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        """Track bar index for each instrument and save them in the MidiTok Events.
+
+        Args:
+            inst_events: List of instrument event dictionaries.
+
+        Returns:
+            Modified list with bar IDs assigned to bar events.
+        """
         for inst_index, inst_event in enumerate(inst_events):
             bar_idx = 0
             for event_index, event in enumerate(inst_event["events"]):
@@ -189,17 +257,32 @@ class TextDecoder:
         return inst_events
 
     @staticmethod
-    def add_missing_timeshifts_in_a_bar(inst_events, beat_per_bar=4, verbose=False):
-        """Add missing time shifts in bar to make sure that each bar has 4 beats
-        takes care of the problem of a missing time shift if notes do not last until the end of the bar
-        takes care of the problem of empty bars that are only defined by "BAR_START BAR END"""
-        new_inst_events = []
+    def add_missing_timeshifts_in_a_bar(
+        inst_events: list[dict[str, Any]],
+        beat_per_bar: int = 4,
+        verbose: bool = False,
+    ) -> list[dict[str, Any]]:
+        """Add missing time shifts in bar to ensure each bar has 4 beats.
+
+        Handles the problem of a missing time shift if notes do not last until
+        the end of the bar, and handles empty bars defined only by BAR_START BAR_END.
+
+        Args:
+            inst_events: List of instrument event dictionaries.
+            beat_per_bar: Number of beats per bar (default 4).
+            verbose: Whether to log detailed information.
+
+        Returns:
+            New list of instrument events with corrected time shifts.
+        """
+        new_inst_events: list[dict[str, Any]] = []
         for index, inst_event in enumerate(inst_events):
             new_inst_events.append({})
             new_inst_events[index]["Instrument"] = inst_event["Instrument"]
             new_inst_events[index]["channel"] = index
             new_inst_events[index]["events"] = []
 
+            beat_count = 0
             for event in inst_event["events"]:
                 if event.type == "Bar-Start":
                     beat_count = 0
@@ -209,43 +292,73 @@ class TextDecoder:
 
                 if event.type == "Bar-End" and beat_count < beat_per_bar:
                     time_shift_to_add = beat_to_int_dec_base(beat_per_bar - beat_count)
-                    new_inst_events[index]["events"].append(
-                        Event("Time-Shift", time_shift_to_add)
-                    )
+                    new_inst_events[index]["events"].append(Event("Time-Shift", time_shift_to_add))
                     beat_count += int_dec_base_to_beat(time_shift_to_add)
 
-                if event.type == "Bar-End" and verbose == True:
-                    print(
-                        f"Instrument {index} - {inst_event['Instrument']} - Bar {event.value} - beat_count = {beat_count}"
+                if event.type == "Bar-End" and verbose:
+                    logger.debug(
+                        "Instrument %s - %s - Bar %s - beat_count = %s",
+                        index,
+                        inst_event["Instrument"],
+                        event.value,
+                        beat_count,
                     )
                 if event.type == "Bar-End" and beat_count > beat_per_bar:
-                    print(
-                        f"Instrument {index} - {inst_event['Instrument']} - Bar {event.value} - Beat count exceeded "
+                    logger.warning(
+                        "Instrument %s - %s - Bar %s - Beat count exceeded",
+                        index,
+                        inst_event["Instrument"],
+                        event.value,
                     )
                 new_inst_events[index]["events"].append(event)
 
         return new_inst_events
 
-    # TODO
+    # TODO: Implement this method
     @staticmethod
-    def check_bar_count_in_section(inst_events, bars_in_sections=8):
-        new_inst_events = []
-        for index, inst_event in enumerate(inst_events):
+    def check_bar_count_in_section(
+        inst_events: list[dict[str, Any]],
+        bars_in_sections: int = 8,  # noqa: ARG004
+    ) -> list[dict[str, Any]]:
+        """Check bar count in section.
+
+        Args:
+            inst_events: List of instrument event dictionaries.
+            bars_in_sections: Expected number of bars per section.
+
+        Returns:
+            New list of instrument events (currently unimplemented).
+        """
+        new_inst_events: list[dict[str, Any]] = []
+        for _index, _inst_event in enumerate(inst_events):
             pass
         return new_inst_events
 
     @staticmethod
-    def remove_unwanted_tokens(events):
+    def remove_unwanted_tokens(
+        events: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        """Remove structural tokens not needed for MIDI conversion.
+
+        Removes Bar-Start, Bar-End, Track-Start, Track-End, Piece-Start,
+        and Instrument events.
+
+        Args:
+            events: List of instrument event dictionaries.
+
+        Returns:
+            Modified list with unwanted tokens removed.
+        """
         for inst_index, inst_event in enumerate(events):
             new_inst_event = []
             for event in inst_event["events"]:
-                if not (
-                    event.type == "Bar-Start"
-                    or event.type == "Bar-End"
-                    or event.type == "Track-Start"
-                    or event.type == "Track-End"
-                    or event.type == "Piece-Start"
-                    or event.type == "Instrument"
+                if event.type not in (
+                    "Bar-Start",
+                    "Bar-End",
+                    "Track-Start",
+                    "Track-End",
+                    "Piece-Start",
+                    "Instrument",
                 ):
                     new_inst_event.append(event)
             # replace the events list with the new one
@@ -253,39 +366,49 @@ class TextDecoder:
         return events
 
     @staticmethod
-    def check_for_duplicated_events(event_list):
+    def check_for_duplicated_events(event_list: list[Event]) -> None:
+        """Check for and log any duplicate consecutive events.
+
+        Args:
+            event_list: List of MidiTok Event objects to check.
+        """
         for i, event in enumerate(event_list):
             if (
                 i < len(event_list) - 1
                 and event.type == event_list[i + 1].type
                 and event.value == event_list[i + 1].value
             ):
-                print(f"Duplicate event found at index {i} : {event}")
+                logger.warning("Duplicate event found at index %s : %s", i, event)
 
     @staticmethod
-    def add_timeshifts(beat_values1, beat_values2):
-        """Adds two beat values
+    def add_timeshifts(beat_values1: str, beat_values2: str) -> str:
+        """Add two beat values in integer.decimal.base format.
 
         Args:
-            beat_values1 (String): like 0.3.8
-            beat_values2 (String): like 1.7.8
+            beat_values1: First beat value (e.g., "0.3.8").
+            beat_values2: Second beat value (e.g., "1.7.8").
 
         Returns:
-            beat_str (String): added beats like 2.2.8 for example values
+            Sum of beat values (e.g., "2.2.8" for the example values).
         """
         value1 = int_dec_base_to_beat(beat_values1)
         value2 = int_dec_base_to_beat(beat_values2)
         return beat_to_int_dec_base(value1 + value2)
 
-    def aggregate_timeshifts(self, events):
-        """Aggregates consecutive time shift events bigger than a bar
-        -> like Timeshift 4.0.8
+    def aggregate_timeshifts(
+        self,
+        events: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        """Aggregate consecutive time shift events.
+
+        Combines consecutive Time-Shift events into single events that may
+        span more than a bar (e.g., Timeshift 4.0.8).
 
         Args:
-            events (_type_): _description_
+            events: List of instrument event dictionaries.
 
         Returns:
-            _type_: _description_
+            Modified list with aggregated time shifts.
         """
         for inst_index, inst_event in enumerate(events):
             new_inst_event = []
@@ -305,19 +428,39 @@ class TextDecoder:
         return events
 
     @staticmethod
-    def add_velocity(events):
-        """Adds default velocity 99 to note events since they are removed from text, needed to generate midi"""
+    def add_velocity(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        """Add default velocity to note events.
+
+        Adds velocity 99 to note events since they are removed from text
+        but needed to generate MIDI.
+
+        Args:
+            events: List of instrument event dictionaries.
+
+        Returns:
+            Modified list with velocity events added after Note-On events.
+        """
         for inst_index, inst_event in enumerate(events):
             new_inst_event = []
-            for inst_event in inst_event["events"]:
-                new_inst_event.append(inst_event)
-                if inst_event.type == "Note-On":
+            for event in inst_event["events"]:
+                new_inst_event.append(event)
+                if event.type == "Note-On":
                     new_inst_event.append(Event("Velocity", 99))
             events[inst_index]["events"] = new_inst_event
         return events
 
-    def get_instruments_tuple(self, events):
-        """Returns instruments tuple for midi generation"""
+    def get_instruments_tuple(
+        self,
+        events: list[dict[str, Any]],
+    ) -> tuple[tuple[int, int], ...]:
+        """Return instruments tuple for MIDI generation.
+
+        Args:
+            events: List of instrument event dictionaries.
+
+        Returns:
+            Tuple of (program_number, is_drum) pairs for each instrument.
+        """
         instruments = []
         for track in events:
             is_drum = 0
@@ -333,14 +476,13 @@ class TextDecoder:
 
 
 if __name__ == "__main__":
-    # filename = "midi/generated/JammyMachina/elec-gmusic-familized-model-13-12__17-35-53/20230221_235439"
-    filename = "source/tests/20230305_150554"  # investigating the duplicates issues
+    # investigating the duplicates issues
+    test_filename = "source/tests/20230305_150554"
     encoded_json = readFromFile(
-        f"{filename}.json",
-        True,
+        f"{test_filename}.json",
+        isJSON=True,
     )
     encoded_text = encoded_json["generated_midi"]
-    # encoded_text = "PIECE_START TRACK_START INST=25 DENSITY=2 BAR_START NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 NOTE_ON=66 NOTE_ON=62 TIME_DELTA=1 NOTE_OFF=66 NOTE_OFF=62 NOTE_ON=66 NOTE_ON=62 TIME_DELTA=1 NOTE_OFF=66 NOTE_OFF=62 NOTE_ON=64 NOTE_ON=60 TIME_DELTA=1 NOTE_OFF=64 NOTE_OFF=60 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 NOTE_ON=64 NOTE_ON=60 TIME_DELTA=1 NOTE_OFF=64 NOTE_OFF=60 NOTE_ON=64 NOTE_ON=60 TIME_DELTA=1 NOTE_OFF=64 NOTE_OFF=60 NOTE_ON=66 NOTE_ON=62 TIME_DELTA=1 NOTE_OFF=66 NOTE_OFF=62 NOTE_ON=64 NOTE_ON=60 TIME_DELTA=1 NOTE_OFF=64 NOTE_OFF=60 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 NOTE_ON=66 NOTE_ON=62 TIME_DELTA=1 NOTE_OFF=66 NOTE_OFF=62 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 NOTE_ON=67 NOTE_ON=64 TIME_DELTA=1 NOTE_OFF=67 NOTE_OFF=64 BAR_END BAR_START NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 NOTE_ON=66 NOTE_ON=62 TIME_DELTA=1 NOTE_OFF=66 NOTE_OFF=62 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 NOTE_ON=64 NOTE_ON=62 TIME_DELTA=1 NOTE_OFF=64 NOTE_OFF=62 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 NOTE_ON=64 NOTE_ON=60 TIME_DELTA=1 NOTE_OFF=64 NOTE_OFF=60 NOTE_ON=66 NOTE_ON=62 TIME_DELTA=1 NOTE_OFF=66 NOTE_OFF=62 NOTE_ON=64 NOTE_ON=60 TIME_DELTA=1 NOTE_OFF=64 NOTE_OFF=60 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 NOTE_ON=66 NOTE_ON=62 TIME_DELTA=1 NOTE_OFF=66 NOTE_OFF=62 NOTE_ON=64 NOTE_ON=60 TIME_DELTA=1 NOTE_OFF=64 NOTE_OFF=60 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 BAR_END BAR_START NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 NOTE_ON=66 NOTE_ON=62 TIME_DELTA=1 NOTE_OFF=66 NOTE_OFF=62 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 NOTE_ON=64 NOTE_ON=60 TIME_DELTA=1 NOTE_OFF=64 NOTE_OFF=60 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 NOTE_ON=64 NOTE_ON=60 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=64 NOTE_OFF=60 NOTE_OFF=50 NOTE_ON=66 NOTE_ON=62 TIME_DELTA=1 NOTE_OFF=66 NOTE_OFF=62 NOTE_ON=64 NOTE_ON=60 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=64 NOTE_OFF=60 NOTE_OFF=50 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 NOTE_ON=64 NOTE_ON=60 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=64 NOTE_OFF=60 NOTE_OFF=50 NOTE_ON=66 NOTE_ON=62 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=66 NOTE_OFF=62 NOTE_OFF=50 NOTE_ON=67 NOTE_ON=64 TIME_DELTA=1 NOTE_OFF=67 NOTE_OFF=64 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 BAR_END BAR_START NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 NOTE_ON=66 NOTE_ON=62 TIME_DELTA=1 NOTE_OFF=66 NOTE_OFF=62 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 NOTE_ON=64 NOTE_ON=60 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=64 NOTE_OFF=60 NOTE_OFF=50 NOTE_ON=66 NOTE_ON=62 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=66 NOTE_OFF=62 NOTE_OFF=50 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 NOTE_ON=64 NOTE_ON=60 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=64 NOTE_OFF=60 NOTE_OFF=50 NOTE_ON=66 NOTE_ON=62 TIME_DELTA=1 NOTE_OFF=66 NOTE_OFF=62 NOTE_ON=64 NOTE_ON=60 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=64 NOTE_OFF=60 NOTE_OFF=50 NOTE_ON=66 NOTE_ON=62 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=66 NOTE_OFF=62 NOTE_OFF=50 NOTE_ON=67 NOTE_ON=64 TIME_DELTA=1 NOTE_OFF=67 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 NOTE_ON=64 NOTE_ON=60 TIME_DELTA=1 NOTE_OFF=64 NOTE_OFF=60 NOTE_ON=64 NOTE_ON=60 TIME_DELTA=1 NOTE_OFF=64 NOTE_OFF=60 NOTE_ON=64 NOTE_ON=60 TIME_DELTA=1 NOTE_OFF=64 NOTE_OFF=60 BAR_END BAR_START NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 NOTE_ON=66 NOTE_ON=62 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=66 NOTE_OFF=62 NOTE_OFF=50 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 NOTE_ON=66 NOTE_ON=62 TIME_DELTA=1 NOTE_OFF=66 NOTE_OFF=62 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 NOTE_ON=64 NOTE_ON=60 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=64 NOTE_OFF=60 NOTE_OFF=50 NOTE_ON=64 NOTE_ON=60 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=64 NOTE_OFF=60 NOTE_OFF=50 NOTE_ON=66 NOTE_ON=62 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=66 NOTE_OFF=62 NOTE_OFF=50 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 NOTE_ON=69 NOTE_ON=64 NOTE_ON=60 TIME_DELTA=1 NOTE_OFF=69 NOTE_OFF=64 NOTE_OFF=60 NOTE_ON=64 NOTE_ON=60 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=64 NOTE_OFF=60 NOTE_OFF=50 NOTE_ON=57 TIME_DELTA=1 NOTE_OFF=57 NOTE_ON=56 TIME_DELTA=1 NOTE_OFF=56 NOTE_ON=64 NOTE_ON=60 NOTE_ON=55 TIME_DELTA=1 NOTE_OFF=64 NOTE_OFF=60 NOTE_OFF=55 BAR_END BAR_START NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 NOTE_ON=66 NOTE_ON=62 TIME_DELTA=1 NOTE_OFF=66 NOTE_OFF=62 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 NOTE_ON=64 NOTE_ON=60 TIME_DELTA=1 NOTE_OFF=64 NOTE_OFF=60 NOTE_ON=66 NOTE_ON=62 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=66 NOTE_OFF=62 NOTE_OFF=50 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 NOTE_ON=64 NOTE_ON=60 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=64 NOTE_OFF=60 NOTE_OFF=50 NOTE_ON=64 NOTE_ON=60 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=64 NOTE_OFF=60 NOTE_OFF=50 NOTE_ON=66 NOTE_ON=62 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=66 NOTE_OFF=62 NOTE_OFF=50 NOTE_ON=66 NOTE_ON=62 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=66 NOTE_OFF=62 NOTE_OFF=50 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 NOTE_ON=67 NOTE_ON=64 TIME_DELTA=1 NOTE_OFF=67 NOTE_OFF=64 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50 NOTE_ON=64 NOTE_ON=60 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=64 NOTE_OFF=60 NOTE_OFF=50 NOTE_ON=59 NOTE_ON=55 NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=59 NOTE_OFF=50 NOTE_OFF=55 NOTE_OFF=50 BAR_END BAR_START BAR_END TRACK_END"
 
     miditok = get_miditok()
-    TextDecoder(miditok).get_midi(encoded_text, filename=filename)
+    TextDecoder(miditok).get_midi(encoded_text, filename=test_filename)

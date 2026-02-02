@@ -1,5 +1,7 @@
 """Main orchestrator for MIDI text generation."""
 
+from __future__ import annotations
+
 import logging
 from typing import TYPE_CHECKING
 
@@ -39,8 +41,8 @@ class GenerateMidiText:
 
     def __init__(
         self,
-        model: "GPT2LMHeadModel",
-        tokenizer: "GPT2Tokenizer",
+        model: GPT2LMHeadModel,
+        tokenizer: GPT2Tokenizer,
         piece_by_track: list | None = None,
     ) -> None:
         """Initialize the generator.

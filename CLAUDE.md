@@ -8,6 +8,32 @@ The Jam Machine is a generative AI music composition tool that creates MIDI sequ
 
 **Live Demo:** https://huggingface.co/spaces/JammyMachina/the-jam-machine-app
 
+---
+
+## CRITICAL: Use Custom Agents
+
+Custom agents are defined in `agents/` (symlinked to `.claude/agents/`). **You MUST use these agents for their designated tasks:**
+
+| Agent | Name | Use For |
+|-------|------|---------|
+| `pr_review_agent.md` | `pr-reviewer` | **PR wrap-up**: Review changes, check design/docs, generate squash merge message |
+| `design_agent.md` | `design-reviewer` | **Design review**: Check code against SOLID, DRY, YAGNI, KISS principles |
+| `documentation_agent.md` | `docs-reviewer` | **Documentation review**: Check docstrings, type hints, comments |
+
+**When to use:**
+- **Before merging any PR** → Run `pr-reviewer`
+- **After ANY code change** → Run `docs-reviewer` (MANDATORY - docs must match code)
+- **After writing new code** → Run `design-reviewer`
+- **During code review** → Run both design and docs reviewers
+
+**Why agents are critical:**
+- They follow systematic checklists and don't skip steps
+- They produce structured, consistent output
+- They maintain dedicated context for the task
+- They catch issues that ad-hoc reviews miss
+
+---
+
 ## Project Structure
 
 ```
@@ -20,6 +46,7 @@ src/the_jam_machine/       # Main package
 app/playground.py          # Gradio web interface
 examples/                  # Example scripts
 test/                      # Test suite
+agents/                    # Custom agent definitions
 ```
 
 ## Environment Setup
@@ -51,24 +78,11 @@ pipenv install -e ".[ci]"
 pipenv shell
 ```
 
-## Running Tests
-
-```bash
-# Run all tests
-pipenv run pytest test/
-
-# Run specific test
-pipenv run pytest test/test_tosort.py::test_generate
-
-# Run with coverage
-pipenv run pytest test/ --cov=src/the_jam_machine
-```
+---
 
 ## Code Quality
 
-### Linting with Ruff
-
-We enforce code quality using [ruff](https://docs.astral.sh/ruff/).
+We enforce code quality using [ruff](https://docs.astral.sh/ruff/). Configuration is in `pyproject.toml`.
 
 ```bash
 # Check for issues
@@ -80,6 +94,26 @@ pipenv run ruff check --fix src/ test/
 # Format code
 pipenv run ruff format src/ test/
 ```
+
+### Pre-Work Lint Check Strategy
+
+Before modifying files, check for pre-existing lint issues that would block commits:
+
+```bash
+# Check files you plan to modify
+pipenv run ruff check src/the_jam_machine/path/to/files/
+
+# If many issues exist, fix them first
+pipenv run ruff check --fix src/the_jam_machine/path/to/files/
+pipenv run ruff format src/the_jam_machine/path/to/files/
+```
+
+**Workflow for files with many pre-existing issues:**
+1. Fix lint issues in a separate "cleanup" commit/PR first
+2. Merge the cleanup PR
+3. Then create a new PR for the actual feature/refactor work
+
+This keeps PRs focused and makes code review easier.
 
 ---
 
@@ -112,6 +146,47 @@ When contributing to this codebase, adhere to the following principles:
 - Prefer simple, readable solutions over clever ones
 - Break complex functions into smaller, well-named pieces
 - If a solution feels complicated, step back and reconsider the approach
+
+### Prefer Functions Over Classes
+
+Don't use classes when module-level functions suffice. Python modules are already namespaces.
+
+```python
+# ❌ Over-engineered - class with only static methods
+class MidiUtils:
+    @staticmethod
+    def transpose(notes: list[int], semitones: int) -> list[int]:
+        return [n + semitones for n in notes]
+
+    @staticmethod
+    def reverse(notes: list[int]) -> list[int]:
+        return notes[::-1]
+
+# ✅ Pythonic - just use module functions
+# midi_utils.py
+def transpose(notes: list[int], semitones: int) -> list[int]:
+    return [n + semitones for n in notes]
+
+def reverse(notes: list[int]) -> list[int]:
+    return notes[::-1]
+```
+
+**Use classes when:**
+- You have instance state (attributes that vary per instance)
+- Objects have a lifecycle (init, configure, use, cleanup)
+- You need multiple instances with different configurations
+- Implementing a protocol or interface
+- Multiple functions share the same arguments repeatedly (a sign they belong together)
+- Modeling real-world entities with both data and behavior
+
+**Use functions when:**
+- No shared state is needed
+- Operations are stateless transformations (data in → data out)
+- You'd end up with all `@staticmethod` or `@classmethod`
+- The logic is action-driven rather than object-driven
+- You want easier testing (pure functions need minimal setup/mocking)
+
+**Heuristic:** If you find yourself passing the same arguments to multiple functions, consider whether a class would group them better. But if those functions don't share state between calls, keep them as functions.
 
 ---
 
@@ -198,69 +273,18 @@ class Generator:
 
 ---
 
-## Ruff Configuration
-
-Add the following to `pyproject.toml` to enforce standards:
-
-```toml
-[tool.ruff]
-target-version = "py311"
-line-length = 100
-src = ["src", "test"]
-
-[tool.ruff.lint]
-select = [
-    "E",      # pycodestyle errors
-    "W",      # pycodestyle warnings
-    "F",      # Pyflakes
-    "I",      # isort
-    "B",      # flake8-bugbear
-    "C4",     # flake8-comprehensions
-    "UP",     # pyupgrade
-    "ARG",    # flake8-unused-arguments
-    "SIM",    # flake8-simplify
-    "TCH",    # flake8-type-checking
-    "PTH",    # flake8-use-pathlib
-    "RUF",    # Ruff-specific rules
-    "D",      # pydocstyle (docstrings)
-    "ANN",    # flake8-annotations (type hints)
-    "S",      # flake8-bandit (security)
-    "N",      # pep8-naming
-    "T20",    # flake8-print
-]
-ignore = [
-    "D100",   # missing module docstring (can be noisy initially)
-    "D104",   # missing package docstring
-    "ANN101", # missing self type (redundant)
-    "ANN102", # missing cls type (redundant)
-]
-
-[tool.ruff.lint.pydocstyle]
-convention = "google"
-
-[tool.ruff.lint.isort]
-known-first-party = ["the_jam_machine"]
-
-[tool.ruff.format]
-quote-style = "double"
-indent-style = "space"
-```
-
----
-
 ## Git Workflow
 
 ### Branch Strategy
 
-- **Reference Branch:** `dev` (all feature branches are created from and merged into `dev`)
-- **Production Branch:** `main` (only receives merges from `dev` for releases)
+- **Default Branch:** `main` (all feature branches are created from and merged into `main`)
 
 ### Development Workflow
 
-1. **Create a feature branch from `dev`:**
+1. **Create a feature branch from `main`:**
    ```bash
-   git checkout dev
-   git pull origin dev
+   git checkout main
+   git pull origin main
    git checkout -b feature/your-feature-name
    ```
 
@@ -283,7 +307,7 @@ indent-style = "space"
 4. **Push and create PR:**
    ```bash
    git push -u origin feature/your-feature-name
-   gh pr create --base dev --title "Add feature X" --body "Description..."
+   gh pr create --base main --title "Add feature X" --body "Description..."
    ```
 
 5. **PR Requirements:**
@@ -293,7 +317,7 @@ indent-style = "space"
    - PR description must explain changes
 
 6. **After PR approval:**
-   - Squash and merge into `dev`
+   - Squash and merge into `main`
    - Delete the feature branch
 
 ### Git Hooks
@@ -312,12 +336,69 @@ The pre-commit hook runs:
 - Ruff formatting (auto-applies)
 - pip-audit security scan (informational)
 
+**Important:**
+- **Never use `--no-verify`** to skip hooks unless explicitly requested by the user
+- Hooks exist to maintain code quality; work with them, not around them
+
 ### Commit and PR Style
 
 - **No AI attribution**: Do not add "Generated with Claude Code", "Co-Authored-By: Claude", or similar AI authorship markers to commits or PRs
 - Keep commit messages concise and focused on the "why"
 - **Squash and merge title**: Max 100 characters
 - PR descriptions should explain changes clearly without boilerplate
+
+---
+
+## AI Session Management
+
+When working on multi-phase refactoring or long tasks:
+
+### Plan Documents
+
+- **Master plan:** `.plans/MASTER-PLAN.md` is the central reference for all refactoring work
+- **Update progress:** Mark phases as complete (✅) and update the "Current State" table
+- **Decision log:** Record important decisions with rationale in the plan's Decision Log section
+
+### CRITICAL: Keep Plans Updated
+
+**Plan files must be updated continuously, not just at session end.** This ensures work can always resume smoothly, even after unexpected context resets.
+
+**Update `.plans/CONTINUATION-PROMPT.md` whenever:**
+- You complete a task or phase
+- You discover new information that affects the plan
+- You make a decision that should be remembered
+- Before any long-running operation (tests, builds, etc.)
+
+**Update frequency:** After every significant action, not just at the end of a session.
+
+### Continuation Prompt Format
+
+The `.plans/CONTINUATION-PROMPT.md` file should always contain:
+- Current branch and its purpose
+- What was just completed
+- What to do next (with specific file/function references)
+- Any blockers, open questions, or decisions needed
+
+Example:
+```markdown
+# Continuation Prompt
+
+**Branch:** `main` (all work merges to `main`)
+
+## Current Status
+- Phase 1 (Postponed Annotations) ✅ Complete
+- Phase 2 in progress: fixing encoder.py
+
+## Next Steps
+1. Fix remaining type hints in `src/the_jam_machine/embedding/encoder.py:145-200`
+2. Run tests to verify changes
+3. Update MASTER-PLAN.md with completion status
+
+## Notes
+- Found circular import issue between encoder.py and familizer.py - resolved with TYPE_CHECKING
+```
+
+This ensures work can resume smoothly after context resets.
 
 ---
 

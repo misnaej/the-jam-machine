@@ -1,5 +1,7 @@
 """Utility functions for MIDI generation."""
 
+from __future__ import annotations
+
 import logging
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -29,7 +31,7 @@ logger = logging.getLogger(__name__)
 class WriteTextMidiToFile:
     """Utility for saving MIDI text from GenerateMidiText to file."""
 
-    def __init__(self, generate_midi: "GenerateMidiText", output_path: str) -> None:
+    def __init__(self, generate_midi: GenerateMidiText, output_path: str) -> None:
         """Initialize the writer.
 
         Args:
@@ -188,7 +190,7 @@ def forcing_bar_count(
     return full_piece, bar_count_checks
 
 
-def get_max_time(inst_midi: "pretty_midi.PrettyMIDI") -> float:
+def get_max_time(inst_midi: pretty_midi.PrettyMIDI) -> float:
     """Get the maximum end time across all instruments.
 
     Args:
@@ -203,7 +205,7 @@ def get_max_time(inst_midi: "pretty_midi.PrettyMIDI") -> float:
     return max_time
 
 
-def plot_piano_roll(inst_midi: "pretty_midi.PrettyMIDI") -> plt.Figure:
+def plot_piano_roll(inst_midi: pretty_midi.PrettyMIDI) -> plt.Figure:
     """Generate a piano roll visualization of the MIDI.
 
     Args:

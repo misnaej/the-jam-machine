@@ -1,11 +1,12 @@
 """Low-level GPT-2 model interaction for music generation."""
 
+from __future__ import annotations
+
 import logging
 from typing import TYPE_CHECKING
 
-import torch
-
 if TYPE_CHECKING:
+    import torch
     from transformers import GPT2LMHeadModel, GPT2Tokenizer
 
 logger = logging.getLogger(__name__)
@@ -28,8 +29,8 @@ class GenerationEngine:
 
     def __init__(
         self,
-        model: "GPT2LMHeadModel",
-        tokenizer: "GPT2Tokenizer",
+        model: GPT2LMHeadModel,
+        tokenizer: GPT2Tokenizer,
         device: str = "cpu",
     ) -> None:
         """Initialize the generation engine.
