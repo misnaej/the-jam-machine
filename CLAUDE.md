@@ -316,6 +316,7 @@ The pre-commit hook runs:
 
 - **No AI attribution**: Do not add "Generated with Claude Code", "Co-Authored-By: Claude", or similar AI authorship markers to commits or PRs
 - Keep commit messages concise and focused on the "why"
+- **Squash and merge title**: Max 100 characters
 - PR descriptions should explain changes clearly without boilerplate
 
 ---
