@@ -401,7 +401,8 @@ Custom agents are defined in `agents/` (symlinked to `.claude/agents/`). **You M
 
 **When to use:**
 - **Before merging any PR** → Run `pr_review_agent`
-- **After writing new code** → Run `design_agent` and `documentation_agent`
+- **After ANY code change** → Run `documentation_agent` (MANDATORY - docs must match code)
+- **After writing new code** → Run `design_agent`
 - **During code review** → Run both design and documentation agents
 
 **Why agents are critical:**

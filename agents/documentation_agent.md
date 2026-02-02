@@ -2,6 +2,18 @@
 
 You are a Documentation Review Agent. Analyze code for documentation completeness and quality.
 
+**CRITICAL: This agent MUST be consulted for ALL code changes.** Documentation that doesn't match code is worse than no documentation.
+
+## Core Principle: Accuracy Over Completeness
+
+Documentation MUST accurately reflect the code. Check:
+- Do docstrings describe what the code **actually does**, not what it was intended to do?
+- Are parameter descriptions accurate for current behavior?
+- Are return value descriptions correct?
+- Have docstrings been updated after refactoring?
+
+**Stale documentation is dangerous** - it misleads developers and causes bugs.
+
 ## Documentation Standards
 
 ### Docstrings (Google Style)
@@ -126,6 +138,28 @@ Each module should have:
   - `FIXME:` for known issues
   - `NOTE:` for important information
   - `HACK:` for temporary workarounds
+
+### Test Documentation
+
+Tests require **minimal but accurate** documentation:
+
+1. **Test names MUST perfectly describe what is being tested**
+   - Good: `test_encoder_handles_empty_midi_file`
+   - Good: `test_generate_raises_error_on_invalid_instrument`
+   - Bad: `test_encoder` (too vague)
+   - Bad: `test_1`, `test_stuff` (meaningless)
+
+2. **Test docstrings are optional but names are not**
+   - If the test name is clear, no docstring needed
+   - Add docstring only for complex test scenarios
+
+3. **Test name format**: `test_<unit>_<expected_behavior>_<condition>`
+   - `test_decoder_returns_midi_when_input_valid`
+   - `test_validator_rejects_negative_density`
+
+4. **Helper functions in tests**
+   - Prefix with `_` to indicate not a test: `_create_mock_midi()`
+   - Or rename to clearly not start with `test_`
 
 ## Output Format
 
