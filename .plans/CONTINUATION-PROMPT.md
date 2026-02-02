@@ -12,11 +12,11 @@ Refactoring The Jam Machine. PR #2 completed (split `generate.py` into 4 classes
 git status  # Shows: README.md, .gitignore modified + new Docker files
 ```
 
-Review `plans/session-changes-20260202.md` for details.
+Review `.plans/session-changes-20260202.md` for details.
 
 ## Start Here
 
-Read `plans/MASTER-PLAN.md` - it's the central reference with ordered phases.
+Read `.plans/MASTER-PLAN.md` - it's the central reference with ordered phases.
 
 ## Key Plans
 

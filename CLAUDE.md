@@ -355,7 +355,7 @@ When working on multi-phase refactoring or long tasks:
 
 ### Plan Documents
 
-- **Master plan:** `plans/MASTER-PLAN.md` is the central reference for all refactoring work
+- **Master plan:** `.plans/MASTER-PLAN.md` is the central reference for all refactoring work
 - **Update progress:** Mark phases as complete (✅) and update the "Current State" table
 - **Decision log:** Record important decisions with rationale in the plan's Decision Log section
 

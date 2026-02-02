@@ -198,7 +198,7 @@ the-jam-machine/
 │   ├── preprocessing/         # Model loading
 │   └── training/              # Model training pipelines
 ├── examples/                  # Example scripts
-├── plans/                     # Refactoring plans and audits
+├── .plans/                    # Refactoring plans and audits
 └── test/                      # Test suite
 ```
 

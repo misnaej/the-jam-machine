@@ -386,7 +386,7 @@ the-jam-machine/
 │   ├── design_agent.md
 │   ├── documentation_agent.md
 │   └── README.md
-├── plans/                         # Local plans (gitignored)
+├── .plans/                         # Local plans (gitignored)
 │   └── code-audit-plan.md
 ├── scripts/
 │   └── setup-env.sh
@@ -418,7 +418,7 @@ After implementation:
 - **Reference branch:** `dev` (not `main`)
 - **Workflow:** Branch creation + PR for all changes
 - **Agents:** Standalone markdown files in `agents/` directory
-- **Plans:** Stored locally in `plans/` folder (gitignored)
+- **Plans:** Stored locally in `.plans/` folder (gitignored)
 
 ## Next Steps (Current: fix/test-failures branch)
 
@@ -473,4 +473,4 @@ After implementation:
 
 ## Note: Plans Location
 
-All plans should be written to the local `plans/` directory which is gitignored. This keeps planning documents local to your machine and not committed to the repository.
+All plans should be written to the local `.plans/` directory which is gitignored. This keeps planning documents local to your machine and not committed to the repository.
