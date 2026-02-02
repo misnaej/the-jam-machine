@@ -159,9 +159,9 @@ wandb
 # Mac
 .DS_Store
 
-# Temporary MIDI files
-tmp/*.mid
-source/tmp/*.mid
+# Temporary files
+tmp/
+source/tmp/
 
 
 # test and example files results
@@ -170,3 +170,7 @@ test/*.mid
 test/*.png
 test/*.json
 run.sh
+
+# Claude Code files
+.claude/
+plans/

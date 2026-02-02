@@ -1,0 +1,72 @@
+#!/bin/bash
+#
+# Pre-commit hook for The Jam Machine
+#
+# This hook runs:
+# 1. Ruff linting and formatting checks
+# 2. Security audit with pip-audit (non-blocking)
+#
+# To bypass this hook (not recommended), use: git commit --no-verify
+
+set -e
+
+echo "Running pre-commit checks..."
+
+# Get the list of staged Python files
+STAGED_PY_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.py$' || true)
+
+if [ -z "$STAGED_PY_FILES" ]; then
+    echo "No Python files staged, skipping linting."
+else
+    echo ""
+    echo "=== Ruff Linting ==="
+
+    # Run ruff check on staged files
+    if ! pipenv run ruff check $STAGED_PY_FILES; then
+        echo ""
+        echo "Ruff found issues. Attempting auto-fix..."
+        pipenv run ruff check --fix $STAGED_PY_FILES
+
+        # Re-add fixed files
+        git add $STAGED_PY_FILES
+
+        # Check again
+        if ! pipenv run ruff check $STAGED_PY_FILES; then
+            echo ""
+            echo "ERROR: Ruff still found issues that couldn't be auto-fixed."
+            echo "Please fix the issues above and try again."
+            exit 1
+        fi
+        echo "Auto-fix successful. Files re-staged."
+    fi
+
+    echo ""
+    echo "=== Ruff Formatting ==="
+
+    # Check formatting
+    if ! pipenv run ruff format --check $STAGED_PY_FILES; then
+        echo ""
+        echo "Formatting issues found. Applying formatting..."
+        pipenv run ruff format $STAGED_PY_FILES
+
+        # Re-add formatted files
+        git add $STAGED_PY_FILES
+        echo "Formatting applied. Files re-staged."
+    fi
+
+    echo ""
+    echo "✓ Linting and formatting checks passed"
+fi
+
+# Security audit (non-blocking, informational only)
+echo ""
+echo "=== Security Audit (informational) ==="
+if command -v pip-audit &> /dev/null || pipenv run pip-audit --version &> /dev/null 2>&1; then
+    pipenv run pip-audit --progress-spinner off 2>/dev/null || echo "Note: pip-audit found potential vulnerabilities. Run 'pipenv run pip-audit' for details."
+else
+    echo "pip-audit not installed. Skipping security audit."
+    echo "Install with: pipenv run pip install pip-audit"
+fi
+
+echo ""
+echo "✓ Pre-commit checks complete"
