@@ -202,10 +202,21 @@ select = [
     "TCH",    # flake8-type-checking
     "PTH",    # flake8-use-pathlib
     "RUF",    # Ruff-specific rules
+    "D",      # pydocstyle (docstrings)
+    "ANN",    # flake8-annotations (type hints)
+    "S",      # flake8-bandit (security)
+    "N",      # pep8-naming
+    "T20",    # flake8-print
 ]
 ignore = [
-    "E501",   # line too long (handled by formatter)
+    "D100",   # missing module docstring (can be noisy initially)
+    "D104",   # missing package docstring
+    "ANN101", # missing self type (redundant)
+    "ANN102", # missing cls type (redundant)
 ]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
 
 [tool.ruff.lint.isort]
 known-first-party = ["the_jam_machine"]
