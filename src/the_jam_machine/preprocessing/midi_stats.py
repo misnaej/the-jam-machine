@@ -93,12 +93,7 @@ def instrument_names(pm: PrettyMIDI) -> list[list[str]] | None:
     """
     if pm.instruments:
         return [
-            list(
-                {
-                    program_to_instrument_name(instrument.program)
-                    for instrument in pm.instruments
-                }
-            )
+            list({program_to_instrument_name(instrument.program) for instrument in pm.instruments})
         ]
     return None
 
@@ -114,12 +109,7 @@ def instrument_families(pm: PrettyMIDI) -> list[list[str | None]] | None:
     """
     if pm.instruments:
         return [
-            list(
-                {
-                    categorize_midi_instrument(instrument.program)
-                    for instrument in pm.instruments
-                }
-            )
+            list({categorize_midi_instrument(instrument.program) for instrument in pm.instruments})
         ]
     return None
 
@@ -135,10 +125,7 @@ def number_of_instrument_families(pm: PrettyMIDI) -> int | None:
     """
     if pm.instruments:
         return len(
-            {
-                categorize_midi_instrument(instrument.program)
-                for instrument in pm.instruments
-            }
+            {categorize_midi_instrument(instrument.program) for instrument in pm.instruments}
         )
     return None
 
@@ -167,13 +154,7 @@ def number_of_unique_notes(pm: PrettyMIDI) -> int | None:
         The number of unique pitches, or None if no instruments exist.
     """
     if pm.instruments:
-        return len(
-            {
-                note.pitch
-                for instrument in pm.instruments
-                for note in instrument.notes
-            }
-        )
+        return len({note.pitch for instrument in pm.instruments for note in instrument.notes})
     return None
 
 
@@ -188,10 +169,7 @@ def avg_number_of_unique_notes_per_instrument(pm: PrettyMIDI) -> float | None:
     """
     if pm.instruments:
         return compute_list_average(
-            [
-                len({note.pitch for note in instrument.notes})
-                for instrument in pm.instruments
-            ]
+            [len({note.pitch for note in instrument.notes}) for instrument in pm.instruments]
         )
     return None
 
@@ -207,11 +185,7 @@ def average_note_duration(pm: PrettyMIDI) -> float | None:
     """
     if pm.instruments:
         return compute_list_average(
-            [
-                note.end - note.start
-                for instrument in pm.instruments
-                for note in instrument.notes
-            ]
+            [note.end - note.start for instrument in pm.instruments for note in instrument.notes]
         )
     return None
 
@@ -227,11 +201,7 @@ def average_note_velocity(pm: PrettyMIDI) -> float | None:
     """
     if pm.instruments:
         return compute_list_average(
-            [
-                note.velocity
-                for instrument in pm.instruments
-                for note in instrument.notes
-            ]
+            [note.velocity for instrument in pm.instruments for note in instrument.notes]
         )
     return None
 
@@ -262,9 +232,7 @@ def range_of_note_pitches(pm: PrettyMIDI) -> int | None:
         The pitch range, or None if no instruments exist.
     """
     if pm.instruments:
-        pitches = [
-            note.pitch for instrument in pm.instruments for note in instrument.notes
-        ]
+        pitches = [note.pitch for instrument in pm.instruments for note in instrument.notes]
         return max(pitches) - min(pitches)
     return None
 
@@ -299,13 +267,7 @@ def number_of_note_pitch_classes(pm: PrettyMIDI) -> int | None:
         The number of unique pitch classes, or None if no instruments exist.
     """
     if pm.instruments:
-        return len(
-            {
-                note.pitch % 12
-                for instrument in pm.instruments
-                for note in instrument.notes
-            }
-        )
+        return len({note.pitch % 12 for instrument in pm.instruments for note in instrument.notes})
     return None
 
 
@@ -320,10 +282,7 @@ def average_number_of_note_pitch_classes_per_instrument(pm: PrettyMIDI) -> float
     """
     if pm.instruments:
         return compute_list_average(
-            [
-                len({note.pitch % 12 for note in instrument.notes})
-                for instrument in pm.instruments
-            ]
+            [len({note.pitch % 12 for note in instrument.notes}) for instrument in pm.instruments]
         )
     return None
 
@@ -338,13 +297,7 @@ def number_of_octaves(pm: PrettyMIDI) -> int | None:
         The number of unique octaves, or None if no instruments exist.
     """
     if pm.instruments:
-        return len(
-            {
-                note.pitch // 12
-                for instrument in pm.instruments
-                for note in instrument.notes
-            }
-        )
+        return len({note.pitch // 12 for instrument in pm.instruments for note in instrument.notes})
     return None
 
 
@@ -359,10 +312,7 @@ def average_number_of_octaves_per_instrument(pm: PrettyMIDI) -> float | None:
     """
     if pm.instruments:
         return compute_list_average(
-            [
-                len({note.pitch // 12 for note in instrument.notes})
-                for instrument in pm.instruments
-            ]
+            [len({note.pitch // 12 for note in instrument.notes}) for instrument in pm.instruments]
         )
     return None
 
@@ -395,9 +345,7 @@ def shortest_note_length(pm: PrettyMIDI) -> float | None:
     """
     if pm.instruments:
         return min(
-            note.end - note.start
-            for instrument in pm.instruments
-            for note in instrument.notes
+            note.end - note.start for instrument in pm.instruments for note in instrument.notes
         )
     return None
 
@@ -413,9 +361,7 @@ def longest_note_length(pm: PrettyMIDI) -> float | None:
     """
     if pm.instruments:
         return max(
-            note.end - note.start
-            for instrument in pm.instruments
-            for note in instrument.notes
+            note.end - note.start for instrument in pm.instruments for note in instrument.notes
         )
     return None
 
@@ -527,9 +473,7 @@ def all_time_signatures(pm: PrettyMIDI) -> list[list[str]] | None:
         A nested list of time signature strings, or None if none exist.
     """
     if pm.time_signature_changes:
-        return [
-            [f"{ts.numerator}/{ts.denominator}" for ts in pm.time_signature_changes]
-        ]
+        return [[f"{ts.numerator}/{ts.denominator}" for ts in pm.time_signature_changes]]
     return None
 
 
@@ -543,9 +487,7 @@ def four_to_the_floor(pm: PrettyMIDI) -> bool | None:
         True if exclusively 4/4, False otherwise, or None if no time signatures exist.
     """
     if pm.time_signature_changes:
-        time_signatures = [
-            f"{ts.numerator}/{ts.denominator}" for ts in pm.time_signature_changes
-        ]
+        time_signatures = [f"{ts.numerator}/{ts.denominator}" for ts in pm.time_signature_changes]
         # check if time_signatures contains exclusively '4/4'
         return all(ts == "4/4" for ts in time_signatures) and len(time_signatures) == 1
     return None

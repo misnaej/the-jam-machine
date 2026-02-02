@@ -582,7 +582,7 @@ def from_midi_to_sectioned_text(midi_filename: str, familized: bool = False) -> 
 
 
 # Backward compatibility alias (deprecated, use from_midi_to_sectioned_text instead)
-_from_midi_to_sectionned_text = from_midi_to_sectioned_text
+from_MIDI_to_sectionned_text = from_midi_to_sectioned_text  # noqa: N816
 
 
 if __name__ == "__main__":

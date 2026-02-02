@@ -326,20 +326,29 @@ def write_to_file(path: str | Path, content: dict[str, object] | str | object) -
             f.write(content)
 
 
-# Backwards compatibility alias
-write_to_file_legacy = write_to_file
+# Backwards compatibility aliases
+writeToFile = write_to_file  # noqa: N816
 
 
-def read_from_file(path: str | Path, *, is_json: bool = False) -> str | dict[str, object]:
+def read_from_file(
+    path: str | Path,
+    *,
+    is_json: bool = False,
+    isJSON: bool | None = None,  # noqa: N803
+) -> str | dict[str, object]:
     """Read content from a file.
 
     Args:
         path: The file path to read from.
         is_json: If True, parse the file as JSON.
+        isJSON: Deprecated alias for is_json (for backward compatibility).
 
     Returns:
         The file content as a string or parsed JSON object.
     """
+    # Support deprecated parameter name
+    if isJSON is not None:
+        is_json = isJSON
     path = Path(path)
     with path.open() as f:
         if is_json:
@@ -348,8 +357,8 @@ def read_from_file(path: str | Path, *, is_json: bool = False) -> str | dict[str
             return f.read()
 
 
-# Backwards compatibility alias
-read_from_file_legacy = read_from_file
+# Backwards compatibility aliases
+readFromFile = read_from_file  # noqa: N816
 
 
 def get_files(directory: Path, extension: str, *, recursive: bool = False) -> list[Path]:

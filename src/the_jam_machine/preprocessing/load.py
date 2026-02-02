@@ -89,8 +89,6 @@ class LoadModel:
         if not self.from_huggingface:
             tokenizer_path = Path(self.path) / "tokenizer.json"
             if not tokenizer_path.exists():
-                raise FileNotFoundError(
-                    f"No 'tokenizer.json' file in {self.path}"
-                )
+                raise FileNotFoundError(f"No 'tokenizer.json' file in {self.path}")
         tokenizer = PreTrainedTokenizerFast.from_pretrained(self.path)
         return tokenizer

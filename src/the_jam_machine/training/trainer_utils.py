@@ -55,9 +55,7 @@ class TokenizeDataset:
         Returns:
             Tokenized dataset with 'text' column removed.
         """
-        dataset_tokenized = dataset.map(
-            self.tokenize, batched=True, remove_columns=["text"]
-        )
+        dataset_tokenized = dataset.map(self.tokenize, batched=True, remove_columns=["text"])
         return dataset_tokenized
 
 
@@ -78,9 +76,7 @@ def train_tokenizer(
     if not tokenizer_path.is_file():
         tokenizer = Tokenizer(WordLevel(unk_token="[UNK]"))  # noqa: S106
         tokenizer.pre_tokenizer = WhitespaceSplit()
-        tokenizer_trainer = WordLevelTrainer(
-            special_tokens=["[UNK]", "[PAD]", "[MASK]"]
-        )
+        tokenizer_trainer = WordLevelTrainer(special_tokens=["[UNK]", "[PAD]", "[MASK]"])
         tokenizer.train_from_iterator(train_data["text"], trainer=tokenizer_trainer)
         tokenizer.save(str(tokenizer_path))
 
@@ -116,16 +112,12 @@ def check_tokenized_data(
     if plot_path is not None:
         inst_tokens = []
         for data in dataset["text"]:
-            inst_tokens += [
-                token.strip("INST=") for token in data.split(" ") if "INST=" in token
-            ]
+            inst_tokens += [token.strip("INST=") for token in data.split(" ") if "INST=" in token]
         token_occ = np.array(
             [[token, int(inst_tokens.count(token))] for token in np.unique(inst_tokens)]
         ).T
         sorted_occurences = np.sort(token_occ[1].astype(int))
-        sorted_tokens = [
-            token_occ[0][idx] for idx in np.argsort(token_occ[1].astype(int))
-        ]
+        sorted_tokens = [token_occ[0][idx] for idx in np.argsort(token_occ[1].astype(int))]
         plt.plot(sorted_occurences, color="Black")
         plt.xticks(ticks=range(len(sorted_tokens)), labels=sorted_tokens, rotation=45)
         plt.title("Distribution of instrument tokens in dataset")

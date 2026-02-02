@@ -109,9 +109,7 @@ def stats_on_track(
         note_coverage_instrument_idx = []
         for i, note in enumerate(instruments.notes):
             if i == 0:
-                min_start_all_instruments.append(
-                    note.start / miditoolk_data.ticks_per_beat
-                )
+                min_start_all_instruments.append(note.start / miditoolk_data.ticks_per_beat)
 
             note_coverage_instrument += note.end - note.start
             note_coverage_instrument_idx.append(list(range(note.start, note.end)))
@@ -126,9 +124,7 @@ def stats_on_track(
             [unique_idx_list.append(idx) for idx in idx_list]
         unique_idx_list = len(np.unique(unique_idx_list))
 
-        note_coverage_true_all_instrument.append(
-            100 * (unique_idx_list / miditoolk_data.max_tick)
-        )
+        note_coverage_true_all_instrument.append(100 * (unique_idx_list / miditoolk_data.max_tick))
         note_counts_all_instrument.append(len(instruments.notes))
 
         if verbose:
@@ -161,9 +157,7 @@ def stats_on_track(
     for ui in np.unique(instrument_names):
         all_notes_starts = []
         all_notes_instrument = []
-        where_unique_inst = [
-            idx for idx, ins in enumerate(instrument_names) if ins == ui
-        ]
+        where_unique_inst = [idx for idx, ins in enumerate(instrument_names) if ins == ui]
         if len(where_unique_inst) > 1:
             print(f"{ui} is split in instrument {where_unique_inst}")  # noqa: T201
 
@@ -176,9 +170,7 @@ def stats_on_track(
             right_order = np.argsort(all_notes_starts)
 
             all_notes_starts_reordered = [all_notes_starts[id] for id in right_order]
-            all_notes_instrument_reordered = [
-                all_notes_instrument[id] for id in right_order
-            ]
+            all_notes_instrument_reordered = [all_notes_instrument[id] for id in right_order]
 
             _fig, _ax = plt.subplots()
             plt.plot(all_notes_starts, all_notes_instrument, "o")

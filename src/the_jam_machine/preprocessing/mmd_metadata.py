@@ -109,8 +109,7 @@ class MetadataExtractor:
         for i, s in enumerate(str_list):
             wrong_strs = ["karaoke", "reprise", "solo", "acoustic"]
             has_wrong_str = any(
-                fuzz.partial_ratio(s, wrong_str) > self.threshold
-                for wrong_str in wrong_strs
+                fuzz.partial_ratio(s, wrong_str) > self.threshold for wrong_str in wrong_strs
             )
             if similar_strs[i] is None and "," not in s and not has_wrong_str:
                 for j, other_strs in enumerate(str_list):
@@ -118,9 +117,7 @@ class MetadataExtractor:
                     if similar_strs[j] is None and is_similar:
                         similar_strs[j] = s
 
-        return [
-            s if s is not None else str_list[i] for i, s in enumerate(similar_strs)
-        ]
+        return [s if s is not None else str_list[i] for i, s in enumerate(similar_strs)]
 
     def get_mmd_artist_genre(self) -> None:
         """Load and process MMD scraped data."""
@@ -145,9 +142,7 @@ class MetadataExtractor:
         unique_artists = self.stats["artist_old"].unique()
         similar_artists = self.find_and_replace_duplicates(unique_artists)
 
-        df_artists = pd.DataFrame(
-            {"artist_old": unique_artists, "artist_new": similar_artists}
-        )
+        df_artists = pd.DataFrame({"artist_old": unique_artists, "artist_new": similar_artists})
         self.stats["artist"] = self.stats["artist_old"].replace(
             df_artists.set_index("artist_old")["artist_new"]
         )
@@ -224,9 +219,9 @@ class MetadataExtractor:
         if four_to_the_floor:
             self.stats = self.stats[self.stats["four_to_the_floor"] == True]  # noqa: E712
         if single_version:
-            self.stats.sort_values(
-                "number_of_notes_per_second", ascending=False
-            ).groupby(["title", "artist"]).first()
+            self.stats.sort_values("number_of_notes_per_second", ascending=False).groupby(
+                ["title", "artist"]
+            ).first()
 
 
 if __name__ == "__main__":

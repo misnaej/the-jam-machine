@@ -130,9 +130,7 @@ class Familizer:
             delayed(self.replace_instruments_in_file)(file) for file in files
         )
 
-    def replace_tokens(
-        self, input_directory: Path, output_directory: Path, operation: str
-    ) -> None:
+    def replace_tokens(self, input_directory: Path, output_directory: Path, operation: str) -> None:
         """Perform token replacement on all text files in a directory.
 
         Args:
