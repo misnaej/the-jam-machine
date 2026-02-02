@@ -1,5 +1,5 @@
-from miditoolkit import MidiFile
 from miditok import OctupleMono
+from miditoolkit import MidiFile
 from utils import writeToFile
 
 # TODO: Create EventToText methods

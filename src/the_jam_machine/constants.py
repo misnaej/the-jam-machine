@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 # fmt: off
 # Instrument mapping and mapping functions
 INSTRUMENT_CLASSES = [

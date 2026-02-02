@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 # classic python
 import matplotlib.pyplot as plt
 import mido

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 from miditok import Event
 from miditoolkit import MidiFile
@@ -43,10 +45,10 @@ class MIDIEncoder:
 
     @staticmethod
     def set_timeshifts_to_min_length(midi_events):
-        """convert existing time-shifts events to multiple time-shift events,
+        """Convert existing time-shifts events to multiple time-shift events,
         which sum equals the original time shift event
-        --> Simplifies the bar encoding process"""
-
+        --> Simplifies the bar encoding process
+        """
         new_midi_events = []
         for inst_events in midi_events:
             new_inst_events = []
@@ -134,7 +136,8 @@ class MIDIEncoder:
     @staticmethod
     def remove_timeshifts_preceeding_bar_end(midi_events):
         """Useless time-shift removed, i.e. when bar are empty, or afgter the last event of a bar is there is a remainder time-shift
-        This helps reducing the sequence length"""
+        This helps reducing the sequence length
+        """
         verbose = False
         new_midi_events = []
         for inst_events in midi_events:
@@ -158,8 +161,7 @@ class MIDIEncoder:
 
     @staticmethod
     def add_density_to_bar(midi_events):
-        """
-        For each bar:
+        """For each bar:
         - calculate the note density as the number of note onset divided by the number of beats per bar
         - add the note density as a new event type "Bar-Density"
         """
@@ -223,8 +225,8 @@ class MIDIEncoder:
     def make_sections(self, midi_events, instruments, n_bar=8):
         """For each instrument, make sections of n_bar bars each
         --> midi_sections[inst_sections][sections]
-        because files can be encoded in many sections of n_bar"""
-
+        because files can be encoded in many sections of n_bar
+        """
         midi_sections = []
         for i, inst_events in enumerate(midi_events):
             inst_section = []
@@ -255,8 +257,7 @@ class MIDIEncoder:
 
     @staticmethod
     def add_density_to_sections(midi_sections):
-        """
-        Add density to each section as the mode of bar density within that section
+        """Add density to each section as the mode of bar density within that section
         """
         new_midi_sections = []
         for inst_sections in midi_sections:
@@ -327,8 +328,8 @@ class MIDIEncoder:
         Args:
             - midi: miditok object
         Returns:
-            - piece_sections: list (instruments) of lists (sections) of miditok events"""
-
+            - piece_sections: list (instruments) of lists (sections) of miditok events
+        """
         midi_events = self.get_midi_events(midi)
 
         piece_sections = chain(
@@ -354,8 +355,8 @@ class MIDIEncoder:
         Args:
             - midi: miditok object
         Returns:
-            - piece_text: string"""
-
+            - piece_text: string
+        """
         piece_text = chain(
             midi,
             [
@@ -390,7 +391,7 @@ class MIDIEncoder:
 
 
 def from_MIDI_to_sectionned_text(midi_filename, familized=False):
-    """convert a MIDI file to a MidiText input prompt"""
+    """Convert a MIDI file to a MidiText input prompt"""
     midi = MidiFile(f"{midi_filename}.mid")
     midi_like = get_miditok()
     piece_text = MIDIEncoder(midi_like, familized=familized).get_piece_text(midi)

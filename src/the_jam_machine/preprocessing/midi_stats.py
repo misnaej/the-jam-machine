@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pathlib import Path
 
 import pandas as pd
@@ -364,8 +366,7 @@ def lyrics_boolean(pm):
 
 class MidiStats:
     def single_file_statistics(self, midi_file):
-        """
-        Compute statistics for a single midi path object.
+        """Compute statistics for a single midi path object.
         """
         # Some Midi files are corrupted and cannot be parsed by PrettyMIDI
         try:
@@ -428,8 +429,7 @@ class MidiStats:
         return statistics
 
     def get_stats(self, input_directory, recursive=False, n_jobs=-1):
-        """
-        Compute statistics for a list of MIDI files
+        """Compute statistics for a list of MIDI files
         input_directory: path to the directory containing the MIDI files
         recursive: if True, recursively search for MIDI files in subdirectories
         """

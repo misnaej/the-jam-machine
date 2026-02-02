@@ -311,12 +311,69 @@ The pre-commit hook runs:
 - Ruff formatting (auto-applies)
 - pip-audit security scan (informational)
 
+**Important:**
+- **Never use `--no-verify`** to skip hooks unless explicitly requested by the user
+- Hooks exist to maintain code quality; work with them, not around them
+
+### Pre-Work Lint Check Strategy
+
+Before modifying files, check for pre-existing lint issues that would block commits:
+
+```bash
+# Check files you plan to modify
+pipenv run ruff check src/the_jam_machine/path/to/files/
+
+# If many issues exist, fix them first
+pipenv run ruff check --fix src/the_jam_machine/path/to/files/
+pipenv run ruff format src/the_jam_machine/path/to/files/
+```
+
+**Workflow for files with many pre-existing issues:**
+1. Fix lint issues in a separate "cleanup" commit/PR first
+2. Merge the cleanup PR
+3. Then create a new PR for the actual feature/refactor work
+
+This keeps PRs focused and makes code review easier.
+
 ### Commit and PR Style
 
 - **No AI attribution**: Do not add "Generated with Claude Code", "Co-Authored-By: Claude", or similar AI authorship markers to commits or PRs
 - Keep commit messages concise and focused on the "why"
 - **Squash and merge title**: Max 100 characters
 - PR descriptions should explain changes clearly without boilerplate
+
+---
+
+## AI Session Management
+
+When working on multi-phase refactoring or long tasks:
+
+### Plan Documents
+
+- **Master plan:** `plans/MASTER-PLAN.md` is the central reference for all refactoring work
+- **Update progress:** Mark phases as complete (✅) and update the "Current State" table
+- **Decision log:** Record important decisions with rationale in the plan's Decision Log section
+
+### Context Preservation
+
+Before context gets auto-compacted (or when clearing context with `/clear`):
+
+1. **Update the plan document** with current progress and any new findings
+2. **Write a continuation prompt** at the end of the plan summarizing:
+   - What was just completed
+   - What to do next
+   - Any blockers or decisions needed
+
+Example continuation prompt format:
+```markdown
+## Continuation Prompt
+
+**Last completed:** Phase 1 - Added postponed annotations to all files
+**Next step:** Phase 2 - Fix broken tests (see Tasks section)
+**Notes:** Found 2 additional files needing updates in examples/
+```
+
+This ensures work can resume smoothly after context resets.
 
 ---
 

@@ -1,5 +1,7 @@
 """Piece state management for multi-track music generation."""
 
+from __future__ import annotations
+
 from typing import Any
 
 from .track_builder import TrackBuilder

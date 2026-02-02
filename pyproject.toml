@@ -76,8 +76,6 @@ select = [
 ignore = [
     "D100",   # missing module docstring (can be noisy initially)
     "D104",   # missing package docstring
-    "ANN101", # missing self type (redundant)
-    "ANN102", # missing cls type (redundant)
 ]
 
 [tool.ruff.lint.pydocstyle]

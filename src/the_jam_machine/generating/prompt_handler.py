@@ -1,5 +1,7 @@
 """Prompt construction and length management for generation."""
 
+from __future__ import annotations
+
 import logging
 import random
 from typing import TYPE_CHECKING
@@ -34,7 +36,7 @@ class PromptHandler:
 
     def build_next_bar_prompt(
         self,
-        piece: "PieceBuilder",
+        piece: PieceBuilder,
         track_idx: int,
         verbose: bool = True,
     ) -> str:

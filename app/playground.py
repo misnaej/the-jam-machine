@@ -1,13 +1,17 @@
 """Gradio web interface for The Jam Machine."""
 
+from __future__ import annotations
+
 import sys
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import gradio as gr
 import matplotlib
-import numpy as np
 from matplotlib import pylab
-from matplotlib.figure import Figure
+
+if TYPE_CHECKING:
+    import numpy as np
+    from matplotlib.figure import Figure
 
 from the_jam_machine.constants import INSTRUMENT_TRANSFER_CLASSES
 from the_jam_machine.embedding.decoder import TextDecoder

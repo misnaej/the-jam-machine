@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from miditok import Event
 
 from ..utils import *
@@ -21,7 +23,7 @@ class TextDecoder:
         self.familized = familized
 
     def decode(self, text):
-        r"""converts from text to instrument events
+        r"""Converts from text to instrument events
         Args:
             text (String): example ->  PIECE_START TRACK_START INST=25 DENSITY=2 BAR_START NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50...BAR_END TRACK_END
 
@@ -40,7 +42,7 @@ class TextDecoder:
         return events
 
     def tokenize(self, events):
-        r"""converts from events to MidiTok tokens
+        r"""Converts from events to MidiTok tokens
         Args:
             events (Dict{inst_id: List[Events]}): List of events for each instrument
 
@@ -53,7 +55,7 @@ class TextDecoder:
         return tokens
 
     def get_midi(self, text, filename=None):
-        r"""converts from text to midi
+        r"""Converts from text to midi
         Args:
             text (String): example ->  PIECE_START TRACK_START INST=25 DENSITY=2 BAR_START NOTE_ON=50 TIME_DELTA=1 NOTE_OFF=50...BAR_END TRACK_END
 
@@ -178,7 +180,7 @@ class TextDecoder:
 
     @staticmethod
     def get_bar_ids(inst_events):
-        """tracking bar index for each instrument and saving them in the miditok Events"""
+        """Tracking bar index for each instrument and saving them in the miditok Events"""
         for inst_index, inst_event in enumerate(inst_events):
             bar_idx = 0
             for event_index, event in enumerate(inst_event["events"]):
@@ -192,7 +194,8 @@ class TextDecoder:
     def add_missing_timeshifts_in_a_bar(inst_events, beat_per_bar=4, verbose=False):
         """Add missing time shifts in bar to make sure that each bar has 4 beats
         takes care of the problem of a missing time shift if notes do not last until the end of the bar
-        takes care of the problem of empty bars that are only defined by "BAR_START BAR END"""
+        takes care of the problem of empty bars that are only defined by "BAR_START BAR END
+        """
         new_inst_events = []
         for index, inst_event in enumerate(inst_events):
             new_inst_events.append({})

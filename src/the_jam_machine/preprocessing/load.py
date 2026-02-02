@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 
 import torch
@@ -5,8 +7,7 @@ from transformers import GPT2LMHeadModel, PreTrainedTokenizerFast
 
 
 class LoadModel:
-    """
-    Example usage:
+    """Example usage:
 
     # if loading model and tokenizer from Huggingface
     model_repo = "misnaej/the-jam-machine"

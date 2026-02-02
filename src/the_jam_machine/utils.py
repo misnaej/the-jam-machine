@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import os
 import shutil
@@ -69,8 +71,7 @@ def get_datetime():
 
 
 def int_dec_base_to_beat(beat_str):
-    """
-    Converts "integer.decimal.base" (str, from miditok) into beats
+    """Converts "integer.decimal.base" (str, from miditok) into beats
     e.g. "0.4.8" = 0 + 4/8 = 0.5
     Args:
         - beat_str: "integer.decimal.base"
@@ -82,10 +83,10 @@ def int_dec_base_to_beat(beat_str):
 
 
 def int_dec_base_to_delta(beat_str, instrument="drums"):
-    """converts the time shift to time_delta according to Tristan's encoding scheme
+    """Converts the time shift to time_delta according to Tristan's encoding scheme
     Drums TIME_DELTA are quantized according to DRUMS_BEAT_QUANTIZATION
-    Other Instrument TIME_DELTA are quantized according to NONE_DRUMS_BEAT_QUANTIZATION"""
-
+    Other Instrument TIME_DELTA are quantized according to NONE_DRUMS_BEAT_QUANTIZATION
+    """
     beat_res = (
         DRUMS_BEAT_QUANTIZATION
         if instrument.lower() == "drums"
@@ -129,8 +130,7 @@ def get_text(event, instrument="drums"):
 
 
 def time_delta_to_beat(time_delta, instrument="drums"):
-    """
-    Converts TIME_DELTA (from midi-text) to beats according to Tristan's encoding scheme
+    """Converts TIME_DELTA (from midi-text) to beats according to Tristan's encoding scheme
     Args:
         - time_delta: int (TIME_DELTA)
         - instrument: str ("Drums" or other instrument): used to determine the quantization resolution defined on constants.py
@@ -147,8 +147,7 @@ def time_delta_to_beat(time_delta, instrument="drums"):
 
 
 def beat_to_int_dec_base(beat, beat_res=8):
-    """
-    Converts beats into "integer.decimal.base" (str) for miditok
+    """Converts beats into "integer.decimal.base" (str) for miditok
     Args:
         - beat_str: "integer.decimal.base"
     Returns:
@@ -219,7 +218,7 @@ def writeToFile(path, content):
 
 
 def readFromFile(path, isJSON=False):
-    with open(path, "r") as f:
+    with open(path) as f:
         if isJSON:
             return json.load(f)
         else:
@@ -227,8 +226,7 @@ def readFromFile(path, isJSON=False):
 
 
 def get_files(directory, extension, recursive=False):
-    """
-    Given a directory, get a list of the file paths of all files matching the
+    """Given a directory, get a list of the file paths of all files matching the
     specified file extension.
     directory: the directory to search as a Path object
     extension: the file extension to match as a string
@@ -242,14 +240,13 @@ def get_files(directory, extension, recursive=False):
 
 def load_jsonl(filepath):
     """Load a jsonl file"""
-    with open(filepath, "r") as f:
+    with open(filepath) as f:
         data = [json.loads(line) for line in f]
     return data
 
 
 def write_mp3(waveform, output_path, bitrate="92k"):
-    """
-    Write a waveform to an mp3 file.
+    """Write a waveform to an mp3 file.
     output_path: Path object for the output mp3 file
     waveform: numpy array of the waveform
     bitrate: bitrate of the mp3 file (64k, 92k, 128k, 256k, 312k)
@@ -277,12 +274,12 @@ class FileCompressor:
 
     # File compression and decompression
     def unzip_file(self, file):
-        """uncompress single zip file"""
+        """Uncompress single zip file"""
         with ZipFile(file, "r") as zip_ref:
             zip_ref.extractall(self.output_directory)
 
     def zip_file(self, file):
-        """compress a single text file to a new zip file and delete the original"""
+        """Compress a single text file to a new zip file and delete the original"""
         output_file = self.output_directory / (file.stem + ".zip")
         with ZipFile(output_file, "w") as zip_ref:
             zip_ref.write(file, arcname=file.name, compress_type=ZIP_DEFLATED)
@@ -290,12 +287,12 @@ class FileCompressor:
 
     @timeit
     def unzip(self):
-        """uncompress all zip files in folder"""
+        """Uncompress all zip files in folder"""
         files = get_files(self.input_directory, extension="zip")
         Parallel(n_jobs=self.n_jobs)(delayed(self.unzip_file)(file) for file in files)
 
     @timeit
     def zip(self):
-        """compress all text files in folder to new zip files and remove the text files"""
+        """Compress all text files in folder to new zip files and remove the text files"""
         files = get_files(self.output_directory, extension="txt")
         Parallel(n_jobs=self.n_jobs)(delayed(self.zip_file)(file) for file in files)

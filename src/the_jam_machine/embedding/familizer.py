@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import random
 from pathlib import Path
 
@@ -13,19 +15,16 @@ class Familizer:
         self.reverse_family(arbitrary)
 
     def get_family_number(self, program_number):
-        """
-        Given a MIDI instrument number, return its associated instrument family number.
+        """Given a MIDI instrument number, return its associated instrument family number.
         """
         for instrument_class in INSTRUMENT_CLASSES:
             if program_number in instrument_class["program_range"]:
                 return instrument_class["family_number"]
 
     def reverse_family(self, arbitrary):
-        """
-        Create a dictionary of family numbers to randomly assigned program numbers.
+        """Create a dictionary of family numbers to randomly assigned program numbers.
         This is used to reverse the family number tokens back to program number tokens.
         """
-
         if arbitrary is True:
             int_class = INSTRUMENT_TRANSFER_CLASSES
         else:
@@ -38,8 +37,7 @@ class Familizer:
             )
 
     def get_program_number(self, family_number):
-        """
-        Given given a family number return a random program number in the respective program_range.
+        """Given given a family number return a random program number in the respective program_range.
         This is the reverse operation of get_family_number.
         """
         assert family_number in self.reference_programs
@@ -47,8 +45,7 @@ class Familizer:
 
     # Replace instruments in text files
     def replace_instrument_token(self, token):
-        """
-        Given a MIDI program number in a word token, replace it with the family or program
+        """Given a MIDI program number in a word token, replace it with the family or program
         number token depending on the operation.
         e.g. INST=86 -> INST=10
         """
@@ -76,8 +73,7 @@ class Familizer:
 
     @timeit
     def replace_instruments(self):
-        """
-        Given a directory of text files:
+        """Given a directory of text files:
         Replace all instrument tokens with family number tokens.
         """
         files = get_files(self.output_directory, extension="txt")
@@ -86,8 +82,7 @@ class Familizer:
         )
 
     def replace_tokens(self, input_directory, output_directory, operation):
-        """
-        Given a directory and an operation, perform the operation on all text files in the directory.
+        """Given a directory and an operation, perform the operation on all text files in the directory.
         operation can be either 'family' or 'program'.
         """
         self.input_directory = input_directory
@@ -102,15 +97,13 @@ class Familizer:
         print(self.operation + " complete.")
 
     def to_family(self, input_directory, output_directory):
-        """
-        Given a directory containing zip files, replace all instrument tokens with
+        """Given a directory containing zip files, replace all instrument tokens with
         family number tokens. The output is a directory of zip files.
         """
         self.replace_tokens(input_directory, output_directory, "family")
 
     def to_program(self, input_directory, output_directory):
-        """
-        Given a directory containing zip files, replace all instrument tokens with
+        """Given a directory containing zip files, replace all instrument tokens with
         program number tokens. The output is a directory of zip files.
         """
         self.replace_tokens(input_directory, output_directory, "program")
