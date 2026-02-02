@@ -1,7 +1,5 @@
 # The-Jam-Machine - a Generative AI composing MIDI music
 
-*This README needs updates*.
-
 ## Summary
 
 The-Jam-Machine is a source of inspiration for beginner or more proficient musicians. Based on a GPT (Generative Pretrained-Transformer) architecture, and trained on the text transcriptions of about 5000 MIDI songs, it can generate harmonious MIDI sequences.
@@ -35,40 +33,64 @@ E.g.: with Mac OS X and Homebrew, run `brew install fluidsynth`
 
 ### 2. Clone the repository
 
-`git clone git@github.com:m41w4r3exe/the-jam-machine.git` #NOT WITH THE CURRENT VERSION
+```bash
+git clone git@github.com:misnaej/the-jam-machine.git
+cd the-jam-machine
+```
 
 ### 3. Install the dependencies
 
-[pipenv](https://pypi.org/project/pipenv/) was chosen to manage the dependencies.
-Make sure that pipenv in install in your main python environment.\
-If not, run `pip install pipenv` in your terminal.\
-Then, from `the-jam-machine` root folder, run `pipenv install --ignore-pipfile` to install the dependencies.
-To activate the virtual environment, run `pipenv shell`.
+We use [pipenv](https://pypi.org/project/pipenv/) for dependency management.
+
+```bash
+# Install pipenv if not already installed
+pip install pipenv
+
+# Install dependencies (including dev/test dependencies)
+pipenv install -e ".[ci]"
+
+# Activate the virtual environment
+pipenv shell
+```
+
+Or use the setup script:
+
+```bash
+./scripts/setup-env.sh
+```
 
 ### 4. Test the Jam-Machine
 
-Run the `test.py` script from `the-jam-machine/source` to check that everything is working fine.\
-It test the encoding, generation, decoding and the consistency between the encoding and decoding, as well as the gradio app.\
-It returns a lot of messages in the terminal including:\
+Run the tests from the project root:
 
-- `Encoding successful`
-- `Generation successful`
-- `Decoding successful`
-- `Encoder-Decoder Consistency successful`
+```bash
+pipenv run pytest test/
+```
 
-Testing the gradio app requires to open the URL displayed in the terminal and manually test the app.\
-Then when closed by keyboard interuption (CTL+C), it returns `Launching Gradio App failed` but it can be ignored.
+This tests encoding, generation, decoding, and consistency.
 
 ## Making Music with the Jam-Machine
 
-### 1. With the gradio app
+### 1. With the Gradio app
 
-From `the-jam-machine/source`, run `gradio playground.py` and then open the URL displayed in your terminal. You will be able to generate 8 bars of MIDI music with up to 3 instruments playing in harmony. More instructions are displayed in the app.\
-Try it on [HuggingFace](https://huggingface.co/spaces/JammyMachina/the-jam-machine-app) first, maybe this is enough for you, and you don't need to install and run anything locally.
+Try it on [HuggingFace](https://huggingface.co/spaces/JammyMachina/the-jam-machine-app) first - you can generate 8 bars of MIDI music with up to 3 instruments playing in harmony.
 
-### 2. With `source/generation_playground.py`
+To run locally:
 
-The gradio app has been made pretty simple so it works without breaking. The problem is that is quite limited in what it can do.
-If you want to get more experimental with generation you can check out `source/generation_playground.py` and try to get inspired by the code. You will be able to generate longer tracks, but it is less interactive than the app.
+```bash
+pipenv run python app/playground.py
+```
+
+Then open the URL displayed in your terminal.
+
+### 2. With the example script
+
+For more experimental generation with longer tracks:
+
+```bash
+pipenv run python examples/generation_playground.py
+```
+
+Check out the code in `examples/generation_playground.py` for inspiration.
 
 **Have Fun!**

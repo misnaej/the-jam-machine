@@ -4,6 +4,7 @@
 # $ pip install transformers tokenizers wandb huggingface_hub datasets
 
 import os
+from pathlib import Path
 
 import wandb
 from datasets import load_dataset
@@ -33,11 +34,12 @@ PER_DEVICE_TRAIN_BATCH_SIZE = 7
 GRADIENT_ACCUMULATION_STEPS = 1
 
 
-if not os.path.exists(MODEL_PATH):
+if not Path(MODEL_PATH).exists():
     print(f"Creating model path: {MODEL_PATH}")
-    os.makedirs(MODEL_PATH, exist_ok=True)
+    Path(MODEL_PATH).mkdir(parents=True, exist_ok=True)
 
-os.environ["WANDB_API_KEY"] = "156af33a7166789bdccefbe9d465fe87b82f2e5e"
+if "WANDB_API_KEY" not in os.environ:
+    raise OSError("WANDB_API_KEY environment variable must be set")
 wandb.init(project="the-jammy-machine")
 create_repo(HF_MODEL_REPO, token=HF_WRITE_TOKEN, exist_ok=True)
 
@@ -48,9 +50,7 @@ data = load_dataset(
 )
 
 if TRAIN_FROM_CHECKPOINT:
-    tokenizer = AutoTokenizer.from_pretrained(
-        HF_MODEL_REPO, use_auth_token=HF_READ_TOKEN
-    )
+    tokenizer = AutoTokenizer.from_pretrained(HF_MODEL_REPO, use_auth_token=HF_READ_TOKEN)
 else:
     tokenizer = train_tokenizer(MODEL_PATH, data["train"])
 
@@ -94,7 +94,7 @@ training_args = TrainingArguments(
     save_steps=EVAL_STEPS * 4,
     save_total_limit=5,
     logging_steps=EVAL_STEPS,
-    logging_dir=os.path.join(MODEL_PATH, "logs"),
+    logging_dir=str(Path(MODEL_PATH) / "logs"),
     report_to="wandb",
     seed=42,
     push_to_hub=True,
@@ -110,7 +110,7 @@ trainer = Trainer(
     eval_dataset=data_tokenized["eval"],
 )
 
-with open(f"{MODEL_PATH}/training_args.json", "w") as f:
+with Path(f"{MODEL_PATH}/training_args.json").open("w") as f:
     f.write(training_args.to_json_string())
 
 result = trainer.train()
