@@ -26,6 +26,15 @@ Reviews code for documentation quality:
 - **Module Documentation**: Module-level docstrings and `__all__`
 - **Comments**: Inline comment quality and relevance
 
+### PRReviewAgent (`pr_review_agent.md`)
+
+Reviews pull requests before merge:
+
+- **Design Review**: SOLID, DRY, KISS violations in changed files
+- **Documentation Review**: Missing docstrings/type hints
+- **Security Check**: Hardcoded secrets, vulnerabilities
+- **Merge Message**: Prepares squash-and-merge commit message
+
 ## Usage
 
 ### With Claude Code
