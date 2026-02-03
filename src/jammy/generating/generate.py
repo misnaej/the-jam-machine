@@ -167,53 +167,44 @@ class GenerateMidiText:
 
     def _generate_until_track_end(
         self,
+        track: TrackConfig,
         input_prompt: str = "PIECE_START ",
-        instrument: str | None = None,
-        density: int | None = None,
-        temperature: float | None = None,
+        add_track_header: bool = True,
         verbose: bool = True,
         expected_length: int | None = None,
     ) -> str:
-        """Generate until TRACK_END token is reached.
+        """Generate until end token is reached.
 
         Args:
+            track: Track configuration (instrument, density, temperature).
             input_prompt: Starting prompt.
-            instrument: Optional instrument to add to prompt.
-            density: Optional density to add to prompt.
-            temperature: Sampling temperature (required).
+            add_track_header: Whether to add TRACK_START/INST/DENSITY to prompt.
             verbose: Whether to log status.
             expected_length: Expected number of bars.
 
         Returns:
             Full generated piece (prompt + generated).
-
-        Raises:
-            ValueError: If temperature is None.
         """
         if expected_length is None:
             expected_length = self.prompts.n_bars
 
-        if instrument is not None:
-            input_prompt = f"{input_prompt}TRACK_START INST={instrument} "
-            if density is not None:
-                input_prompt = f"{input_prompt}DENSITY={density} "
-
-        if instrument is None and density is not None:
-            logger.warning("Density cannot be defined without an instrument")
-
-        if temperature is None:
-            raise ValueError("Temperature must be defined")
+        if add_track_header:
+            input_prompt = f"{input_prompt}TRACK_START INST={track.instrument} "
+            input_prompt = f"{input_prompt}DENSITY={track.density} "
 
         if verbose:
             logger.info(
-                "Generating %s - Density %s - temperature %s", instrument, density, temperature
+                "Generating %s - Density %s - temperature %s",
+                track.instrument,
+                track.density,
+                track.temperature,
             )
 
         bar_count_checks = False
         failed = 0
 
         while not bar_count_checks:
-            full_piece = self.engine.generate(input_prompt, temperature, verbose=verbose)
+            full_piece = self.engine.generate(input_prompt, track.temperature, verbose=verbose)
             generated = TrackBuilder.get_new_content(full_piece, input_prompt)
             bar_count_checks, bar_count = bar_count_check(generated, expected_length)
 
@@ -255,10 +246,8 @@ class GenerateMidiText:
         """
         self.piece.init_track(track.instrument, track.density, track.temperature)
         full_piece = self._generate_until_track_end(
+            track=track,
             input_prompt=input_prompt,
-            instrument=track.instrument,
-            density=track.density,
-            temperature=track.temperature,
         )
 
         generated_track = TrackBuilder.get_last_track(full_piece)
@@ -293,10 +282,12 @@ class GenerateMidiText:
         Args:
             track_index: Track to extend.
         """
+        track_config = self.piece.get_track_config(track_index)
         processed_prompt = self.prompts.build_next_bar_prompt(self.piece, track_index)
         prompt_plus_bar = self._generate_until_track_end(
+            track=track_config,
             input_prompt=processed_prompt,
-            temperature=self.piece.get_track_temperature(track_index),
+            add_track_header=False,
             expected_length=1,
             verbose=False,
         )
