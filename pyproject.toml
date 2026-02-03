@@ -79,6 +79,9 @@ ignore = [
     "D104",   # missing package docstring
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"test/**/*.py" = ["S101"]  # assert statements are expected in tests
+
 [tool.ruff.lint.pydocstyle]
 convention = "google"
 

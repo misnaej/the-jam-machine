@@ -375,6 +375,50 @@ The pre-commit hook runs:
 
 When working on multi-phase refactoring or long tasks:
 
+### Plan Mode Workflow
+
+**CRITICAL: When entering plan mode, always follow these steps:**
+
+1. **Read essential context files first:**
+   - `CLAUDE.md` - coding standards, docstrings, type hints, naming conventions
+   - `.plans/MASTER-PLAN.md` - current state, phase order, decision log
+   - `.plans/CONTINUATION-PROMPT.md` - what was last completed, what's next
+
+2. **Read task-specific plans if referenced** (e.g., `design-audit-implementation-plan.md`, `test-coverage-audit.md`)
+
+3. **Include a Pre-Implementation Checklist in your plan:**
+   ```markdown
+   ## Pre-Implementation Checklist
+
+   - [ ] Read `CLAUDE.md` for coding standards
+   - [ ] Read `.plans/MASTER-PLAN.md` for context
+   - [ ] Read relevant sub-plans
+   ```
+
+4. **Include Workflow Requirements in your plan:**
+   ```markdown
+   ## Workflow Requirements
+
+   After each step:
+   1. Update `.plans/CONTINUATION-PROMPT.md` with progress
+
+   After phase complete:
+   1. Update `.plans/MASTER-PLAN.md`
+   2. Run `docs-reviewer` agent on changed files
+   ```
+
+5. **Include a Post-Implementation Tasks section:**
+   ```markdown
+   ## Post-Implementation Tasks
+
+   1. Update MASTER-PLAN.md
+   2. Update CONTINUATION-PROMPT.md
+   3. Run agents (docs-reviewer, design-reviewer)
+   4. Commit with descriptive message
+   ```
+
+**Why this matters:** Plans are often executed across multiple sessions. Including these workflow requirements ensures consistent execution regardless of who (or which session) implements them.
+
 ### Plan Documents
 
 - **Master plan:** `.plans/MASTER-PLAN.md` is the central reference for all refactoring work
