@@ -70,6 +70,7 @@ class GenerateMidiText:
             n_bars=config.n_bars,
             max_length=config.max_prompt_length,
         )
+        self.engine.generate_until = config.generate_until_token
         self.engine.set_improvisation_level(config.improvisation_level)
 
     def set_nb_bars_generated(self, n_bars: int = 8) -> None:
