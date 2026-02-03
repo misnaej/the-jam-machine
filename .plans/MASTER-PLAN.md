@@ -18,7 +18,7 @@ This document is the **central reference** for all refactoring and improvement w
 | `generate.py` refactor | ✅ Complete | Split into 4 focused classes |
 | Critical bugs | ✅ Fixed | Device tuple, ValueError, dead code |
 | Logging | ✅ Added | `logging_config.py` created |
-| Test coverage | ⚠️ 52% | 3 pass, 2 fail, 1 error |
+| Test coverage | ⚠️ 53% | 4 pass (Phase 3.5 done) |
 | Type hints | ⚠️ Partial | New code has hints, old code doesn't |
 | Annotations style | ✅ Done | All files use `from __future__ import annotations` |
 | Package rename | ✅ Done | Renamed to `jammy`, absolute imports enforced |
@@ -97,6 +97,23 @@ Get all tests passing before making more changes.
 3. Add assertions to `test_generate` and `test_encode`
 
 **Details:** [Test Coverage Audit](./test-coverage-audit.md) - Phase 1
+
+---
+
+### Phase 3.5: Test Restructuring ✅
+**Effort:** ~1 hour | **Risk:** Low | **Impact:** Test organization
+
+Restructured test directory to mirror `src/jammy/` layout.
+
+**Completed:**
+- Created `test/conftest.py` with session-scoped fixtures
+- Created `test/fixtures/` with sample data
+- Created `test/helpers/comparison.py` with extracted utilities
+- Migrated tests to module-specific files (`embedding/`, `generating/`, `preprocessing/`)
+- Added placeholder files for Phase 10 unit tests
+- Deleted old `test_tosort.py`
+
+**Result:** 4 tests passing, 53% coverage, proper test organization for future development.
 
 ---
 
@@ -450,6 +467,6 @@ git commit -m "refactor: add postponed annotations to all modules"
 
 ## Continuation Prompt
 
-**Last completed:** Phase 2 - Renamed package to `jammy`, enforced absolute imports (TID252)
-**Next step:** Phase 3 - Fix broken tests
-**Notes:** All ruff checks pass. Branch: `refactor/rename-package-jammy`. Tests: 3 pass, 2 fail, 1 error (pre-existing)
+**Last completed:** Phase 3.5 - Test Restructuring
+**Next step:** Phase 4 - Config Dataclasses
+**Notes:** All ruff checks pass. Branch: `main`. Tests: 4 pass (53% coverage)
