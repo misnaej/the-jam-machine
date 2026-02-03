@@ -21,10 +21,8 @@ class PromptHandler:
 
     Attributes:
         n_bars: Number of bars the model was trained on.
-        max_prompt_length: Maximum prompt length in tokens.
+        max_length: Maximum prompt length in tokens.
     """
-
-    MAX_PROMPT_LENGTH = 1500
 
     def __init__(self, n_bars: int = 8, max_length: int = 1500) -> None:
         """Initialize the prompt handler.
