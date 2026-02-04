@@ -15,6 +15,7 @@ from matplotlib.figure import (
 
 from jammy.constants import INSTRUMENT_TRANSFER_CLASSES
 from jammy.embedding.decoder import TextDecoder
+from jammy.generating.config import TrackConfig
 from jammy.generating.generate import GenerateMidiText
 from jammy.generating.playback import get_music
 from jammy.generating.utils import plot_piano_roll
@@ -113,7 +114,8 @@ def _generator(
 
         # NEW TRACK
         input_prompt = _define_prompt(state, genesis)
-        genesis.generate_one_new_track(inst, density, temp, input_prompt=input_prompt)
+        track_config = TrackConfig(instrument=inst, density=density, temperature=temp)
+        genesis.generate_one_new_track(track_config, input_prompt=input_prompt)
 
         regenerate = True  # set generate to true
     else:

@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from .track_builder import TrackBuilder
+
+if TYPE_CHECKING:
+    from .config import TrackConfig
 
 
 class PieceBuilder:
@@ -98,6 +101,24 @@ class PieceBuilder:
             Temperature value.
         """
         return self.piece_by_track[track_id]["temperature"]
+
+    def get_track_config(self, track_id: int) -> TrackConfig:
+        """Get the TrackConfig for a track.
+
+        Args:
+            track_id: Index of the track.
+
+        Returns:
+            TrackConfig with instrument, density, and temperature.
+        """
+        from .config import TrackConfig
+
+        track = self.piece_by_track[track_id]
+        return TrackConfig(
+            instrument=track["instrument"],
+            density=track["density"],
+            temperature=track["temperature"],
+        )
 
     def set_track_temperature(self, track_id: int, temperature: float) -> None:
         """Set the temperature for a track.
