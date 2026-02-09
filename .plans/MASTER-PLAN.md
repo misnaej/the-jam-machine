@@ -129,6 +129,18 @@ Create `TrackConfig` and `GenerationConfig` dataclasses.
 
 ---
 
+### Phase 4.1: Post-merge cleanup (PR #6 review findings)
+**Effort:** ~15 min | **Risk:** Low | **Impact:** Code hygiene
+
+Small issues found during PR #6 review. Do immediately after merging.
+
+**Tasks:**
+1. `src/jammy/generating/generate.py:214` — `if failed > -1` is always true (failed starts at 0). The `else` branch on line 223 is dead code. Fix the condition or remove dead branch.
+2. `src/jammy/generating/__init__.py` — missing `from __future__ import annotations`. Add for consistency with all other files.
+3. `test/generating/test_generate.py:57` — `piece_by_track: list[str] = []` has wrong type annotation. Should be `list[dict[str, Any]]` to match the tightened signature.
+
+---
+
 ### Phase 5: Token & Constant Consolidation
 **Effort:** ~1 hour | **Risk:** Low | **Impact:** DRY, maintainability
 
