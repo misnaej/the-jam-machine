@@ -212,15 +212,12 @@ class GenerateMidiText:
                 bar_count_checks = True
 
             if not bar_count_checks and self.config.force_sequence_length:
-                if failed > -1:
-                    full_piece, bar_count_checks = forcing_bar_count(
-                        input_prompt,
-                        generated,
-                        bar_count,
-                        expected_length,
-                    )
-                else:
-                    logger.info("Wrong length - Regenerating")
+                full_piece, bar_count_checks = forcing_bar_count(
+                    input_prompt,
+                    generated,
+                    bar_count,
+                    expected_length,
+                )
 
             if not bar_count_checks:
                 failed += 1

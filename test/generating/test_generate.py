@@ -54,8 +54,7 @@ def test_generate_midi_text(
     test_dir = define_generation_dir(str(tmp_path / "results"))
 
     # Instantiate generator
-    piece_by_track: list[str] = []
-    generate_midi = GenerateMidiText(model, tokenizer, piece_by_track)
+    generate_midi = GenerateMidiText(model, tokenizer)
 
     # Configure and generate
     generate_midi.set_nb_bars_generated(n_bars=N_BAR_GENERATED)
