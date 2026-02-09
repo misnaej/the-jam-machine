@@ -5,6 +5,8 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
+from jammy.tokens import TRACK_END
+
 if TYPE_CHECKING:
     import torch
     from transformers import GPT2LMHeadModel, GPT2Tokenizer
@@ -45,7 +47,7 @@ class GenerationEngine:
         self.device = device
         self.max_length = model.config.n_positions
         self.no_repeat_ngram_size = 0
-        self.generate_until = "TRACK_END"
+        self.generate_until = TRACK_END
         logger.info("Attention length set to %d -> 'model.config.n_positions'", self.max_length)
 
     def tokenize(self, prompt: str, verbose: bool = True) -> torch.Tensor:

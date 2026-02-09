@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from jammy.tokens import BAR_START, PIECE_START, TRACK_END, TRACK_START
+
 
 class TrackBuilder:
     """Handles track-level text operations for MIDI text format.
@@ -20,8 +22,8 @@ class TrackBuilder:
         Returns:
             Text with TRACK_END removed.
         """
-        if "TRACK_END" in text:
-            text = text.rstrip(" ").rstrip("TRACK_END")
+        if TRACK_END in text:
+            text = text.rstrip(" ").rstrip(TRACK_END)
         return text
 
     @staticmethod
@@ -34,8 +36,8 @@ class TrackBuilder:
         Returns:
             List of track strings with TRACK_START/TRACK_END tokens.
         """
-        stripped = TrackBuilder.strip_track_ends(piece_text.split("TRACK_START ")[1::])
-        return [f"TRACK_START {track}TRACK_END " for track in stripped]
+        stripped = TrackBuilder.strip_track_ends(piece_text.split(f"{TRACK_START} ")[1::])
+        return [f"{TRACK_START} {track}{TRACK_END} " for track in stripped]
 
     @staticmethod
     def get_last_track(piece_text: str) -> str:
@@ -59,7 +61,7 @@ class TrackBuilder:
         Returns:
             Combined piece text starting with PIECE_START.
         """
-        piece = "PIECE_START "
+        piece = f"{PIECE_START} "
         for track in track_list:
             piece += track
         return piece
@@ -87,5 +89,5 @@ class TrackBuilder:
         Returns:
             The new bar with BAR_START prefix.
         """
-        stripped = TrackBuilder.strip_track_ends(prompt_plus_bar.split("BAR_START ")[-1])
-        return "BAR_START " + stripped
+        stripped = TrackBuilder.strip_track_ends(prompt_plus_bar.split(f"{BAR_START} ")[-1])
+        return f"{BAR_START} " + stripped

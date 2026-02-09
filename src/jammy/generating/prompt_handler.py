@@ -6,6 +6,8 @@ import logging
 import random
 from typing import TYPE_CHECKING
 
+from jammy.tokens import BAR_START, PIECE_START, TRACK_END, TRACK_START
+
 if TYPE_CHECKING:
     from .piece_builder import PieceBuilder
 
@@ -60,7 +62,7 @@ class PromptHandler:
         track_bars = track["bars"]
 
         # Build pre-prompt from other tracks
-        pre_prompt = "PIECE_START "
+        pre_prompt = f"{PIECE_START} "
         for i in range(piece.get_track_count()):
             if i != track_idx:
                 other_track = piece.get_track(i)
@@ -78,7 +80,7 @@ class PromptHandler:
                     pre_prompt += other_bars[0]
                     for bar in track_bars[-self.n_bars :]:
                         pre_prompt += bar
-                    pre_prompt += "TRACK_END "
+                    pre_prompt += f"{TRACK_END} "
 
         # Build main prompt from track to extend
         processed_prompt = track_bars[0]  # Track initialization
@@ -91,7 +93,7 @@ class PromptHandler:
         for bar in track_bars[-(self.n_bars - 1) :]:
             processed_prompt += bar
 
-        processed_prompt += "BAR_START "
+        processed_prompt += f"{BAR_START} "
 
         # Enforce length limit on pre-prompt
         pre_prompt = self.enforce_length_limit(pre_prompt)
@@ -128,7 +130,7 @@ class PromptHandler:
             return prompt
 
         selected_tracks = random.sample(tracks, len(tracks) - 1)
-        truncated = "PIECE_START "
+        truncated = f"{PIECE_START} "
         for track in selected_tracks:
             truncated += track
         logger.info("Prompt too long - deleting one track")
@@ -143,10 +145,10 @@ class PromptHandler:
         Returns:
             List of track strings.
         """
-        parts = prompt.split("TRACK_START ")[1:]
+        parts = prompt.split(f"{TRACK_START} ")[1:]
         tracks = []
         for part in parts:
-            if "TRACK_END" in part:
-                part = part.rstrip(" ").rstrip("TRACK_END")
-            tracks.append(f"TRACK_START {part}TRACK_END ")
+            if TRACK_END in part:
+                part = part.rstrip(" ").rstrip(TRACK_END)
+            tracks.append(f"{TRACK_START} {part}{TRACK_END} ")
         return tracks

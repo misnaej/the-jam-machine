@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from jammy.constants import INSTRUMENT_CLASSES
+from jammy.tokens import BAR_END, INST, TRACK_END
 from jammy.utils import get_datetime, writeToFile
 
 if TYPE_CHECKING:
@@ -97,7 +98,7 @@ def bar_count_check(sequence: str, n_bars: int) -> tuple[bool, int]:
         Tuple of (matches, actual_count).
     """
     tokens = sequence.split(" ")
-    bar_count = sum(1 for token in tokens if token == "BAR_END")  # noqa: S105
+    bar_count = sum(1 for token in tokens if token == BAR_END)
     bar_count_matches = bar_count == n_bars
     if not bar_count_matches:
         logger.info("Bar count is %d - but should be %d", bar_count, n_bars)
@@ -128,9 +129,9 @@ def check_if_prompt_inst_in_tokenizer_vocab(
         ValueError: If an instrument is not in the tokenizer vocabulary.
     """
     for inst in inst_prompt_list:
-        if f"INST={inst}" not in tokenizer.vocab:
+        if f"{INST}={inst}" not in tokenizer.vocab:
             instruments_in_dataset = np.sort(
-                [tok.split("=")[-1] for tok in tokenizer.vocab if "INST" in tok]
+                [tok.split("=")[-1] for tok in tokenizer.vocab if INST in tok]
             )
             print_inst_classes(INSTRUMENT_CLASSES)
             raise ValueError(
@@ -172,12 +173,12 @@ def forcing_bar_count(
     """
     if bar_count - expected_length > 0:  # Cut the sequence if too long
         full_piece = ""
-        splited = generated.split("BAR_END ")
+        splited = generated.split(f"{BAR_END} ")
         for count, spl in enumerate(splited):
             if count < expected_length:
-                full_piece += spl + "BAR_END "
+                full_piece += spl + f"{BAR_END} "
 
-        full_piece += "TRACK_END "
+        full_piece += f"{TRACK_END} "
         full_piece = input_prompt + full_piece
         logger.info("Generated sequence truncated at %d bars", expected_length)
         bar_count_checks = True

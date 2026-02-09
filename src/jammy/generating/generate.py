@@ -5,6 +5,8 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any
 
+from jammy.tokens import DENSITY, INST, PIECE_START, TRACK_START, UNK
+
 from .config import GenerationConfig, TrackConfig
 from .generation_engine import GenerationEngine
 from .piece_builder import PieceBuilder
@@ -168,7 +170,7 @@ class GenerateMidiText:
     def _generate_until_track_end(
         self,
         track: TrackConfig,
-        input_prompt: str = "PIECE_START ",
+        input_prompt: str = f"{PIECE_START} ",
         add_track_header: bool = True,
         verbose: bool = True,
         expected_length: int | None = None,
@@ -189,8 +191,8 @@ class GenerateMidiText:
             expected_length = self.prompts.n_bars
 
         if add_track_header:
-            input_prompt = f"{input_prompt}TRACK_START INST={track.instrument} "
-            input_prompt = f"{input_prompt}DENSITY={track.density} "
+            input_prompt = f"{input_prompt}{TRACK_START} {INST}={track.instrument} "
+            input_prompt = f"{input_prompt}{DENSITY}={track.density} "
 
         if verbose:
             logger.info(
@@ -230,7 +232,7 @@ class GenerateMidiText:
     def generate_one_new_track(
         self,
         track: TrackConfig,
-        input_prompt: str = "PIECE_START ",
+        input_prompt: str = f"{PIECE_START} ",
     ) -> str:
         """Generate a new track and add it to the piece.
 
@@ -263,7 +265,7 @@ class GenerateMidiText:
         Returns:
             Complete piece text.
         """
-        generated_piece = "PIECE_START "
+        generated_piece = f"{PIECE_START} "
         for track in tracks:
             generated_piece = self.generate_one_new_track(
                 track,
@@ -324,7 +326,7 @@ class GenerateMidiText:
             piece = self.get_piece_text()
 
         for idx, midi_token in enumerate(piece.split(" ")):
-            if midi_token not in self.tokenizer.vocab or midi_token == "UNK":  # noqa: S105
+            if midi_token not in self.tokenizer.vocab or midi_token == UNK:
                 logger.warning(
                     "Token not found in the piece at %d: %s",
                     idx,

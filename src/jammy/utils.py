@@ -18,6 +18,20 @@ from pydub import AudioSegment
 from scipy.io.wavfile import write
 
 from jammy.constants import DRUMS_BEAT_QUANTIZATION, NONE_DRUMS_BEAT_QUANTIZATION
+from jammy.tokens import (
+    BAR_END,
+    BAR_START,
+    DENSITY,
+    DRUMS,
+    INST,
+    NOTE_OFF,
+    NOTE_ON,
+    PIECE_START,
+    TIME_DELTA,
+    TIME_SHIFT,
+    TRACK_END,
+    TRACK_START,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
@@ -179,28 +193,28 @@ def get_text(event: Event, instrument: str = "drums") -> str:
     """
     match event.type:
         case "Piece-Start":
-            return "PIECE_START "
+            return f"{PIECE_START} "
         case "Track-Start":
-            return "TRACK_START "
+            return f"{TRACK_START} "
         case "Track-End":
-            return "TRACK_END "
+            return f"{TRACK_END} "
         case "Instrument":
             if str(event.value).lower() == "drums":
-                return "INST=DRUMS "
+                return f"{INST}={DRUMS} "
             else:
-                return f"INST={event.value} "
+                return f"{INST}={event.value} "
         case "Density":
-            return f"DENSITY={event.value} "
+            return f"{DENSITY}={event.value} "
         case "Bar-Start":
-            return "BAR_START "
+            return f"{BAR_START} "
         case "Bar-End":
-            return "BAR_END "
+            return f"{BAR_END} "
         case "Time-Shift":
-            return f"TIME_DELTA={int_dec_base_to_delta(event.value, instrument)} "
+            return f"{TIME_DELTA}={int_dec_base_to_delta(event.value, instrument)} "
         case "Note-On":
-            return f"NOTE_ON={event.value} "
+            return f"{NOTE_ON}={event.value} "
         case "Note-Off":
-            return f"NOTE_OFF={event.value} "
+            return f"{NOTE_OFF}={event.value} "
         case _:
             return ""
 
@@ -276,31 +290,30 @@ def get_event(text: str, value: str | None = None, instrument: str = "drums") ->
     Returns:
         A miditok Event object, or None if the text is not recognized.
     """
-    match text:
-        case "PIECE_START":
-            return Event("Piece-Start", value)
-        case "TRACK_START":
-            return Event("Track-Start", value)
-        case "TRACK_END":
-            return Event("Track-End", value)
-        case "INST":
-            if value == "DRUMS":
-                value = "Drums"
-            return Event("Instrument", value)
-        case "BAR_START":
-            return Event("Bar-Start", value)
-        case "BAR_END":
-            return Event("Bar-End", value)
-        case "TIME_SHIFT":
-            return Event("Time-Shift", value)
-        case "TIME_DELTA":
-            return Event("Time-Shift", time_delta_to_int_dec_base(value, instrument))
-        case "NOTE_ON":
-            return Event("Note-On", value)
-        case "NOTE_OFF":
-            return Event("Note-Off", value)
-        case _:
-            return None
+    if text == PIECE_START:
+        return Event("Piece-Start", value)
+    elif text == TRACK_START:
+        return Event("Track-Start", value)
+    elif text == TRACK_END:
+        return Event("Track-End", value)
+    elif text == INST:
+        if value == DRUMS:
+            value = "Drums"
+        return Event("Instrument", value)
+    elif text == BAR_START:
+        return Event("Bar-Start", value)
+    elif text == BAR_END:
+        return Event("Bar-End", value)
+    elif text == TIME_SHIFT:
+        return Event("Time-Shift", value)
+    elif text == TIME_DELTA:
+        return Event("Time-Shift", time_delta_to_int_dec_base(value, instrument))
+    elif text == NOTE_ON:
+        return Event("Note-On", value)
+    elif text == NOTE_OFF:
+        return Event("Note-Off", value)
+    else:
+        return None
 
 
 # File utils

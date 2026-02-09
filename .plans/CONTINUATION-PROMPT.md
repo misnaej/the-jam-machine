@@ -1,6 +1,6 @@
 # Continuation Prompt
 
-**Branch:** `main` (after merging PR #6)
+**Branch:** `main`
 
 ## Context
 
@@ -25,23 +25,31 @@ Read `.plans/MASTER-PLAN.md` - it's the central reference with ordered phases.
 - Phase 3 (Fix Broken Tests) ✅ Complete
 - Phase 3.5 (Test Restructuring) ✅ Complete
 - Phase 4 (Config Dataclasses) ✅ Complete (PR #6)
+- Phase 5 (Token & Constant Consolidation) ✅ Complete
 - All ruff lint checks pass ✅
 - Tests: 12 pass
 
-## Just Completed (Phase 4 — PR #6)
+## Just Completed (Phase 5 — Token & Constant Consolidation)
 
-- Added `TrackConfig` (frozen) and `GenerationConfig` (mutable) dataclasses in `src/jammy/generating/config.py`
-- `GenerateMidiText` constructor accepts `config=GenerationConfig(...)` parameter
-- `generate_piece()` and `_generate_until_track_end()` use `TrackConfig` consistently
-- Refactored `examples/generation_playground.py`: logging, `pathlib.Path`, extracted `generate_and_save()`, removed YAGNI loops
-- Tightened `piece_by_track` type hint from `list` to `list[dict[str, Any]]`
-- Added 8 unit tests for config dataclasses
-- Added Phase 16 to master plan: `TrackState` dataclass (replace `dict[str, Any]` in `PieceBuilder`) + future `BarConfig` design
+- Created `src/jammy/tokens.py` with module-level MIDI text token constants
+- Constants: PIECE_START, TRACK_START, TRACK_END, BAR_START, BAR_END, NOTE_ON, NOTE_OFF, TIME_DELTA, TIME_SHIFT (legacy), INST, DENSITY, DRUMS, UNK
+- Replaced hardcoded strings across `generating/` (7 files), `embedding/` (2 files), and `utils.py`
+- Converted `get_event()` in `utils.py` from `match/case` to `if/elif` (match/case doesn't work with variable patterns)
+- Updated tests: `test_config.py`, `test_generate.py`, `test_encoder.py`
+- Removed all token-related `# noqa: S105/S106` suppressions
+- Skipped `DEFAULT_VELOCITY = 99` (only used in one place — decoder.py)
+
+## Review Findings (not addressed — pre-existing issues)
+
+- **High:** `extract_tracks` in `track_builder.py:39` passes `list[str]` to `strip_track_ends(str)` — latent type bug
+- **Medium:** `TrackBuilder` is all-static methods — should be module functions (CLAUDE.md: "prefer functions over classes")
+- **Medium:** Duplicated track-parsing logic between `PromptHandler._extract_tracks_from_prompt` and `TrackBuilder.extract_tracks`
+- **Low:** Several YAGNI stubs (`check_if_prompt_density_in_tokenizer_vocab`, `check_bar_count_in_section`)
 
 ## Next Steps (from MASTER-PLAN)
 
-1. **Phase 5**: Token & Constant Consolidation
-2. **Phase 6**: Split `generating/utils.py`
+1. **Phase 6**: Split `generating/utils.py`
+2. **Phase 7**: Split `embedding/encoder.py`
 
 ## Commands
 

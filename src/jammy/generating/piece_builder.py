@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from jammy.tokens import BAR_START, PIECE_START, TRACK_END, TRACK_START
+
 from .track_builder import TrackBuilder
 
 if TYPE_CHECKING:
@@ -61,13 +63,13 @@ class PieceBuilder:
             bars_text: Text containing one or more bars.
         """
         stripped = TrackBuilder.strip_track_ends(bars_text)
-        for bar in stripped.split("BAR_START "):
+        for bar in stripped.split(f"{BAR_START} "):
             if bar == "":
                 continue
-            if "TRACK_START" in bar:
+            if TRACK_START in bar:
                 self.piece_by_track[track_id]["bars"].append(bar)
             else:
-                self.piece_by_track[track_id]["bars"].append("BAR_START " + bar)
+                self.piece_by_track[track_id]["bars"].append(f"{BAR_START} " + bar)
 
     def get_track(self, track_id: int) -> dict[str, Any]:
         """Get a single track by ID.
@@ -157,7 +159,7 @@ class PieceBuilder:
         text = ""
         for bar in self.piece_by_track[track_id]["bars"]:
             text += bar
-        text += "TRACK_END "
+        text += f"{TRACK_END} "
         return text
 
     def build_piece_text(self) -> str:
@@ -166,7 +168,7 @@ class PieceBuilder:
         Returns:
             Full piece text starting with PIECE_START.
         """
-        text = "PIECE_START "
+        text = f"{PIECE_START} "
         for track_id in range(len(self.piece_by_track)):
             text += self.build_track_text(track_id)
         return text

@@ -7,6 +7,7 @@ from pathlib import Path
 from joblib import Parallel, delayed
 
 from jammy.constants import INSTRUMENT_CLASSES, INSTRUMENT_TRANSFER_CLASSES
+from jammy.tokens import DRUMS, INST
 from jammy.utils import FileCompressor, get_files, timeit
 
 logger = logging.getLogger(__name__)
@@ -90,9 +91,9 @@ class Familizer:
         """
         inst_number = int(token.split("=")[1])
         if self.operation == "family":
-            return "INST=" + str(self.get_family_number(inst_number))
+            return f"{INST}=" + str(self.get_family_number(inst_number))
         elif self.operation == "program":
-            return "INST=" + str(self.get_program_number(inst_number))
+            return f"{INST}=" + str(self.get_program_number(inst_number))
         return token
 
     def replace_instrument_in_text(self, text: str) -> str:
@@ -107,7 +108,7 @@ class Familizer:
         return " ".join(
             [
                 self.replace_instrument_token(token)
-                if token.startswith("INST=") and token != "INST=DRUMS"  # noqa: S105
+                if token.startswith(f"{INST}=") and token != f"{INST}={DRUMS}"
                 else token
                 for token in text.split(" ")
             ]

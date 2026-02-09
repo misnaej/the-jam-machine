@@ -5,6 +5,7 @@ from __future__ import annotations
 import pytest
 
 from jammy.generating.config import GenerationConfig, TrackConfig
+from jammy.tokens import BAR_END, TRACK_END
 
 
 class TestTrackConfig:
@@ -66,7 +67,7 @@ class TestGenerationConfig:
         assert config.force_sequence_length is True
         assert config.improvisation_level == 0
         assert config.max_prompt_length == 1500
-        assert config.generate_until_token == "TRACK_END"  # noqa: S105
+        assert config.generate_until_token == TRACK_END
         assert config.max_retries == 2
 
     def test_custom_values(self) -> None:
@@ -76,7 +77,7 @@ class TestGenerationConfig:
             force_sequence_length=False,
             improvisation_level=3,
             max_prompt_length=2000,
-            generate_until_token="BAR_END",  # noqa: S106
+            generate_until_token=BAR_END,
             max_retries=5,
         )
 
@@ -84,7 +85,7 @@ class TestGenerationConfig:
         assert config.force_sequence_length is False
         assert config.improvisation_level == 3
         assert config.max_prompt_length == 2000
-        assert config.generate_until_token == "BAR_END"  # noqa: S105
+        assert config.generate_until_token == BAR_END
         assert config.max_retries == 5
 
     def test_generation_config_is_mutable(self) -> None:
@@ -119,4 +120,4 @@ class TestGenerationConfig:
         assert config.force_sequence_length is True
         assert config.improvisation_level == 0
         assert config.max_prompt_length == 1500
-        assert config.generate_until_token == "TRACK_END"  # noqa: S105
+        assert config.generate_until_token == TRACK_END
