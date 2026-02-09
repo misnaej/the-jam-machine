@@ -294,68 +294,50 @@ pipenv run pytest test/
 
 ---
 
-### Phase 16: Split TrackConfig into Track Identity + Per-Bar Config (Feature Design)
-**Effort:** ~4 hours | **Risk:** Medium | **Impact:** Expressiveness, future features
+### Phase 16: Replace `dict[str, Any]` with typed dataclasses in PieceBuilder
+**Effort:** ~4 hours | **Risk:** Medium | **Impact:** Type safety, expressiveness, future features
 
-Redesign the config model so generation parameters can evolve over time (per bar).
+**Two-step plan:**
 
-**Problem:**
-The current `TrackConfig(instrument, density, temperature)` bundles static track identity with per-bar generation parameters. This makes it impossible to express things like "a drum track that gets denser over 8 bars" or "a bass line that starts conservative and gets creative."
+#### Step 1: `TrackState` dataclass (replaces `dict[str, Any]`)
 
-**Design Direction:**
+`PieceBuilder` stores tracks as `list[dict[str, Any]]` with a fixed shape `{label, instrument, density, temperature, bars}`. This weak typing propagates to `generate.py`, `prompt_handler.py`, `utils.py`, and `app/playground.py`.
 
-Split into two concerns:
-
-1. **`TrackConfig`** — static track identity:
-   - `instrument: str` (e.g., `"DRUMS"`, `"4"`)
-   - Possibly future: `channel`, `program`, `label`
-
-2. **`BarConfig`** — per-bar generation parameters:
-   - `density: int`
-   - `temperature: float`
-   - Possibly future: `improvisation_level`
-
-**Open questions (need design exploration):**
-- Should `BarConfig` live inside `TrackConfig` (e.g., `TrackConfig.bars: list[BarConfig]`)?
-- Or should the generation API accept them separately (e.g., `generate_piece(tracks, bar_configs)`)?
-- How does this interact with `generate_one_more_bar()` in the Gradio app?
-- Should there be a convenience constructor for the common case of uniform bars?
-- What about backward compatibility with existing `TrackConfig` usage?
-
-**Possible API sketches:**
-
+Replace with:
 ```python
-# Option A: BarConfig list inside TrackConfig
-track = TrackConfig(
-    instrument="DRUMS",
-    bars=[BarConfig(density=2, temperature=0.5)] * 4
-        + [BarConfig(density=3, temperature=0.7)] * 4,
-)
-
-# Option B: Separate track + bar config
-track = TrackConfig(instrument="DRUMS")
-bar_schedule = [BarConfig(density=2, temperature=0.5)] * 8
-generator.generate_track(track, bar_schedule)
-
-# Option C: TrackConfig with defaults, BarConfig overrides
-track = TrackConfig(instrument="DRUMS", density=2, temperature=0.5)
-# Per-bar overrides only when needed
-overrides = {4: BarConfig(density=3, temperature=0.7)}  # bar 4 onward
+@dataclass
+class TrackState:
+    """Mutable state of a track during generation."""
+    instrument: str
+    density: int
+    temperature: float
+    bars: list[str] = field(default_factory=list)
 ```
+
+- No `label` field — derive from index (`f"track_{i}"`)
+- `PieceBuilder.piece_by_track` becomes `list[TrackState]`
+- All `track["bars"]` → `track.bars`, etc.
+- `WriteTextMidiToFile` uses `dataclasses.asdict()` for JSON serialization
+
+**Files:** `config.py`, `piece_builder.py`, `generate.py`, `prompt_handler.py`, `utils.py`, `app/playground.py`, test
+
+#### Step 2: `BarConfig` — per-bar generation parameters (future)
+
+Once `TrackState` is in place, the natural next step is splitting density/temperature out so they can evolve per bar. The type hierarchy would be:
+- **`BarConfig`** — atomic generation params: `density`, `temperature`
+- **`TrackConfig`** — generation input: `instrument` + `BarConfig`
+- **`TrackState`** — runtime state: `instrument` + `bars` + current `BarConfig`
+
+This would enable things like "a drum track that gets denser over 8 bars."
+
+**Open questions (for when we get here):**
+- Should `BarConfig` live inside `TrackState` or be passed separately per bar?
+- How does this interact with `generate_one_more_bar()` in the Gradio app?
+- Convenience for the common case of uniform bars?
 
 **Prerequisites:**
 - Phase 4 (Config Dataclasses) ✅
-- Understanding of how the Gradio app and `generate_one_more_bar()` use configs
-
-**Tasks (when ready):**
-1. Design exploration: map all places `TrackConfig` is created/consumed
-2. Pick an approach (A/B/C or hybrid)
-3. Implement `BarConfig` dataclass
-4. Refactor `TrackConfig` to separate identity from per-bar params
-5. Update `_generate_until_track_end()` to accept per-bar config
-6. Update `generate_piece()`, `generate_one_more_bar()`, Gradio app
-7. Update example scripts
-8. Update tests
+- Step 1 (`TrackState`) must be done first
 
 ---
 

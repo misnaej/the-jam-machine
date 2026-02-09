@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from .config import GenerationConfig, TrackConfig
 from .generation_engine import GenerationEngine
@@ -44,7 +44,7 @@ class GenerateMidiText:
         self,
         model: GPT2LMHeadModel,
         tokenizer: GPT2Tokenizer,
-        piece_by_track: list | None = None,
+        piece_by_track: list[dict[str, Any]] | None = None,
         config: GenerationConfig | None = None,
     ) -> None:
         """Initialize the generator.
