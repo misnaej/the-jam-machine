@@ -18,7 +18,8 @@ This document is the **central reference** for all refactoring and improvement w
 | `generate.py` refactor | ✅ Complete | Split into 4 focused classes |
 | Critical bugs | ✅ Fixed | Device tuple, ValueError, dead code |
 | Logging | ✅ Added | `logging_config.py` created |
-| Test coverage | ⚠️ 53% | 4 pass (Phase 3.5 done) |
+| Config dataclasses | ✅ Done | `TrackConfig` (frozen), `GenerationConfig` (mutable) |
+| Test coverage | ⚠️ 12 pass | 8 config tests + 4 existing (Phase 3.5 done) |
 | Type hints | ⚠️ Partial | New code has hints, old code doesn't |
 | Annotations style | ✅ Done | All files use `from __future__ import annotations` |
 | Package rename | ✅ Done | Renamed to `jammy`, absolute imports enforced |
@@ -516,6 +517,6 @@ git commit -m "refactor: add postponed annotations to all modules"
 
 ## Continuation Prompt
 
-**Last completed:** Phase 4 - Config Dataclasses (+ example script refactor)
-**Next step:** Phase 5 - Token & Constant Consolidation
-**Notes:** All ruff checks pass. Branch: `feature/config-dataclasses`. Tests: 12 pass. Phase 16 (TrackConfig/BarConfig split) added as future design work.
+**Last completed:** Phase 4 - Config Dataclasses (PR #6)
+**Next step:** Merge PR #6 → Phase 5 (Token & Constant Consolidation)
+**Notes:** All ruff checks pass. 12 tests pass. PR #6 reviewed and ready to merge. Phase 16 (TrackState + future BarConfig) added to plan.
