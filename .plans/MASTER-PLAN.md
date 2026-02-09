@@ -117,15 +117,12 @@ Restructured test directory to mirror `src/jammy/` layout.
 
 ---
 
-### Phase 4: Config Dataclasses (PR #2 Feedback)
+### Phase 4: Config Dataclasses (PR #2 Feedback) ✅
 **Effort:** ~2 hours | **Risk:** Low | **Impact:** API cleanliness
 
 Create `TrackConfig` and `GenerationConfig` dataclasses.
 
-**Why now:**
-- Direct feedback from PR #2
-- Improves API before more code depends on it
-- Foundation for future work
+**Status:** Complete — `TrackConfig` (frozen) and `GenerationConfig` dataclasses in `src/jammy/generating/config.py`. `GenerateMidiText` constructor accepts `config=` parameter. `examples/generation_playground.py` refactored to use both.
 
 **Details:** [Design Audit Implementation](./design-audit-implementation-plan.md) - Phase 1
 
@@ -297,6 +294,71 @@ pipenv run pytest test/
 
 ---
 
+### Phase 16: Split TrackConfig into Track Identity + Per-Bar Config (Feature Design)
+**Effort:** ~4 hours | **Risk:** Medium | **Impact:** Expressiveness, future features
+
+Redesign the config model so generation parameters can evolve over time (per bar).
+
+**Problem:**
+The current `TrackConfig(instrument, density, temperature)` bundles static track identity with per-bar generation parameters. This makes it impossible to express things like "a drum track that gets denser over 8 bars" or "a bass line that starts conservative and gets creative."
+
+**Design Direction:**
+
+Split into two concerns:
+
+1. **`TrackConfig`** — static track identity:
+   - `instrument: str` (e.g., `"DRUMS"`, `"4"`)
+   - Possibly future: `channel`, `program`, `label`
+
+2. **`BarConfig`** — per-bar generation parameters:
+   - `density: int`
+   - `temperature: float`
+   - Possibly future: `improvisation_level`
+
+**Open questions (need design exploration):**
+- Should `BarConfig` live inside `TrackConfig` (e.g., `TrackConfig.bars: list[BarConfig]`)?
+- Or should the generation API accept them separately (e.g., `generate_piece(tracks, bar_configs)`)?
+- How does this interact with `generate_one_more_bar()` in the Gradio app?
+- Should there be a convenience constructor for the common case of uniform bars?
+- What about backward compatibility with existing `TrackConfig` usage?
+
+**Possible API sketches:**
+
+```python
+# Option A: BarConfig list inside TrackConfig
+track = TrackConfig(
+    instrument="DRUMS",
+    bars=[BarConfig(density=2, temperature=0.5)] * 4
+        + [BarConfig(density=3, temperature=0.7)] * 4,
+)
+
+# Option B: Separate track + bar config
+track = TrackConfig(instrument="DRUMS")
+bar_schedule = [BarConfig(density=2, temperature=0.5)] * 8
+generator.generate_track(track, bar_schedule)
+
+# Option C: TrackConfig with defaults, BarConfig overrides
+track = TrackConfig(instrument="DRUMS", density=2, temperature=0.5)
+# Per-bar overrides only when needed
+overrides = {4: BarConfig(density=3, temperature=0.7)}  # bar 4 onward
+```
+
+**Prerequisites:**
+- Phase 4 (Config Dataclasses) ✅
+- Understanding of how the Gradio app and `generate_one_more_bar()` use configs
+
+**Tasks (when ready):**
+1. Design exploration: map all places `TrackConfig` is created/consumed
+2. Pick an approach (A/B/C or hybrid)
+3. Implement `BarConfig` dataclass
+4. Refactor `TrackConfig` to separate identity from per-bar params
+5. Update `_generate_until_track_end()` to accept per-bar config
+6. Update `generate_piece()`, `generate_one_more_bar()`, Gradio app
+7. Update example scripts
+8. Update tests
+
+---
+
 ## Phase 1: Postponed Annotations (Detailed)
 
 ### Goal
@@ -441,6 +503,9 @@ git commit -m "refactor: add postponed annotations to all modules"
          │
          ▼
 15. Remove Backward Compat  ───►  Code cleanliness
+         │
+         ▼
+16. TrackConfig/BarConfig Split ► Time-varying generation
 ```
 
 ---
@@ -453,6 +518,8 @@ git commit -m "refactor: add postponed annotations to all modules"
 | 2026-02-02 | Fix tests before more changes | Need CI confidence |
 | 2026-02-02 | Config dataclasses before splits | Cleaner API for dependent code |
 | 2026-02-02 | Defer genre_prediction | Separate system, lower priority |
+| 2026-02-09 | Phase 4 complete | `TrackConfig`, `GenerationConfig` dataclasses, example script refactored |
+| 2026-02-09 | Add Phase 16: TrackConfig/BarConfig split | Current `TrackConfig` bundles static identity with per-bar params; need design for time-varying density/temperature |
 
 ---
 
@@ -467,6 +534,6 @@ git commit -m "refactor: add postponed annotations to all modules"
 
 ## Continuation Prompt
 
-**Last completed:** Phase 3.5 - Test Restructuring
-**Next step:** Phase 4 - Config Dataclasses
-**Notes:** All ruff checks pass. Branch: `main`. Tests: 4 pass (53% coverage)
+**Last completed:** Phase 4 - Config Dataclasses (+ example script refactor)
+**Next step:** Phase 5 - Token & Constant Consolidation
+**Notes:** All ruff checks pass. Branch: `feature/config-dataclasses`. Tests: 12 pass. Phase 16 (TrackConfig/BarConfig split) added as future design work.
