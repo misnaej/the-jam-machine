@@ -18,7 +18,8 @@ This document is the **central reference** for all refactoring and improvement w
 | `generate.py` refactor | ✅ Complete | Split into 4 focused classes |
 | Critical bugs | ✅ Fixed | Device tuple, ValueError, dead code |
 | Logging | ✅ Added | `logging_config.py` created |
-| Test coverage | ⚠️ 53% | 4 pass (Phase 3.5 done) |
+| Config dataclasses | ✅ Done | `TrackConfig` (frozen), `GenerationConfig` (mutable) |
+| Test coverage | ⚠️ 12 pass | 8 config tests + 4 existing (Phase 3.5 done) |
 | Type hints | ⚠️ Partial | New code has hints, old code doesn't |
 | Annotations style | ✅ Done | All files use `from __future__ import annotations` |
 | Package rename | ✅ Done | Renamed to `jammy`, absolute imports enforced |
@@ -117,15 +118,12 @@ Restructured test directory to mirror `src/jammy/` layout.
 
 ---
 
-### Phase 4: Config Dataclasses (PR #2 Feedback)
+### Phase 4: Config Dataclasses (PR #2 Feedback) ✅
 **Effort:** ~2 hours | **Risk:** Low | **Impact:** API cleanliness
 
 Create `TrackConfig` and `GenerationConfig` dataclasses.
 
-**Why now:**
-- Direct feedback from PR #2
-- Improves API before more code depends on it
-- Foundation for future work
+**Status:** Complete — `TrackConfig` (frozen) and `GenerationConfig` dataclasses in `src/jammy/generating/config.py`. `GenerateMidiText` constructor accepts `config=` parameter. `examples/generation_playground.py` refactored to use both.
 
 **Details:** [Design Audit Implementation](./design-audit-implementation-plan.md) - Phase 1
 
@@ -297,6 +295,53 @@ pipenv run pytest test/
 
 ---
 
+### Phase 16: Replace `dict[str, Any]` with typed dataclasses in PieceBuilder
+**Effort:** ~4 hours | **Risk:** Medium | **Impact:** Type safety, expressiveness, future features
+
+**Two-step plan:**
+
+#### Step 1: `TrackState` dataclass (replaces `dict[str, Any]`)
+
+`PieceBuilder` stores tracks as `list[dict[str, Any]]` with a fixed shape `{label, instrument, density, temperature, bars}`. This weak typing propagates to `generate.py`, `prompt_handler.py`, `utils.py`, and `app/playground.py`.
+
+Replace with:
+```python
+@dataclass
+class TrackState:
+    """Mutable state of a track during generation."""
+    instrument: str
+    density: int
+    temperature: float
+    bars: list[str] = field(default_factory=list)
+```
+
+- No `label` field — derive from index (`f"track_{i}"`)
+- `PieceBuilder.piece_by_track` becomes `list[TrackState]`
+- All `track["bars"]` → `track.bars`, etc.
+- `WriteTextMidiToFile` uses `dataclasses.asdict()` for JSON serialization
+
+**Files:** `config.py`, `piece_builder.py`, `generate.py`, `prompt_handler.py`, `utils.py`, `app/playground.py`, test
+
+#### Step 2: `BarConfig` — per-bar generation parameters (future)
+
+Once `TrackState` is in place, the natural next step is splitting density/temperature out so they can evolve per bar. The type hierarchy would be:
+- **`BarConfig`** — atomic generation params: `density`, `temperature`
+- **`TrackConfig`** — generation input: `instrument` + `BarConfig`
+- **`TrackState`** — runtime state: `instrument` + `bars` + current `BarConfig`
+
+This would enable things like "a drum track that gets denser over 8 bars."
+
+**Open questions (for when we get here):**
+- Should `BarConfig` live inside `TrackState` or be passed separately per bar?
+- How does this interact with `generate_one_more_bar()` in the Gradio app?
+- Convenience for the common case of uniform bars?
+
+**Prerequisites:**
+- Phase 4 (Config Dataclasses) ✅
+- Step 1 (`TrackState`) must be done first
+
+---
+
 ## Phase 1: Postponed Annotations (Detailed)
 
 ### Goal
@@ -441,6 +486,9 @@ git commit -m "refactor: add postponed annotations to all modules"
          │
          ▼
 15. Remove Backward Compat  ───►  Code cleanliness
+         │
+         ▼
+16. TrackConfig/BarConfig Split ► Time-varying generation
 ```
 
 ---
@@ -453,6 +501,8 @@ git commit -m "refactor: add postponed annotations to all modules"
 | 2026-02-02 | Fix tests before more changes | Need CI confidence |
 | 2026-02-02 | Config dataclasses before splits | Cleaner API for dependent code |
 | 2026-02-02 | Defer genre_prediction | Separate system, lower priority |
+| 2026-02-09 | Phase 4 complete | `TrackConfig`, `GenerationConfig` dataclasses, example script refactored |
+| 2026-02-09 | Add Phase 16: TrackConfig/BarConfig split | Current `TrackConfig` bundles static identity with per-bar params; need design for time-varying density/temperature |
 
 ---
 
@@ -467,6 +517,6 @@ git commit -m "refactor: add postponed annotations to all modules"
 
 ## Continuation Prompt
 
-**Last completed:** Phase 3.5 - Test Restructuring
-**Next step:** Phase 4 - Config Dataclasses
-**Notes:** All ruff checks pass. Branch: `main`. Tests: 4 pass (53% coverage)
+**Last completed:** Phase 4 - Config Dataclasses (PR #6)
+**Next step:** Merge PR #6 → Phase 5 (Token & Constant Consolidation)
+**Notes:** All ruff checks pass. 12 tests pass. PR #6 reviewed and ready to merge. Phase 16 (TrackState + future BarConfig) added to plan.

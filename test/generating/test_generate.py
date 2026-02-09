@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from jammy.generating.config import TrackConfig
 from jammy.generating.generate import GenerateMidiText
 from jammy.generating.utils import (
     WriteTextMidiToFile,
@@ -58,11 +59,11 @@ def test_generate_midi_text(
 
     # Configure and generate
     generate_midi.set_nb_bars_generated(n_bars=N_BAR_GENERATED)
-    generate_midi.generate_piece(
-        instrument_prompt_list,
-        density_list,
-        [temperature for _ in density_list],
-    )
+    tracks = [
+        TrackConfig(instrument=inst, density=dens, temperature=temperature)
+        for inst, dens in zip(instrument_prompt_list, density_list, strict=True)
+    ]
+    generate_midi.generate_piece(tracks)
     generate_midi.generated_piece = generate_midi.get_whole_piece_from_bar_dict()
 
     # Write output

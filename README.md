@@ -29,10 +29,10 @@ The Jam Machine is an AI music composition tool that generates harmonious MIDI s
   ┌──────────────────────────────────────────────────────────────────────────┐
   │  TRAINING (one-time, already done)                                       │
   │                                                                          │
-  │    5000 MIDI Songs ──► Encoder ──► Text Tokens ──► Train GPT-2 Model    │
+  │    5000 MIDI Songs ──► Encoder ──► Text Tokens ──► Train GPT-2 Model     │
   │                                                                          │
-  │    Example text: "PIECE_START TRACK_START INST=DRUMS DENSITY=3          │
-  │                   BAR_START NOTE_ON=36 TIME_DELTA=2 NOTE_OFF=36..."     │
+  │    Example text: "PIECE_START TRACK_START INST=DRUMS DENSITY=3           │
+  │                   BAR_START NOTE_ON=36 TIME_DELTA=2 NOTE_OFF=36..."      │
   └──────────────────────────────────────────────────────────────────────────┘
 
                                      │
@@ -56,9 +56,9 @@ The Jam Machine is an AI music composition tool that generates harmonious MIDI s
   ┌──────────────────────────────────────────────────────────────────────────┐
   │  OUTPUT                                                                  │
   │                                                                          │
-  │    Generated Text ──► Decoder ──► MIDI File ──► Audio Preview           │
+  │    Generated Text ──► Decoder ──► MIDI File ──► Audio Preview            │
   │                                                                          │
-  │    Download the MIDI and import into GarageBand, Ableton, FL Studio...  │
+  │    Download the MIDI and import into GarageBand, Ableton, FL Studio...   │
   └──────────────────────────────────────────────────────────────────────────┘
 ```
 
