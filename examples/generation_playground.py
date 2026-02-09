@@ -29,13 +29,12 @@ logger = logging.getLogger(__name__)
 
 MODEL_REPO = "JammyMachina/elec-gmusic-familized-model-13-12__17-35-53"
 USE_FAMILIZED_MODEL = True
-N_FILES = 1
 N_BARS = 8
-TEMPERATURES = [0.7]
-TRACK_PRESETS: list[tuple[str, int]] = [
-    ("DRUMS", 3),
-    ("4", 2),
-    ("3", 2),
+TEMPERATURE = 0.7
+TRACKS = [
+    TrackConfig(instrument="DRUMS", density=3, temperature=TEMPERATURE),
+    TrackConfig(instrument="4", density=2, temperature=TEMPERATURE),
+    TrackConfig(instrument="3", density=2, temperature=TEMPERATURE),
 ]
 
 
@@ -86,20 +85,12 @@ def main() -> None:
 
     model, tokenizer = LoadModel(MODEL_REPO, from_huggingface=True).load_model_and_tokenizer()
 
-    instruments = [inst for inst, _ in TRACK_PRESETS]
+    instruments = [t.instrument for t in TRACKS]
     check_if_prompt_inst_in_tokenizer_vocab(tokenizer, instruments)
 
     config = GenerationConfig(n_bars=N_BARS)
-
-    for temperature in TEMPERATURES:
-        logger.info("Generating with temperature %s", temperature)
-        tracks = [
-            TrackConfig(instrument=inst, density=dens, temperature=temperature)
-            for inst, dens in TRACK_PRESETS
-        ]
-        for _ in range(N_FILES):
-            generator = GenerateMidiText(model, tokenizer, config=config)
-            generate_and_save(generator, tracks, output_dir)
+    generator = GenerateMidiText(model, tokenizer, config=config)
+    generate_and_save(generator, TRACKS, output_dir)
 
 
 if __name__ == "__main__":
