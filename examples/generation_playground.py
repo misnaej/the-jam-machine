@@ -1,8 +1,8 @@
-# ruff: noqa: T201
 """Example script demonstrating MIDI generation with The Jam Machine."""
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 
 from jammy.embedding.decoder import TextDecoder
@@ -15,8 +15,11 @@ from jammy.generating.utils import (
     define_generation_dir,
     plot_piano_roll,
 )
+from jammy.logging_config import setup_logging
 from jammy.preprocessing.load import LoadModel
 from jammy.utils import get_miditok
+
+logger = logging.getLogger(__name__)
 
 # Instrument family mapping:
 # DRUMS = drums, 0 = piano, 1 = chromatic percussion, 2 = organ, 3 = guitar,
@@ -48,14 +51,12 @@ def generate_and_save(
         tracks: Track configurations for the piece.
         output_dir: Directory for output files.
     """
-    print("========================================")
+    logger.info("Generating new piece...")
 
     generator.generate_piece(tracks)
     generator.generated_piece = generator.get_whole_piece_from_bar_dict()
 
-    print("=========================================")
-    print(generator.generated_piece)
-    print("=========================================")
+    logger.info("Generated piece:\n%s", generator.generated_piece)
 
     # Write to JSON file
     json_path = WriteTextMidiToFile(generator, output_dir).text_midi_to_file()
@@ -74,11 +75,13 @@ def generate_and_save(
     piano_roll_fig.savefig(str(base_path) + "_piano_roll.png", bbox_inches="tight")
     piano_roll_fig.clear()
 
-    print("Et voilà! Your MIDI file is ready! GO JAM!")
+    logger.info("Done! MIDI saved to %s", midi_path)
 
 
 def main() -> None:
     """Run the MIDI generation example."""
+    setup_logging(log_to_file=False)
+
     output_dir = define_generation_dir(f"midi/generated/{MODEL_REPO}")
 
     model, tokenizer = LoadModel(MODEL_REPO, from_huggingface=True).load_model_and_tokenizer()
@@ -89,7 +92,7 @@ def main() -> None:
     config = GenerationConfig(n_bars=N_BARS)
 
     for temperature in TEMPERATURES:
-        print(f"================= TEMPERATURE {temperature} =======================")
+        logger.info("Generating with temperature %s", temperature)
         tracks = [
             TrackConfig(instrument=inst, density=dens, temperature=temperature)
             for inst, dens in TRACK_PRESETS
