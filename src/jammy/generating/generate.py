@@ -11,7 +11,7 @@ from .config import GenerationConfig, TrackConfig
 from .generation_engine import GenerationEngine
 from .piece_builder import PieceBuilder
 from .prompt_handler import PromptHandler
-from .track_builder import TrackBuilder
+from .track_builder import extract_new_bar, get_last_track, get_new_content
 from .utils import bar_count_check, forcing_bar_count
 
 if TYPE_CHECKING:
@@ -25,8 +25,8 @@ class GenerateMidiText:
 
     This class coordinates the generation of MIDI text sequences using
     a GPT-2 model. It delegates to specialized components for model
-    interaction, piece state management, track operations, and prompt
-    construction.
+    interaction and piece state management, and uses standalone functions
+    from ``track_builder`` for track-level text manipulation.
 
     LOGIC:
 
@@ -207,7 +207,7 @@ class GenerateMidiText:
 
         while not bar_count_checks:
             full_piece = self.engine.generate(input_prompt, track.temperature, verbose=verbose)
-            generated = TrackBuilder.get_new_content(full_piece, input_prompt)
+            generated = get_new_content(full_piece, input_prompt)
             bar_count_checks, bar_count = bar_count_check(generated, expected_length)
 
             if not self.config.force_sequence_length:
@@ -249,7 +249,7 @@ class GenerateMidiText:
             input_prompt=input_prompt,
         )
 
-        generated_track = TrackBuilder.get_last_track(full_piece)
+        generated_track = get_last_track(full_piece)
         self.piece.add_bars_to_track(-1, generated_track)
         return self.get_piece_text()
 
@@ -290,7 +290,7 @@ class GenerateMidiText:
             expected_length=1,
             verbose=False,
         )
-        added_bar = TrackBuilder.extract_new_bar(prompt_plus_bar)
+        added_bar = extract_new_bar(prompt_plus_bar)
         self.piece.add_bars_to_track(track_index, added_bar)
 
     def generate_n_more_bars(

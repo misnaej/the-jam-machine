@@ -315,26 +315,6 @@ class TextDecoder:
 
         return new_inst_events
 
-    # TODO: Implement this method
-    @staticmethod
-    def check_bar_count_in_section(
-        inst_events: list[dict[str, Any]],
-        bars_in_sections: int = 8,  # noqa: ARG004
-    ) -> list[dict[str, Any]]:
-        """Check bar count in section.
-
-        Args:
-            inst_events: List of instrument event dictionaries.
-            bars_in_sections: Expected number of bars per section.
-
-        Returns:
-            New list of instrument events (currently unimplemented).
-        """
-        new_inst_events: list[dict[str, Any]] = []
-        for _index, _inst_event in enumerate(inst_events):
-            pass
-        return new_inst_events
-
     @staticmethod
     def remove_unwanted_tokens(
         events: list[dict[str, Any]],

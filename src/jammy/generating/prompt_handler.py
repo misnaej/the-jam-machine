@@ -6,7 +6,9 @@ import logging
 import random
 from typing import TYPE_CHECKING
 
-from jammy.tokens import BAR_START, PIECE_START, TRACK_END, TRACK_START
+from jammy.tokens import BAR_START, PIECE_START, TRACK_END
+
+from .track_builder import extract_tracks
 
 if TYPE_CHECKING:
     from .piece_builder import PieceBuilder
@@ -125,7 +127,7 @@ class PromptHandler:
             return prompt
 
         # Extract tracks and remove one randomly
-        tracks = self._extract_tracks_from_prompt(prompt)
+        tracks = extract_tracks(prompt)
         if len(tracks) <= 1:
             return prompt
 
@@ -135,20 +137,3 @@ class PromptHandler:
             truncated += track
         logger.info("Prompt too long - deleting one track")
         return truncated
-
-    def _extract_tracks_from_prompt(self, prompt: str) -> list[str]:
-        """Extract track strings from a prompt.
-
-        Args:
-            prompt: Prompt text containing tracks.
-
-        Returns:
-            List of track strings.
-        """
-        parts = prompt.split(f"{TRACK_START} ")[1:]
-        tracks = []
-        for part in parts:
-            if TRACK_END in part:
-                part = part.rstrip(" ").rstrip(TRACK_END)
-            tracks.append(f"{TRACK_START} {part}{TRACK_END} ")
-        return tracks
