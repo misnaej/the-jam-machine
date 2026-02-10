@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any
 
 from jammy.tokens import BAR_START, PIECE_START, TRACK_END, TRACK_START
 
-from .track_builder import TrackBuilder
+from .track_builder import strip_track_ends
 
 if TYPE_CHECKING:
     from .config import TrackConfig
@@ -62,7 +62,7 @@ class PieceBuilder:
             track_id: Index of the track to add bars to.
             bars_text: Text containing one or more bars.
         """
-        stripped = TrackBuilder.strip_track_ends(bars_text)
+        stripped = strip_track_ends(bars_text)
         for bar in stripped.split(f"{BAR_START} "):
             if bar == "":
                 continue

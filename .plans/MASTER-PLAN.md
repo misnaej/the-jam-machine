@@ -520,6 +520,7 @@ git commit -m "refactor: add postponed annotations to all modules"
 | 2026-02-09 | Phase 4 complete | `TrackConfig`, `GenerationConfig` dataclasses, example script refactored |
 | 2026-02-09 | Add Phase 16: TrackConfig/BarConfig split | Current `TrackConfig` bundles static identity with per-bar params; need design for time-varying density/temperature |
 | 2026-02-09 | Phase 5 complete | Created `tokens.py`, replaced ~130 hardcoded strings, removed `# noqa: S105/S106` suppressions |
+| 2026-02-09 | Phase 5.5: Fix track builder review findings | Converted TrackBuilder to module functions, fixed extract_tracks type bug, deduplicated track-parsing logic, removed YAGNI stubs, added 10 tests |
 
 ---
 
@@ -534,6 +535,6 @@ git commit -m "refactor: add postponed annotations to all modules"
 
 ## Continuation Prompt
 
-**Last completed:** Phase 5 - Token & Constant Consolidation
+**Last completed:** Phase 5.5 - Track Builder Review Findings
 **Next step:** Phase 6 (Split `generating/utils.py`)
-**Notes:** All ruff checks pass. 12 tests pass. `tokens.py` created with all MIDI text token constants.
+**Notes:** All ruff checks pass. 22 tests pass. TrackBuilder converted to module functions, type bug fixed, DRY violation resolved.

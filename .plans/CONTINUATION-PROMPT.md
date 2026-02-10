@@ -26,25 +26,28 @@ Read `.plans/MASTER-PLAN.md` - it's the central reference with ordered phases.
 - Phase 3.5 (Test Restructuring) ✅ Complete
 - Phase 4 (Config Dataclasses) ✅ Complete (PR #6)
 - Phase 5 (Token & Constant Consolidation) ✅ Complete
+- Phase 5.5 (Track Builder Review Findings) ✅ Complete
 - All ruff lint checks pass ✅
-- Tests: 12 pass
+- Tests: 22 pass
 
-## Just Completed (Phase 5 — Token & Constant Consolidation)
+## Just Completed (Phase 5.5 — Track Builder Review Findings)
 
-- Created `src/jammy/tokens.py` with module-level MIDI text token constants
-- Constants: PIECE_START, TRACK_START, TRACK_END, BAR_START, BAR_END, NOTE_ON, NOTE_OFF, TIME_DELTA, TIME_SHIFT (legacy), INST, DENSITY, DRUMS, UNK
-- Replaced hardcoded strings across `generating/` (7 files), `embedding/` (2 files), and `utils.py`
-- Converted `get_event()` in `utils.py` from `match/case` to `if/elif` (match/case doesn't work with variable patterns)
-- Updated tests: `test_config.py`, `test_generate.py`, `test_encoder.py`
-- Removed all token-related `# noqa: S105/S106` suppressions
-- Skipped `DEFAULT_VELOCITY = 99` (only used in one place — decoder.py)
+Fixed four pre-existing issues surfaced during Phase 5 PR review:
 
-## Review Findings (not addressed — pre-existing issues)
+1. **Converted `TrackBuilder` class to module functions** — removed all-static class, now 6 module-level functions in `track_builder.py` (CLAUDE.md: "prefer functions over classes")
+2. **Fixed `extract_tracks` type bug** — was passing `list[str]` to `strip_track_ends(str)`, now iterates over parts individually
+3. **Deduplicated track-parsing logic** — deleted `PromptHandler._extract_tracks_from_prompt`, replaced with call to `extract_tracks` from `track_builder.py`
+4. **Removed YAGNI stubs** — deleted `check_if_prompt_density_in_tokenizer_vocab` (utils.py) and `check_bar_count_in_section` (decoder.py)
+5. **Added 10 unit tests** for all 6 track_builder functions
 
-- **High:** `extract_tracks` in `track_builder.py:39` passes `list[str]` to `strip_track_ends(str)` — latent type bug
-- **Medium:** `TrackBuilder` is all-static methods — should be module functions (CLAUDE.md: "prefer functions over classes")
-- **Medium:** Duplicated track-parsing logic between `PromptHandler._extract_tracks_from_prompt` and `TrackBuilder.extract_tracks`
-- **Low:** Several YAGNI stubs (`check_if_prompt_density_in_tokenizer_vocab`, `check_bar_count_in_section`)
+### Files changed
+- `src/jammy/generating/track_builder.py` — class → module functions, bug fix
+- `src/jammy/generating/generate.py` — updated imports and 3 call sites
+- `src/jammy/generating/piece_builder.py` — updated import and 1 call site
+- `src/jammy/generating/prompt_handler.py` — deleted `_extract_tracks_from_prompt`, added `extract_tracks` import
+- `src/jammy/generating/utils.py` — deleted `check_if_prompt_density_in_tokenizer_vocab`
+- `src/jammy/embedding/decoder.py` — deleted `check_bar_count_in_section`
+- `test/generating/test_track_builder.py` — 10 new tests
 
 ## Next Steps (from MASTER-PLAN)
 
@@ -54,7 +57,7 @@ Read `.plans/MASTER-PLAN.md` - it's the central reference with ordered phases.
 ## Commands
 
 ```bash
-pipenv run pytest test/ -v           # Run tests (12 pass)
+pipenv run pytest test/ -v           # Run tests (22 pass)
 pipenv run ruff check src/ test/     # Lint (should pass)
 pipenv run python app/playground.py  # Run app
 ```

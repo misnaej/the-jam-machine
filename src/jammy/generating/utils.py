@@ -140,20 +140,6 @@ def check_if_prompt_inst_in_tokenizer_vocab(
             )
 
 
-def check_if_prompt_density_in_tokenizer_vocab(
-    tokenizer: Any,  # noqa: ANN401
-    density_prompt_list: list[int],
-) -> None:
-    """Check if the prompt densities are in the tokenizer vocab.
-
-    Args:
-        tokenizer: The tokenizer to check against.
-        density_prompt_list: List of densities to validate.
-    """
-    # TODO: Implement density validation
-    pass
-
-
 def forcing_bar_count(
     input_prompt: str,
     generated: str,
