@@ -91,9 +91,9 @@ class Familizer:
         """
         inst_number = int(token.split("=")[1])
         if self.operation == "family":
-            return f"{INST}=" + str(self.get_family_number(inst_number))
+            return f"{INST}={self.get_family_number(inst_number)}"
         elif self.operation == "program":
-            return f"{INST}=" + str(self.get_program_number(inst_number))
+            return f"{INST}={self.get_program_number(inst_number)}"
         return token
 
     def replace_instrument_in_text(self, text: str) -> str:
