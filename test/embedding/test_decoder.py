@@ -8,7 +8,7 @@ import pytest
 
 from jammy.embedding.decoder import TextDecoder
 from jammy.generating.playback import get_music
-from jammy.generating.utils import plot_piano_roll
+from jammy.generating.visualization import plot_piano_roll
 from jammy.utils import read_from_file
 from test.conftest import USE_FAMILIZED_MODEL
 

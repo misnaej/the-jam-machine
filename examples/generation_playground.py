@@ -7,14 +7,11 @@ from pathlib import Path
 
 from jammy.embedding.decoder import TextDecoder
 from jammy.generating.config import GenerationConfig, TrackConfig
+from jammy.generating.file_io import define_generation_dir, write_text_midi_to_file
 from jammy.generating.generate import GenerateMidiText
 from jammy.generating.playback import get_music
-from jammy.generating.utils import (
-    WriteTextMidiToFile,
-    check_if_prompt_inst_in_tokenizer_vocab,
-    define_generation_dir,
-    plot_piano_roll,
-)
+from jammy.generating.validation import check_if_prompt_inst_in_tokenizer_vocab
+from jammy.generating.visualization import plot_piano_roll
 from jammy.logging_config import setup_logging
 from jammy.preprocessing.load import LoadModel
 from jammy.utils import get_miditok
@@ -53,20 +50,18 @@ def generate_and_save(
     logger.info("Generating new piece...")
 
     generator.generate_piece(tracks)
-    generator.generated_piece = generator.get_whole_piece_from_bar_dict()
+    generated_piece = generator.get_whole_piece_from_bar_dict()
 
-    logger.info("Generated piece:\n%s", generator.generated_piece)
+    logger.info("Generated piece:\n%s", generated_piece)
 
     # Write to JSON file
-    json_path = WriteTextMidiToFile(generator, output_dir).text_midi_to_file()
+    json_path = write_text_midi_to_file(generated_piece, generator.piece.piece_by_track, output_dir)
     base_path = Path(json_path).with_suffix("")
 
     # Decode to MIDI
     midi_path = str(base_path.with_suffix(".mid"))
     decode_tokenizer = get_miditok()
-    TextDecoder(decode_tokenizer, USE_FAMILIZED_MODEL).get_midi(
-        generator.generated_piece, filename=midi_path
-    )
+    TextDecoder(decode_tokenizer, USE_FAMILIZED_MODEL).get_midi(generated_piece, filename=midi_path)
 
     # Generate piano roll visualization
     inst_midi, _ = get_music(midi_path)
