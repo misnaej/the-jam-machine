@@ -5,11 +5,13 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any
 
+from jammy.tokens import DENSITY, INST, PIECE_START, TRACK_START, UNK
+
 from .config import GenerationConfig, TrackConfig
 from .generation_engine import GenerationEngine
 from .piece_builder import PieceBuilder
 from .prompt_handler import PromptHandler
-from .track_builder import TrackBuilder
+from .track_builder import extract_new_bar, get_last_track, get_new_content
 from .utils import bar_count_check, forcing_bar_count
 
 if TYPE_CHECKING:
@@ -23,8 +25,8 @@ class GenerateMidiText:
 
     This class coordinates the generation of MIDI text sequences using
     a GPT-2 model. It delegates to specialized components for model
-    interaction, piece state management, track operations, and prompt
-    construction.
+    interaction and piece state management, and uses standalone functions
+    from ``track_builder`` for track-level text manipulation.
 
     LOGIC:
 
@@ -168,7 +170,7 @@ class GenerateMidiText:
     def _generate_until_track_end(
         self,
         track: TrackConfig,
-        input_prompt: str = "PIECE_START ",
+        input_prompt: str = f"{PIECE_START} ",
         add_track_header: bool = True,
         verbose: bool = True,
         expected_length: int | None = None,
@@ -189,8 +191,8 @@ class GenerateMidiText:
             expected_length = self.prompts.n_bars
 
         if add_track_header:
-            input_prompt = f"{input_prompt}TRACK_START INST={track.instrument} "
-            input_prompt = f"{input_prompt}DENSITY={track.density} "
+            input_prompt = f"{input_prompt}{TRACK_START} {INST}={track.instrument} "
+            input_prompt = f"{input_prompt}{DENSITY}={track.density} "
 
         if verbose:
             logger.info(
@@ -205,7 +207,7 @@ class GenerateMidiText:
 
         while not bar_count_checks:
             full_piece = self.engine.generate(input_prompt, track.temperature, verbose=verbose)
-            generated = TrackBuilder.get_new_content(full_piece, input_prompt)
+            generated = get_new_content(full_piece, input_prompt)
             bar_count_checks, bar_count = bar_count_check(generated, expected_length)
 
             if not self.config.force_sequence_length:
@@ -230,7 +232,7 @@ class GenerateMidiText:
     def generate_one_new_track(
         self,
         track: TrackConfig,
-        input_prompt: str = "PIECE_START ",
+        input_prompt: str = f"{PIECE_START} ",
     ) -> str:
         """Generate a new track and add it to the piece.
 
@@ -247,7 +249,7 @@ class GenerateMidiText:
             input_prompt=input_prompt,
         )
 
-        generated_track = TrackBuilder.get_last_track(full_piece)
+        generated_track = get_last_track(full_piece)
         self.piece.add_bars_to_track(-1, generated_track)
         return self.get_piece_text()
 
@@ -263,7 +265,7 @@ class GenerateMidiText:
         Returns:
             Complete piece text.
         """
-        generated_piece = "PIECE_START "
+        generated_piece = f"{PIECE_START} "
         for track in tracks:
             generated_piece = self.generate_one_new_track(
                 track,
@@ -288,7 +290,7 @@ class GenerateMidiText:
             expected_length=1,
             verbose=False,
         )
-        added_bar = TrackBuilder.extract_new_bar(prompt_plus_bar)
+        added_bar = extract_new_bar(prompt_plus_bar)
         self.piece.add_bars_to_track(track_index, added_bar)
 
     def generate_n_more_bars(
@@ -324,7 +326,7 @@ class GenerateMidiText:
             piece = self.get_piece_text()
 
         for idx, midi_token in enumerate(piece.split(" ")):
-            if midi_token not in self.tokenizer.vocab or midi_token == "UNK":  # noqa: S105
+            if midi_token not in self.tokenizer.vocab or midi_token == UNK:
                 logger.warning(
                     "Token not found in the piece at %d: %s",
                     idx,

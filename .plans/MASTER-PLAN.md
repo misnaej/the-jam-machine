@@ -141,15 +141,19 @@ Small issues found during PR #6 review. Do immediately after merging.
 
 ---
 
-### Phase 5: Token & Constant Consolidation
+### Phase 5: Token & Constant Consolidation ✅
 **Effort:** ~1 hour | **Risk:** Low | **Impact:** DRY, maintainability
 
-Create `tokens.py` and expand `constants.py`.
+Created `src/jammy/tokens.py` with all MIDI text token constants and replaced ~130 hardcoded string literals across the codebase.
 
-**Tasks:**
-1. Create `src/the_jam_machine/tokens.py` with token strings
-2. Add missing constants to `constants.py`
-3. Replace hardcoded values throughout
+**Completed:**
+- Created `src/jammy/tokens.py` with module-level constants (PIECE_START, TRACK_START, TRACK_END, BAR_START, BAR_END, NOTE_ON, NOTE_OFF, TIME_DELTA, TIME_SHIFT, INST, DENSITY, DRUMS, UNK)
+- Replaced hardcoded strings in `generating/` (generate.py, piece_builder.py, track_builder.py, prompt_handler.py, utils.py, generation_engine.py, config.py)
+- Replaced hardcoded strings in `embedding/` (familizer.py, decoder.py)
+- Replaced hardcoded strings in `utils.py` (get_text, get_event)
+- Updated tests to use constants (test_config.py, test_generate.py, test_encoder.py)
+- Removed all token-related `# noqa: S105/S106` suppressions
+- All 12 tests pass, all lint checks pass
 
 **Details:** [Design Audit Implementation](./design-audit-implementation-plan.md) - Phase 2
 
@@ -515,6 +519,8 @@ git commit -m "refactor: add postponed annotations to all modules"
 | 2026-02-02 | Defer genre_prediction | Separate system, lower priority |
 | 2026-02-09 | Phase 4 complete | `TrackConfig`, `GenerationConfig` dataclasses, example script refactored |
 | 2026-02-09 | Add Phase 16: TrackConfig/BarConfig split | Current `TrackConfig` bundles static identity with per-bar params; need design for time-varying density/temperature |
+| 2026-02-09 | Phase 5 complete | Created `tokens.py`, replaced ~130 hardcoded strings, removed `# noqa: S105/S106` suppressions |
+| 2026-02-09 | Phase 5.5: Fix track builder review findings | Converted TrackBuilder to module functions, fixed extract_tracks type bug, deduplicated track-parsing logic, removed YAGNI stubs, added 10 tests |
 
 ---
 
@@ -529,6 +535,6 @@ git commit -m "refactor: add postponed annotations to all modules"
 
 ## Continuation Prompt
 
-**Last completed:** Phase 4 - Config Dataclasses (PR #6)
-**Next step:** Merge PR #6 → Phase 5 (Token & Constant Consolidation)
-**Notes:** All ruff checks pass. 12 tests pass. PR #6 reviewed and ready to merge. Phase 16 (TrackState + future BarConfig) added to plan.
+**Last completed:** Phase 5.5 - Track Builder Review Findings
+**Next step:** Phase 6 (Split `generating/utils.py`)
+**Notes:** All ruff checks pass. 22 tests pass. TrackBuilder converted to module functions, type bug fixed, DRY violation resolved.

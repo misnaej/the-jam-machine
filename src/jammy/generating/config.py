@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from jammy.tokens import TRACK_END
+
 
 @dataclass(frozen=True)
 class TrackConfig:
@@ -42,5 +44,5 @@ class GenerationConfig:
     force_sequence_length: bool = True
     improvisation_level: int = 0
     max_prompt_length: int = 1500
-    generate_until_token: str = "TRACK_END"  # noqa: S105
+    generate_until_token: str = TRACK_END
     max_retries: int = 2

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from jammy.embedding.encoder import from_midi_to_sectioned_text
+from jammy.tokens import PIECE_START, TRACK_START
 from jammy.utils import write_to_file
 from test.conftest import USE_FAMILIZED_MODEL
 
@@ -20,5 +21,5 @@ def test_encode_midi_file() -> None:
     write_to_file(f"{midi_filename}_from_midi.txt", piece_text)
 
     assert piece_text is not None
-    assert "PIECE_START" in piece_text
-    assert "TRACK_START" in piece_text
+    assert PIECE_START in piece_text
+    assert TRACK_START in piece_text

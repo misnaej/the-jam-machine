@@ -9,6 +9,7 @@ from miditok import Event
 
 from jammy.constants import DRUMS_BEAT_QUANTIZATION, NONE_DRUMS_BEAT_QUANTIZATION
 from jammy.embedding.familizer import Familizer
+from jammy.tokens import BAR_START, INST, NOTE_ON, TIME_DELTA
 from jammy.utils import (
     beat_to_int_dec_base,
     get_event,
@@ -130,7 +131,7 @@ class TextDecoder:
             value = _event[1] if len(_event) > 1 else None
             beyond_quantization = False  # needs to be reset for each event
 
-            if _event[0] == "INST":
+            if _event[0] == INST:
                 track_index += 1
                 bar_value = 0
                 # get the instrument for passing in get_event when time_delta
@@ -144,7 +145,7 @@ class TextDecoder:
                     else NONE_DRUMS_BEAT_QUANTIZATION * 4
                 )
 
-            if _event[0] == "BAR_START":
+            if _event[0] == BAR_START:
                 bar_value += 1
                 value = bar_value
                 # reseting cumul_time_delta
@@ -152,13 +153,13 @@ class TextDecoder:
 
             # ----- hack to prevent over quantization -----
             # NOT IDEAL - the model should not output these events
-            if _event[0] == "TIME_DELTA":
+            if _event[0] == TIME_DELTA:
                 cumul_time_delta += int(_event[1])
                 if cumul_time_delta > max_cumul_time_delta:
                     beyond_quantization = True
                     cumul_time_delta -= int(_event[1])
 
-            if _event[0] == "NOTE_ON" and cumul_time_delta >= max_cumul_time_delta:
+            if _event[0] == NOTE_ON and cumul_time_delta >= max_cumul_time_delta:
                 beyond_quantization = True
 
             if beyond_quantization and verbose:
@@ -312,26 +313,6 @@ class TextDecoder:
                     )
                 new_inst_events[index]["events"].append(event)
 
-        return new_inst_events
-
-    # TODO: Implement this method
-    @staticmethod
-    def check_bar_count_in_section(
-        inst_events: list[dict[str, Any]],
-        bars_in_sections: int = 8,  # noqa: ARG004
-    ) -> list[dict[str, Any]]:
-        """Check bar count in section.
-
-        Args:
-            inst_events: List of instrument event dictionaries.
-            bars_in_sections: Expected number of bars per section.
-
-        Returns:
-            New list of instrument events (currently unimplemented).
-        """
-        new_inst_events: list[dict[str, Any]] = []
-        for _index, _inst_event in enumerate(inst_events):
-            pass
         return new_inst_events
 
     @staticmethod

@@ -12,6 +12,7 @@ from jammy.generating.utils import (
     check_if_prompt_inst_in_tokenizer_vocab,
     define_generation_dir,
 )
+from jammy.tokens import PIECE_START, TRACK_END
 
 if TYPE_CHECKING:
     from transformers import GPT2LMHeadModel, GPT2TokenizerFast
@@ -73,6 +74,6 @@ def test_generate_midi_text(
 
     # Assertions
     assert generate_midi.generated_piece is not None
-    assert "PIECE_START" in generate_midi.generated_piece
-    assert "TRACK_END" in generate_midi.generated_piece
+    assert PIECE_START in generate_midi.generated_piece
+    assert TRACK_END in generate_midi.generated_piece
     assert Path(filename).exists()
