@@ -170,10 +170,10 @@ Split into `file_io.py`, `validation.py`, `visualization.py`. Also replaced `Wri
 
 ---
 
-### Phase 7: Split `embedding/encoder.py`
+### Phase 7: Split `embedding/encoder.py` ✅
 **Effort:** ~2 hours | **Risk:** Medium | **Impact:** SRP compliance
 
-Split 406-line file into focused modules.
+Split 594-line file into `time_processing.py`, `bar_processing.py`, `section_building.py` + slimmed `encoder.py`. Converted 10 `@staticmethod` methods to module functions. Replaced fragile `chain()` with explicit pipeline. Deleted unused `get_text_by_section`, `get_piece_sections`, backward compat alias, `__main__` block.
 
 **Details:** [Design Audit Implementation](./design-audit-implementation-plan.md) - Phase 4
 
@@ -525,6 +525,7 @@ git commit -m "refactor: add postponed annotations to all modules"
 | 2026-02-09 | Phase 5.5: Fix track builder review findings | Converted TrackBuilder to module functions, fixed extract_tracks type bug, deduplicated track-parsing logic, removed YAGNI stubs, added 10 tests |
 | 2026-03-17 | Merged Phase 5 + 5.5 (PR #8) | Squash-merged token consolidation + track builder fixes to main |
 | 2026-03-17 | Phase 6 complete | Split `generating/utils.py` into `file_io.py`, `validation.py`, `visualization.py`; replaced `WriteTextMidiToFile` class with function; deleted unused `get_max_time()` |
+| 2026-03-18 | Phase 7 complete | Split `embedding/encoder.py` into `time_processing.py`, `bar_processing.py`, `section_building.py`; converted 10 staticmethods to functions; replaced `chain()` with explicit pipeline; deleted unused methods and backward compat alias |
 
 ---
 
@@ -539,6 +540,6 @@ git commit -m "refactor: add postponed annotations to all modules"
 
 ## Continuation Prompt
 
-**Last completed:** Phase 6 (Split `generating/utils.py`)
-**Next step:** Phase 7 (Split `embedding/encoder.py`)
-**Notes:** All ruff checks pass. 22 tests pass. On `refactor/split-generating-utils` branch.
+**Last completed:** Phase 7 (Split `embedding/encoder.py`)
+**Next step:** Phase 8 (Split `embedding/decoder.py`)
+**Notes:** All ruff checks pass. 22 tests pass. On `refactor/split-embedding-encoder` branch.
