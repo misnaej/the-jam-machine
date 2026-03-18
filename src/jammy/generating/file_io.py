@@ -31,7 +31,7 @@ def write_text_midi_to_file(
         "generated_midi": generated_midi,
         "hyperparameters_and_bars": piece_by_track,
     }
-    logger.info("Token generate_midi written: %s", filename)
+    logger.info("Generated MIDI text written to: %s", filename)
     writeToFile(filename, output_dict)
     return filename
 

@@ -47,8 +47,8 @@ def check_if_prompt_inst_in_tokenizer_vocab(
             instruments_in_dataset = sorted(
                 tok.split("=")[-1] for tok in tokenizer.vocab if INST in tok
             )
-            for classe in INSTRUMENT_CLASSES:
-                logger.info("%s", classe)
+            for inst_class in INSTRUMENT_CLASSES:
+                logger.info("%s", inst_class)
             raise ValueError(
                 f"The instrument {inst} is not in the tokenizer vocabulary. "
                 f"Available Instruments: {instruments_in_dataset}"
