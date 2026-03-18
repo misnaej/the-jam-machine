@@ -18,7 +18,7 @@ from jammy.embedding.decoder import TextDecoder
 from jammy.generating.config import TrackConfig
 from jammy.generating.generate import GenerateMidiText
 from jammy.generating.playback import get_music
-from jammy.generating.utils import plot_piano_roll
+from jammy.generating.visualization import plot_piano_roll
 from jammy.logging_config import setup_logging
 from jammy.preprocessing.load import LoadModel
 from jammy.utils import get_miditok

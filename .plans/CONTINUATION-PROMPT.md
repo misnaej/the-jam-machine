@@ -1,6 +1,6 @@
 # Continuation Prompt
 
-**Branch:** `main`
+**Branch:** `refactor/split-generating-utils` (PR pending → merge to `main`)
 
 ## Context
 
@@ -25,34 +25,31 @@ Read `.plans/MASTER-PLAN.md` - it's the central reference with ordered phases.
 - Phase 3 (Fix Broken Tests) ✅ Complete
 - Phase 3.5 (Test Restructuring) ✅ Complete
 - Phase 4 (Config Dataclasses) ✅ Complete (PR #6)
-- Phase 5 (Token & Constant Consolidation) ✅ Complete
-- Phase 5.5 (Track Builder Review Findings) ✅ Complete
+- Phase 5 (Token & Constant Consolidation) ✅ Complete (PR #8)
+- Phase 5.5 (Track Builder Review Findings) ✅ Complete (PR #8)
+- Phase 6 (Split generating/utils.py) ✅ Complete
 - All ruff lint checks pass ✅
 - Tests: 22 pass
 
-## Just Completed (Phase 5.5 — Track Builder Review Findings)
+## What Phase 6 Did
 
-Fixed four pre-existing issues surfaced during Phase 5 PR review:
-
-1. **Converted `TrackBuilder` class to module functions** — removed all-static class, now 6 module-level functions in `track_builder.py` (CLAUDE.md: "prefer functions over classes")
-2. **Fixed `extract_tracks` type bug** — was passing `list[str]` to `strip_track_ends(str)`, now iterates over parts individually
-3. **Deduplicated track-parsing logic** — deleted `PromptHandler._extract_tracks_from_prompt`, replaced with call to `extract_tracks` from `track_builder.py`
-4. **Removed YAGNI stubs** — deleted `check_if_prompt_density_in_tokenizer_vocab` (utils.py) and `check_bar_count_in_section` (decoder.py)
-5. **Added 10 unit tests** for all 6 track_builder functions
-
-### Files changed
-- `src/jammy/generating/track_builder.py` — class → module functions, bug fix
-- `src/jammy/generating/generate.py` — updated imports and 3 call sites
-- `src/jammy/generating/piece_builder.py` — updated import and 1 call site
-- `src/jammy/generating/prompt_handler.py` — deleted `_extract_tracks_from_prompt`, added `extract_tracks` import
-- `src/jammy/generating/utils.py` — deleted `check_if_prompt_density_in_tokenizer_vocab`
-- `src/jammy/embedding/decoder.py` — deleted `check_bar_count_in_section`
-- `test/generating/test_track_builder.py` — 10 new tests
+- Split `generating/utils.py` into 3 focused modules:
+  - `file_io.py` — `write_text_midi_to_file()`, `define_generation_dir()`
+  - `validation.py` — `bar_count_check()`, `check_if_prompt_inst_in_tokenizer_vocab()`, `forcing_bar_count()`, `_print_inst_classes()`
+  - `visualization.py` — `plot_piano_roll()`, matplotlib config
+- Replaced `WriteTextMidiToFile` class with `write_text_midi_to_file()` function (no shared state)
+- Deleted `get_max_time()` (YAGNI — unused)
+- Made `print_inst_classes()` private (`_print_inst_classes`)
+- Updated 5 callers: `generate.py`, `playground.py`, `test_generate.py`, `generation_playground.py`, `test_decoder.py`
+- Deleted `utils.py`
 
 ## Next Steps (from MASTER-PLAN)
 
-1. **Phase 6**: Split `generating/utils.py`
-2. **Phase 7**: Split `embedding/encoder.py`
+1. **Phase 7**: Split `embedding/encoder.py`
+2. **Phase 8**: Split `embedding/decoder.py`
+3. **Phase 9**: Naming Fixes & Cleanup
+
+See `design-audit-implementation-plan.md` Phase 4 for detailed Phase 7 plan.
 
 ## Commands
 

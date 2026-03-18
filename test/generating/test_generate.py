@@ -6,12 +6,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from jammy.generating.config import TrackConfig
+from jammy.generating.file_io import define_generation_dir, write_text_midi_to_file
 from jammy.generating.generate import GenerateMidiText
-from jammy.generating.utils import (
-    WriteTextMidiToFile,
-    check_if_prompt_inst_in_tokenizer_vocab,
-    define_generation_dir,
-)
+from jammy.generating.validation import check_if_prompt_inst_in_tokenizer_vocab
 from jammy.tokens import PIECE_START, TRACK_END
 
 if TYPE_CHECKING:
@@ -64,16 +61,17 @@ def test_generate_midi_text(
         for inst, dens in zip(instrument_prompt_list, density_list, strict=True)
     ]
     generate_midi.generate_piece(tracks)
-    generate_midi.generated_piece = generate_midi.get_whole_piece_from_bar_dict()
+    generated_piece = generate_midi.get_whole_piece_from_bar_dict()
 
     # Write output
-    filename = WriteTextMidiToFile(
-        generate_midi,
+    filename = write_text_midi_to_file(
+        generated_piece,
+        generate_midi.piece.piece_by_track,
         test_dir,
-    ).text_midi_to_file()
+    )
 
     # Assertions
-    assert generate_midi.generated_piece is not None
-    assert PIECE_START in generate_midi.generated_piece
-    assert TRACK_END in generate_midi.generated_piece
+    assert generated_piece is not None
+    assert PIECE_START in generated_piece
+    assert TRACK_END in generated_piece
     assert Path(filename).exists()

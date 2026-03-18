@@ -19,7 +19,9 @@ This document is the **central reference** for all refactoring and improvement w
 | Critical bugs | ✅ Fixed | Device tuple, ValueError, dead code |
 | Logging | ✅ Added | `logging_config.py` created |
 | Config dataclasses | ✅ Done | `TrackConfig` (frozen), `GenerationConfig` (mutable) |
-| Test coverage | ⚠️ 12 pass | 8 config tests + 4 existing (Phase 3.5 done) |
+| Test coverage | ⚠️ 22 pass | 8 config + 10 track_builder + 4 existing |
+| Token constants | ✅ Done | `tokens.py` with 13 constants, ~130 hardcoded strings replaced |
+| TrackBuilder | ✅ Done | Converted to module functions, bugs fixed |
 | Type hints | ⚠️ Partial | New code has hints, old code doesn't |
 | Annotations style | ✅ Done | All files use `from __future__ import annotations` |
 | Package rename | ✅ Done | Renamed to `jammy`, absolute imports enforced |
@@ -159,10 +161,10 @@ Created `src/jammy/tokens.py` with all MIDI text token constants and replaced ~1
 
 ---
 
-### Phase 6: Split `generating/utils.py`
+### Phase 6: Split `generating/utils.py` ✅
 **Effort:** ~1 hour | **Risk:** Low | **Impact:** SRP compliance
 
-Split into `file_io.py`, `validation.py`, `visualization.py`.
+Split into `file_io.py`, `validation.py`, `visualization.py`. Also replaced `WriteTextMidiToFile` class with `write_text_midi_to_file()` function (class was over-engineered — no shared state). Deleted `get_max_time()` (unused). Made `print_inst_classes()` private.
 
 **Details:** [Design Audit Implementation](./design-audit-implementation-plan.md) - Phase 3
 
@@ -521,6 +523,8 @@ git commit -m "refactor: add postponed annotations to all modules"
 | 2026-02-09 | Add Phase 16: TrackConfig/BarConfig split | Current `TrackConfig` bundles static identity with per-bar params; need design for time-varying density/temperature |
 | 2026-02-09 | Phase 5 complete | Created `tokens.py`, replaced ~130 hardcoded strings, removed `# noqa: S105/S106` suppressions |
 | 2026-02-09 | Phase 5.5: Fix track builder review findings | Converted TrackBuilder to module functions, fixed extract_tracks type bug, deduplicated track-parsing logic, removed YAGNI stubs, added 10 tests |
+| 2026-03-17 | Merged Phase 5 + 5.5 (PR #8) | Squash-merged token consolidation + track builder fixes to main |
+| 2026-03-17 | Phase 6 complete | Split `generating/utils.py` into `file_io.py`, `validation.py`, `visualization.py`; replaced `WriteTextMidiToFile` class with function; deleted unused `get_max_time()` |
 
 ---
 
@@ -535,6 +539,6 @@ git commit -m "refactor: add postponed annotations to all modules"
 
 ## Continuation Prompt
 
-**Last completed:** Phase 5.5 - Track Builder Review Findings
-**Next step:** Phase 6 (Split `generating/utils.py`)
-**Notes:** All ruff checks pass. 22 tests pass. TrackBuilder converted to module functions, type bug fixed, DRY violation resolved.
+**Last completed:** Phase 6 (Split `generating/utils.py`)
+**Next step:** Phase 7 (Split `embedding/encoder.py`)
+**Notes:** All ruff checks pass. 22 tests pass. On `refactor/split-generating-utils` branch.
