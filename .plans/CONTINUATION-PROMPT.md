@@ -1,6 +1,6 @@
 # Continuation Prompt
 
-**Branch:** `refactor/split-embedding-encoder` (PR pending → merge to `main`)
+**Branch:** `refactor/split-embedding-decoder` (PR pending → merge to `main`)
 
 ## Context
 
@@ -20,38 +20,30 @@ Read `.plans/MASTER-PLAN.md` - it's the central reference with ordered phases.
 
 ## Current Status
 
-- Phase 1 (Postponed Annotations) ✅ Complete
-- Phase 2 (Package Rename & Absolute Imports) ✅ Complete
-- Phase 3 (Fix Broken Tests) ✅ Complete
-- Phase 3.5 (Test Restructuring) ✅ Complete
-- Phase 4 (Config Dataclasses) ✅ Complete (PR #6)
-- Phase 5 (Token & Constant Consolidation) ✅ Complete (PR #8)
-- Phase 5.5 (Track Builder Review Findings) ✅ Complete (PR #8)
-- Phase 6 (Split generating/utils.py) ✅ Complete (PR #10)
-- Phase 7 (Split embedding/encoder.py) ✅ Complete
+- Phases 1-7 ✅ Complete
+- Phase 8 (Split embedding/decoder.py) ✅ Complete
 - All ruff lint checks pass ✅
 - Tests: 22 pass
 
-## What Phase 7 Did
+## What Phase 8 Did
 
-- Split 594-line `embedding/encoder.py` into 3 focused modules + slim orchestrator:
-  - `time_processing.py` — `remove_velocity`, `normalize_timeshifts`, `combine_timeshifts_in_bar`, `remove_timeshifts_preceding_bar_end`
-  - `bar_processing.py` — `add_bars`, `add_density_to_bar`, `add_density_to_sections`
-  - `section_building.py` — `define_instrument`, `initiate_track_in_section`, `terminate_track_in_section`, `make_sections`, `sections_to_piece`
-  - `encoder.py` (slimmed) — `MIDIEncoder` class (2 instance methods), `events_to_text`, `from_midi_to_sectioned_text`
-- Converted 10 `@staticmethod` methods to module functions
-- Replaced fragile `chain()` calls with explicit pipeline in `get_piece_text`
-- Deleted: `get_text_by_section` (unused), `get_piece_sections` (inlined), `from_MIDI_to_sectionned_text` alias, `__main__` block, aspirational TODO comments
-- Fixed typos: `preceeding` → `preceding`, `beggining` → `beginning`, `writting` → `writing`
-- No caller changes needed (preprocess.py and test_encoder.py use unchanged public API)
+- Split 470-line `embedding/decoder.py` into 2 focused modules + slim orchestrator:
+  - `text_parsing.py` — `text_to_events`, `get_track_ids`, `piece_to_inst_events`, `get_bar_ids`
+  - `event_processing.py` — `add_missing_timeshifts_in_bar`, `remove_unwanted_tokens`, `check_for_duplicated_events`, `aggregate_timeshifts`, `add_velocity`, `_add_timeshifts`
+  - `decoder.py` (slimmed) — `TextDecoder` class: `__init__`, `decode`, `tokenize`, `get_midi`, `get_instruments_tuple`
+- Converted 10 `@staticmethod` + 1 pseudo-instance method to module functions
+- Renamed `add_missing_timeshifts_in_a_bar` → `add_missing_timeshifts_in_bar`
+- Made `add_timeshifts` private (`_add_timeshifts`)
+- Deleted `__main__` block (dead debug code)
+- No caller changes needed
 
 ## Next Steps (from MASTER-PLAN)
 
-1. **Phase 8**: Split `embedding/decoder.py`
-2. **Phase 9**: Naming Fixes & Cleanup
-3. **Phase 10**: Add Unit Tests
+1. **Phase 9**: Naming Fixes & Cleanup
+2. **Phase 10**: Add Unit Tests
+3. **Phase 11**: Genre Prediction Cleanup (Optional)
 
-See `design-audit-implementation-plan.md` Phase 5 for detailed Phase 8 plan.
+See `design-audit-implementation-plan.md` Phase 6 for detailed Phase 9 plan.
 
 ## Commands
 
