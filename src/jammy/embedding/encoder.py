@@ -119,6 +119,7 @@ def from_midi_to_sectioned_text(midi_filename: str, familized: bool = False) -> 
     Returns:
         Text representation of the MIDI file.
     """
+    # Runtime import needed -- the module-level import is TYPE_CHECKING only
     from miditoolkit import MidiFile
 
     midi = MidiFile(f"{midi_filename}.mid")

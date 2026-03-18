@@ -15,12 +15,12 @@ if TYPE_CHECKING:
     from miditoolkit import Instrument
 
 
-def define_instrument(midi_tok_instrument: Instrument, familize: bool = False) -> int | str:
+def define_instrument(midi_tok_instrument: Instrument, familized: bool = False) -> int | str:
     """Define the instrument token from the MIDI token instrument.
 
     Args:
         midi_tok_instrument: The miditoolkit Instrument object.
-        familize: Whether the instrument needs to be familized.
+        familized: Whether the instrument needs to be familized.
 
     Returns:
         The instrument identifier (program number, family number, or "Drums").
@@ -28,7 +28,7 @@ def define_instrument(midi_tok_instrument: Instrument, familize: bool = False) -
     instrument: int | str = (
         midi_tok_instrument.program if not midi_tok_instrument.is_drum else "Drums"
     )
-    if familize and not midi_tok_instrument.is_drum:
+    if familized and not midi_tok_instrument.is_drum:
         familizer = Familizer()
         family_number = familizer.get_family_number(int(instrument))
         if family_number is not None:
@@ -92,7 +92,7 @@ def make_sections(
     for i, inst_events in enumerate(midi_events):
         inst_section = []
         track_index = 0
-        instrument = define_instrument(instruments[i], familize=familized)
+        instrument = define_instrument(instruments[i], familized=familized)
         section = initiate_track_in_section(instrument, track_index)
         for ev_idx, event in enumerate(inst_events):
             section.append(event)
@@ -110,7 +110,7 @@ def make_sections(
     return midi_sections
 
 
-def sections_to_piece(midi_events: list[list[list[Event]]]) -> list[Event]:
+def sections_to_piece(midi_sections: list[list[list[Event]]]) -> list[Event]:
     """Combine all sections into one piece.
 
     Sections are combined as follows:
@@ -122,18 +122,18 @@ def sections_to_piece(midi_events: list[list[list[Event]]]) -> list[Event]:
     ...'
 
     Args:
-        midi_events: Nested list of sections per instrument.
+        midi_sections: Nested list of sections per instrument
+            (shape: [instruments][sections][events]).
 
     Returns:
         Flat list of events representing the complete piece.
     """
     piece: list[Event] = []
-    max_total_sections = max(map(len, midi_events))
+    max_total_sections = max(map(len, midi_sections))
     for i in range(max_total_sections):
         # adding piece start event at the beginning of each section
         piece += [Event("Piece-Start", 1)]
-        for inst_events in midi_events:
-            nb_inst_section = len(inst_events)
-            if i < nb_inst_section:
-                piece += inst_events[i]
+        for inst_sections in midi_sections:
+            if i < len(inst_sections):
+                piece += inst_sections[i]
     return piece

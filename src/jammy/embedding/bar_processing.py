@@ -63,6 +63,9 @@ def add_density_to_bar(midi_events: list[list[Event]]) -> list[list[Event]]:
     For each bar, calculates the note density as the number of note onsets
     divided by the number of beats per bar, then adds it as a Bar-Density event.
 
+    Each instrument's event list must begin with a Bar-Start event (as produced
+    by ``add_bars``).
+
     Args:
         midi_events: List of instrument event lists.
 
@@ -103,6 +106,10 @@ def add_density_to_sections(
     midi_sections: list[list[list[Event]]],
 ) -> list[list[list[Event]]]:
     """Add density to each section as the mode of bar density.
+
+    Each section must contain at least one Instrument event and one
+    Bar-Density event (as produced by ``section_building.make_sections``
+    and ``add_density_to_bar``).
 
     Args:
         midi_sections: Nested list of sections per instrument.

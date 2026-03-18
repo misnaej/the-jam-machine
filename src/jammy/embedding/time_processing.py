@@ -42,8 +42,9 @@ def normalize_timeshifts(midi_events: list[list[Event]]) -> list[list[Event]]:
         new_inst_events = []
         for event in inst_events:
             if event.type == "Time-Shift":
+                # split_dots returns [integer_part, decimal_part, base]
+                # Convert integer beats into decimal units: e.g., 1.2.8 -> 0.10.8
                 values = split_dots(event.value)
-                # transfer values[0] to values[1]
                 values[1] += values[0] * values[2]
                 values[0] = 0
                 # generating and appending new time-shift events
