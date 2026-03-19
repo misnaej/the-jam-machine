@@ -179,10 +179,10 @@ Split 594-line file into `time_processing.py`, `bar_processing.py`, `section_bui
 
 ---
 
-### Phase 8: Split `embedding/decoder.py`
+### Phase 8: Split `embedding/decoder.py` ✅
 **Effort:** ~2 hours | **Risk:** Medium | **Impact:** SRP compliance
 
-Split 333-line file into focused modules.
+Split 470-line file into `text_parsing.py`, `event_processing.py` + slimmed `decoder.py`. Converted 10 `@staticmethod` + 1 pseudo-instance method to module functions. No caller changes needed.
 
 **Details:** [Design Audit Implementation](./design-audit-implementation-plan.md) - Phase 5
 
@@ -526,6 +526,7 @@ git commit -m "refactor: add postponed annotations to all modules"
 | 2026-03-17 | Merged Phase 5 + 5.5 (PR #8) | Squash-merged token consolidation + track builder fixes to main |
 | 2026-03-17 | Phase 6 complete | Split `generating/utils.py` into `file_io.py`, `validation.py`, `visualization.py`; replaced `WriteTextMidiToFile` class with function; deleted unused `get_max_time()` |
 | 2026-03-18 | Phase 7 complete | Split `embedding/encoder.py` into `time_processing.py`, `bar_processing.py`, `section_building.py`; converted 10 staticmethods to functions; replaced `chain()` with explicit pipeline; deleted unused methods and backward compat alias |
+| 2026-03-18 | Phase 8 complete | Split `embedding/decoder.py` into `text_parsing.py`, `event_processing.py`; converted 11 methods to module functions; deleted `__main__` block; no caller changes needed |
 
 ---
 
@@ -540,6 +541,6 @@ git commit -m "refactor: add postponed annotations to all modules"
 
 ## Continuation Prompt
 
-**Last completed:** Phase 7 (Split `embedding/encoder.py`)
-**Next step:** Phase 8 (Split `embedding/decoder.py`)
-**Notes:** All ruff checks pass. 22 tests pass. On `refactor/split-embedding-encoder` branch.
+**Last completed:** Phase 8 (Split `embedding/decoder.py`)
+**Next step:** Phase 9 (Naming Fixes & Cleanup)
+**Notes:** All ruff checks pass. 22 tests pass. On `refactor/split-embedding-decoder` branch.
