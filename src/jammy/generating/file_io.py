@@ -6,7 +6,8 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from jammy.utils import get_datetime, writeToFile
+from jammy.file_utils import write_to_file
+from jammy.utils import get_datetime
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +33,7 @@ def write_text_midi_to_file(
         "hyperparameters_and_bars": piece_by_track,
     }
     logger.info("Generated MIDI text written to: %s", filename)
-    writeToFile(filename, output_dict)
+    write_to_file(filename, output_dict)
     return filename
 
 

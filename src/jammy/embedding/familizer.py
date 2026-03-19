@@ -1,3 +1,9 @@
+"""Instrument familization for MIDI program number to family mapping.
+
+Converts between specific MIDI program numbers (0-127) and broader
+instrument family categories (0-15), operating on text token files.
+"""
+
 from __future__ import annotations
 
 import logging
@@ -7,8 +13,8 @@ from pathlib import Path
 from joblib import Parallel, delayed
 
 from jammy.constants import INSTRUMENT_CLASSES, INSTRUMENT_TRANSFER_CLASSES
+from jammy.file_utils import FileCompressor, get_files, timeit
 from jammy.tokens import DRUMS, INST
-from jammy.utils import FileCompressor, get_files, timeit
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +24,13 @@ class Familizer:
 
     This class handles the conversion between specific MIDI program numbers
     (0-127) and their broader instrument family categories (0-15).
+
+    Attributes:
+        n_jobs: Number of parallel jobs.
+        reference_programs: Mapping from family numbers to program numbers.
+        input_directory: Set dynamically by ``replace_tokens``.
+        output_directory: Set dynamically by ``replace_tokens``.
+        operation: Set dynamically by ``replace_tokens`` ("family" or "program").
     """
 
     def __init__(self, n_jobs: int = -1, arbitrary: bool = False) -> None:
@@ -82,6 +95,9 @@ class Familizer:
 
     def replace_instrument_token(self, token: str) -> str:
         """Replace a MIDI program number token with family/program number.
+
+        Requires ``self.operation`` to be set (via ``replace_tokens``)
+        to either ``"family"`` or ``"program"`` before calling.
 
         Args:
             token: Token like 'INST=86'.

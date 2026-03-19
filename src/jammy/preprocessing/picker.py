@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from jammy.utils import copy_file, get_files
+from jammy.file_utils import copy_file, get_files
 
 logger = logging.getLogger(__name__)
 

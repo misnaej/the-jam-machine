@@ -7,7 +7,7 @@ from miditok import Event
 from scipy import stats
 
 from jammy.constants import BEATS_PER_BAR
-from jammy.utils import int_dec_base_to_beat
+from jammy.midi_codec import int_dec_base_to_beat
 
 
 def add_bars(midi_events: list[list[Event]]) -> list[list[Event]]:

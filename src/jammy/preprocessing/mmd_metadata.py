@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 from fuzzywuzzy import fuzz
 
-from jammy.utils import load_jsonl
+from jammy.file_utils import load_jsonl
 
 
 class MetadataExtractor:

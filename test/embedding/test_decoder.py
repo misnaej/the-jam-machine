@@ -7,9 +7,9 @@ from typing import TYPE_CHECKING
 import pytest
 
 from jammy.embedding.decoder import TextDecoder
+from jammy.file_utils import read_from_file
 from jammy.generating.playback import get_music
 from jammy.generating.visualization import plot_piano_roll
-from jammy.utils import read_from_file
 from test.conftest import USE_FAMILIZED_MODEL
 
 if TYPE_CHECKING:

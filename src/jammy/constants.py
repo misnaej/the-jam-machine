@@ -123,8 +123,10 @@ INSTRUMENT_TRANSFER_CLASSES = [
 ]
 
 
-"Encoding and decoding constants"
+# Encoding and decoding constants
 
+# NOTE: Both quantization values are currently identical (4).
+# The distinction is preserved in case they need to diverge in the future.
 DRUMS_BEAT_QUANTIZATION = 4  # 8th notes per beat
 NONE_DRUMS_BEAT_QUANTIZATION = 4  # 4th notes per beat
 BEATS_PER_BAR = 4  # 4/4 time

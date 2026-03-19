@@ -50,7 +50,7 @@ def generate_and_save(
     logger.info("Generating new piece...")
 
     generator.generate_piece(tracks)
-    generated_piece = generator.get_whole_piece_from_bar_dict()
+    generated_piece = generator.get_piece_text()
 
     logger.info("Generated piece:\n%s", generated_piece)
 
