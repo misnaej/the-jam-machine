@@ -9,6 +9,7 @@ from jammy.constants import DRUMS_BEAT_QUANTIZATION, NONE_DRUMS_BEAT_QUANTIZATIO
 
 if TYPE_CHECKING:
     from miditok import Event
+
 from jammy.tokens import BAR_START, INST, NOTE_ON, TIME_DELTA
 from jammy.utils import get_event
 
