@@ -14,13 +14,13 @@ from joblib import Parallel, delayed
 from pretty_midi import PrettyMIDI, program_to_instrument_name
 
 from jammy.constants import INSTRUMENT_CLASSES
-from jammy.utils import compute_list_average, get_files
+from jammy.file_utils import get_files
+from jammy.utils import compute_list_average
 
 if TYPE_CHECKING:
     import pandas as pd
 
 # TODO: add data enrichment
-# TODO: include types
 # TODO: count most common combinations of instruments / instrument families
 #       (pairwise and trackwise)
 
@@ -633,7 +633,7 @@ class MidiStats:
         Returns:
             A list of statistics dictionaries for each successfully parsed file.
         """
-        midi_files = get_files(input_directory, "mid", recursive)
+        midi_files = get_files(Path(input_directory), "mid", recursive=recursive)
 
         statistics = Parallel(n_jobs, verbose=1)(
             delayed(self.single_file_statistics)(midi_file) for midi_file in midi_files

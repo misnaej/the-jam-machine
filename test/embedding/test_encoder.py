@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from jammy.embedding.encoder import from_midi_to_sectioned_text
+from jammy.file_utils import write_to_file
 from jammy.tokens import PIECE_START, TRACK_START
-from jammy.utils import write_to_file
 from test.conftest import USE_FAMILIZED_MODEL
 
 

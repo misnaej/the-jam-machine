@@ -1,6 +1,6 @@
 # Continuation Prompt
 
-**Branch:** `refactor/split-embedding-decoder` (PR pending → merge to `main`)
+**Branch:** `main` (all work merges to `main`)
 
 ## Context
 
@@ -20,30 +20,47 @@ Read `.plans/MASTER-PLAN.md` - it's the central reference with ordered phases.
 
 ## Current Status
 
-- Phases 1-7 ✅ Complete
-- Phase 8 (Split embedding/decoder.py) ✅ Complete
+- Phases 1-8 ✅ Complete
+- Phase 9 (Naming Fixes & Cleanup) ✅ Complete
 - All ruff lint checks pass ✅
 - Tests: 22 pass
 
-## What Phase 8 Did
+## What Phase 9 Did
 
-- Split 470-line `embedding/decoder.py` into 2 focused modules + slim orchestrator:
-  - `text_parsing.py` — `text_to_events`, `get_track_ids`, `piece_to_inst_events`, `get_bar_ids`
-  - `event_processing.py` — `add_missing_timeshifts_in_bar`, `remove_unwanted_tokens`, `check_for_duplicated_events`, `aggregate_timeshifts`, `add_velocity`, `_add_timeshifts`
-  - `decoder.py` (slimmed) — `TextDecoder` class: `__init__`, `decode`, `tokenize`, `get_midi`, `get_instruments_tuple`
-- Converted 10 `@staticmethod` + 1 pseudo-instance method to module functions
-- Renamed `add_missing_timeshifts_in_a_bar` → `add_missing_timeshifts_in_bar`
-- Made `add_timeshifts` private (`_add_timeshifts`)
-- Deleted `__main__` block (dead debug code)
-- No caller changes needed
+### Original Plan Items
+- Deleted `src/jammy/unused/` directory (2 dead files)
+- Removed dead `track_index` variable in `text_parsing.py`
+- Removed 3 legacy method aliases in `generate.py` (`get_whole_piece_from_bar_dict`, `get_whole_track_from_bar_dict`, `delete_one_track`)
+- Removed camelCase aliases (`writeToFile`, `readFromFile`) and deprecated `isJSON` param in `utils.py`
+- Removed dead `__main__` block in `generate.py`
+
+### Pre-existing Issues Fixed (from design/docs reviewer agents)
+- Split `utils.py` into focused modules: `midi_codec.py` (encoding/decoding), `file_utils.py` (file I/O), slim `utils.py` (generic helpers)
+- Removed `chain()` function (swallowed TypeError silently), inlined in `time_delta_to_int_dec_base`
+- Fixed `write_to_file` inconsistent `mkdir` (now applies to both dict and non-dict paths)
+- Extracted `get_beat_resolution()` helper (replaced 4 duplicate ternary patterns)
+- Fixed `preprocess.py`: added docstring, wrapped in `main()` guard, narrowed bare `except Exception` to specific types, removed dead comment, unified miditok config via `get_miditok()`
+- Renamed `set_nb_bars_generated` → `set_n_bars_generated`
+- Renamed `_check_for_errors` param `piece` → `piece_text`
+- Fixed hardcoded `"PIECE_START "` strings → `f"{PIECE_START} "` in `playground.py`
+- Added `GeneratorResult` NamedTuple (replaced 8-element tuple) with documented attributes
+- Extracted `SAMPLE_RATE` constant in `playground.py`
+- Added `@functools.wraps` to `timeit` decorator
+- Made `get_miditok()` a singleton via `@lru_cache(maxsize=1)`
+- Moved heavy imports (numpy, pydub, scipy, joblib) to lazy imports in `file_utils.py`
+- Removed dead re-exports from `utils.py`
+- Fixed bare string literal as section comment in `constants.py`
+- Added module docstring + class attribute docs to `familizer.py`
+- Fixed `get_stats` type hint mismatch in `midi_stats.py`
+- Removed stale `# TODO: include types` comment
+- Added explanatory comment on `get_event` about why if/elif vs match/case
 
 ## Next Steps (from MASTER-PLAN)
 
-1. **Phase 9**: Naming Fixes & Cleanup
-2. **Phase 10**: Add Unit Tests
-3. **Phase 11**: Genre Prediction Cleanup (Optional)
+1. **Phase 10**: Add Unit Tests
+2. **Phase 11**: Genre Prediction Cleanup (Optional)
 
-See `design-audit-implementation-plan.md` Phase 6 for detailed Phase 9 plan.
+See `test-coverage-audit.md` for Phase 10 details.
 
 ## Commands
 

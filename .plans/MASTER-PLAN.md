@@ -188,12 +188,14 @@ Split 470-line file into `text_parsing.py`, `event_processing.py` + slimmed `dec
 
 ---
 
-### Phase 9: Naming Fixes & Cleanup
+### Phase 9: Naming Fixes & Cleanup ✅
 **Effort:** ~1 hour | **Risk:** Low | **Impact:** Code quality
 
 Fix typos, remove dead code, delete `unused/` directory.
 
 **Details:** [Design Audit Implementation](./design-audit-implementation-plan.md) - Phase 6
+
+**Completed:** Deleted `unused/` directory, removed dead `track_index` variable, removed 3 legacy method aliases in `generate.py`, removed camelCase aliases and deprecated `isJSON` param in `utils.py`, removed dead `__main__` block, updated all callers.
 
 ---
 
@@ -542,5 +544,5 @@ git commit -m "refactor: add postponed annotations to all modules"
 ## Continuation Prompt
 
 **Last completed:** Phase 8 (Split `embedding/decoder.py`)
-**Next step:** Phase 9 (Naming Fixes & Cleanup)
+**Next step:** Phase 10 (Add Unit Tests)
 **Notes:** All ruff checks pass. 22 tests pass. On `refactor/split-embedding-decoder` branch.

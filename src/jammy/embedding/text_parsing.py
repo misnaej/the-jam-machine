@@ -5,13 +5,11 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any
 
-from jammy.constants import DRUMS_BEAT_QUANTIZATION, NONE_DRUMS_BEAT_QUANTIZATION
-
 if TYPE_CHECKING:
     from miditok import Event
 
+from jammy.midi_codec import get_beat_resolution, get_event
 from jammy.tokens import BAR_START, INST, NOTE_ON, TIME_DELTA
-from jammy.utils import get_event
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +26,6 @@ def text_to_events(text: str, verbose: bool = False) -> list[Event]:
     """
     events: list[Event] = []
     instrument = "drums"
-    track_index = -1
     bar_value = 0
     cumul_time_delta = 0
     max_cumul_time_delta = 0
@@ -39,18 +36,13 @@ def text_to_events(text: str, verbose: bool = False) -> list[Event]:
         beyond_quantization = False  # needs to be reset for each event
 
         if _event[0] == INST:
-            track_index += 1
             bar_value = 0  # reset bar count for new instrument
             # get the instrument for passing in get_event when time_delta
             # for proper quantization
             instrument = get_event(_event[0], value).value
 
             # how much delta can be added before over quantization
-            max_cumul_time_delta = (
-                DRUMS_BEAT_QUANTIZATION * 4
-                if instrument.lower() == "drums"
-                else NONE_DRUMS_BEAT_QUANTIZATION * 4
-            )
+            max_cumul_time_delta = get_beat_resolution(instrument) * 4
 
         if _event[0] == BAR_START:
             bar_value += 1
