@@ -27,7 +27,7 @@ class GenerationConfig:
     """Configuration for the generation engine.
 
     This dataclass is intentionally mutable (not frozen) because the Gradio
-    app adjusts generation parameters at runtime via ``set_nb_bars_generated``,
+    app adjusts generation parameters at runtime via ``set_n_bars_generated``,
     ``set_force_sequence_length``, and ``set_improvisation_level`` on the
     generator, which modify the config in place.
 

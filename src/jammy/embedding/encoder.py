@@ -9,7 +9,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from jammy.embedding import bar_processing, section_building, time_processing
-from jammy.utils import get_miditok, get_text
+from jammy.midi_codec import get_text
+from jammy.utils import get_miditok
 
 if TYPE_CHECKING:
     from miditok import Event, MIDILike

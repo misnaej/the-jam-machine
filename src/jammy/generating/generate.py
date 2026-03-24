@@ -75,7 +75,7 @@ class GenerateMidiText:
         self.engine.generate_until = config.generate_until_token
         self.engine.set_improvisation_level(config.improvisation_level)
 
-    def set_nb_bars_generated(self, n_bars: int = 8) -> None:
+    def set_n_bars_generated(self, n_bars: int = 8) -> None:
         """Set the number of bars to generate.
 
         Args:
@@ -136,36 +136,6 @@ class GenerateMidiText:
             Complete piece text.
         """
         return self.piece.build_piece_text()
-
-    # Legacy alias for backwards compatibility during transition
-    def get_whole_piece_from_bar_dict(self) -> str:
-        """Get full piece text from state (legacy alias).
-
-        Returns:
-            Complete piece text.
-        """
-        return self.get_piece_text()
-
-    # Legacy alias
-    def get_whole_track_from_bar_dict(self, track_id: int) -> str:
-        """Get full track text from state (legacy alias).
-
-        Args:
-            track_id: Track index.
-
-        Returns:
-            Track text with TRACK_END.
-        """
-        return self.get_track_text(track_id)
-
-    # Legacy alias
-    def delete_one_track(self, track_id: int) -> None:
-        """Delete a track from the piece (legacy alias).
-
-        Args:
-            track_id: Track index to delete.
-        """
-        self.delete_track(track_id)
 
     def _generate_until_track_end(
         self,
@@ -316,24 +286,20 @@ class GenerateMidiText:
 
         self._check_for_errors()
 
-    def _check_for_errors(self, piece: str | None = None) -> None:
+    def _check_for_errors(self, piece_text: str | None = None) -> None:
         """Check piece for invalid tokens.
 
         Args:
-            piece: Piece text to check (uses current state if None).
+            piece_text: Piece text to check (uses current state if None).
         """
-        if piece is None:
-            piece = self.get_piece_text()
+        if piece_text is None:
+            piece_text = self.get_piece_text()
 
-        for idx, midi_token in enumerate(piece.split(" ")):
+        for idx, midi_token in enumerate(piece_text.split(" ")):
             if midi_token not in self.tokenizer.vocab or midi_token == UNK:
                 logger.warning(
                     "Token not found in the piece at %d: %s",
                     idx,
                     midi_token,
                 )
-                logger.warning("Context: %s", piece.split(" ")[idx - 5 : idx + 5])
-
-
-if __name__ == "__main__":
-    pass
+                logger.warning("Context: %s", piece_text.split(" ")[idx - 5 : idx + 5])

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import sys
-from typing import Any
+from typing import Any, NamedTuple
 
 import gradio as gr
 import matplotlib
@@ -21,6 +21,7 @@ from jammy.generating.playback import get_music
 from jammy.generating.visualization import plot_piano_roll
 from jammy.logging_config import setup_logging
 from jammy.preprocessing.load import LoadModel
+from jammy.tokens import PIECE_START
 from jammy.utils import get_miditok
 
 matplotlib.use("Agg")
@@ -32,6 +33,7 @@ sys.modules["pylab"] = pylab
 
 MODEL_REPO = "JammyMachina/elec-gmusic-familized-model-13-12__17-35-53"
 N_BAR_GENERATED = 8
+SAMPLE_RATE = 44100
 
 model, tokenizer = LoadModel(
     MODEL_REPO,
@@ -40,6 +42,34 @@ model, tokenizer = LoadModel(
 
 miditok = get_miditok()
 decoder = TextDecoder(miditok)
+
+
+class GeneratorResult(NamedTuple):
+    """Result from the _generator function.
+
+    This is a NamedTuple (not a dataclass) because Gradio's event system
+    unpacks return values positionally into output components. NamedTuple
+    supports tuple unpacking natively, while dataclass would not.
+
+    Attributes:
+        inst_text: Generated text for the individual instrument track.
+        inst_audio: Tuple of (sample_rate, waveform) for the instrument.
+        piano_roll: Matplotlib figure of the piano roll visualization.
+        state: Updated list of track state dictionaries.
+        mixed_audio: Tuple of (sample_rate, waveform) for the full mix.
+        regenerate: Whether the track can be regenerated.
+        piece_by_track: Updated piece data organized by track.
+        output_file: Path to the output MIDI file.
+    """
+
+    inst_text: str
+    inst_audio: tuple[int, np.ndarray]
+    piano_roll: Figure
+    state: list[dict[str, Any]]
+    mixed_audio: tuple[int, np.ndarray]
+    regenerate: bool
+    piece_by_track: list[dict[str, Any]]
+    output_file: str
 
 
 def _define_prompt(state: list[dict[str, Any]], genesis: GenerateMidiText) -> str:
@@ -53,8 +83,8 @@ def _define_prompt(state: list[dict[str, Any]], genesis: GenerateMidiText) -> st
         The prompt string to use for generation.
     """
     if len(state) == 0:
-        return "PIECE_START "
-    return genesis.get_whole_piece_from_bar_dict()
+        return f"{PIECE_START} "
+    return genesis.get_piece_text()
 
 
 def _generator(
@@ -67,7 +97,7 @@ def _generator(
     piece_by_track: list[dict[str, Any]],
     add_bars: bool = False,
     add_bar_count: int = 1,
-) -> tuple[str, tuple[int, np.ndarray], Figure, list, tuple[int, np.ndarray], bool, list, str]:
+) -> GeneratorResult:
     """Generate music based on the given parameters.
 
     Args:
@@ -82,8 +112,7 @@ def _generator(
         add_bar_count: Number of bars to add.
 
     Returns:
-        Tuple of (inst_text, inst_audio, piano_roll, state, mixed_audio,
-                  regenerate, piece_by_track, output_file).
+        GeneratorResult with generated text, audio, piano roll, and updated state.
     """
     genesis = GenerateMidiText(model, tokenizer, piece_by_track)
     track = {
@@ -108,8 +137,8 @@ def _generator(
         # Regenerate
         if regenerate:
             state.pop(inst_index)
-            genesis.delete_one_track(inst_index)
-            genesis.get_whole_piece_from_bar_dict()  # refresh state
+            genesis.delete_track(inst_index)
+            genesis.get_piece_text()  # refresh state
             inst_index = -1  # reset to last generated
 
         # NEW TRACK
@@ -123,11 +152,11 @@ def _generator(
         genesis.generate_n_more_bars(add_bar_count)  # for all instruments
 
     # save the mix midi and get the mix audio
-    generated_text = genesis.get_whole_piece_from_bar_dict()
+    generated_text = genesis.get_piece_text()
     decoder.get_midi(generated_text, "mixed.mid")
     mixed_inst_midi, mixed_audio = get_music("mixed.mid")
     # get the instrument text MIDI
-    inst_text = genesis.get_whole_track_from_bar_dict(inst_index)
+    inst_text = genesis.get_track_text(inst_index)
     # save the instrument midi and get the instrument audio
     decoder.get_midi(inst_text, f"{instrument}.mid")
     _, inst_audio = get_music(f"{instrument}.mid")
@@ -135,16 +164,15 @@ def _generator(
     piano_roll = plot_piano_roll(mixed_inst_midi)
     track["text"] = inst_text
     state.append(track)
-    output_file = "./mixed.mid"
-    return (
-        inst_text,
-        (44100, inst_audio),
-        piano_roll,
-        state,
-        (44100, mixed_audio),
-        regenerate,
-        genesis.piece.piece_by_track,
-        output_file,
+    return GeneratorResult(
+        inst_text=inst_text,
+        inst_audio=(SAMPLE_RATE, inst_audio),
+        piano_roll=piano_roll,
+        state=state,
+        mixed_audio=(SAMPLE_RATE, mixed_audio),
+        regenerate=regenerate,
+        piece_by_track=genesis.piece.piece_by_track,
+        output_file="./mixed.mid",
     )
 
 
@@ -157,7 +185,7 @@ def _generated_text_from_state(state: list[dict[str, Any]]) -> str:
     Returns:
         Combined piece text.
     """
-    result = "PIECE_START "
+    result = f"{PIECE_START} "
     for track in state:
         result += track["text"]
     return result

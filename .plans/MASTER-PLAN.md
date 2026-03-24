@@ -188,16 +188,36 @@ Split 470-line file into `text_parsing.py`, `event_processing.py` + slimmed `dec
 
 ---
 
-### Phase 9: Naming Fixes & Cleanup
+### Phase 9: Naming Fixes & Cleanup ✅
 **Effort:** ~1 hour | **Risk:** Low | **Impact:** Code quality
 
 Fix typos, remove dead code, delete `unused/` directory.
 
 **Details:** [Design Audit Implementation](./design-audit-implementation-plan.md) - Phase 6
 
+**Completed:** Deleted `unused/` directory, removed dead `track_index` variable, removed 3 legacy method aliases in `generate.py`, removed camelCase aliases and deprecated `isJSON` param in `utils.py`, removed dead `__main__` block, updated all callers.
+
 ---
 
-### Phase 10: Add Unit Tests
+### Phase 10: Examples Reorganization
+**Effort:** ~1-2 hours | **Risk:** Low | **Impact:** DX, documentation
+
+Organize `examples/` with two runnable scripts: encode/decode roundtrip (using Reptilia MIDI) and generation. Clean up scattered MIDI artifacts and test side effects.
+
+**Details:** [Examples Reorganization](./examples-reorganization.md)
+
+---
+
+### Phase 11: Notebook Cleanup & GitHub Pages
+**Effort:** ~2-3 hours | **Risk:** Low | **Impact:** Documentation, DX
+
+Make `exploring_the_embedding.ipynb` re-runnable (fix hardcoded paths, load from HuggingFace Hub), move notebook deps (`bertviz`, `ipykernel`) to optional group in `pyproject.toml`, and publish as a GitHub Page.
+
+**Details:** [Notebook & GitHub Pages](./notebook-github-pages.md)
+
+---
+
+### Phase 12: Add Unit Tests
 **Effort:** ~4 hours | **Risk:** Low | **Impact:** Reliability
 
 Add unit tests for refactored modules, target 70% coverage.
@@ -206,7 +226,7 @@ Add unit tests for refactored modules, target 70% coverage.
 
 ---
 
-### Phase 11: Genre Prediction Cleanup (Optional)
+### Phase 13: Genre Prediction Cleanup (Optional)
 **Effort:** ~4 hours | **Risk:** Medium | **Impact:** Separate system
 
 Fix module-level execution, deduplicate code.
@@ -215,7 +235,7 @@ Fix module-level execution, deduplicate code.
 
 ---
 
-### Phase 12: Dedicated Output Folder
+### Phase 14: Dedicated Output Folder
 **Effort:** ~30 min | **Risk:** Low | **Impact:** UX, repo cleanliness
 
 Create a dedicated `output/` folder for generated MIDI and audio files.
@@ -234,7 +254,7 @@ Create a dedicated `output/` folder for generated MIDI and audio files.
 
 ---
 
-### Phase 13: Python 3.13 Upgrade (Advanced)
+### Phase 15: Python 3.13 Upgrade (Advanced)
 **Effort:** ~2-4 hours | **Risk:** High | **Impact:** Future-proofing
 
 Upgrade from Python 3.11 to Python 3.13.
@@ -542,5 +562,5 @@ git commit -m "refactor: add postponed annotations to all modules"
 ## Continuation Prompt
 
 **Last completed:** Phase 8 (Split `embedding/decoder.py`)
-**Next step:** Phase 9 (Naming Fixes & Cleanup)
+**Next step:** Phase 10 (Examples Reorganization)
 **Notes:** All ruff checks pass. 22 tests pass. On `refactor/split-embedding-decoder` branch.

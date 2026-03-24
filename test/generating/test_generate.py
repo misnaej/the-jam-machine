@@ -55,13 +55,13 @@ def test_generate_midi_text(
     generate_midi = GenerateMidiText(model, tokenizer)
 
     # Configure and generate
-    generate_midi.set_nb_bars_generated(n_bars=N_BAR_GENERATED)
+    generate_midi.set_n_bars_generated(n_bars=N_BAR_GENERATED)
     tracks = [
         TrackConfig(instrument=inst, density=dens, temperature=temperature)
         for inst, dens in zip(instrument_prompt_list, density_list, strict=True)
     ]
     generate_midi.generate_piece(tracks)
-    generated_piece = generate_midi.get_whole_piece_from_bar_dict()
+    generated_piece = generate_midi.get_piece_text()
 
     # Write output
     filename = write_text_midi_to_file(

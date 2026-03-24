@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from typing import TYPE_CHECKING
 
 import pytest
@@ -9,7 +10,6 @@ import pytest
 from jammy.embedding.decoder import TextDecoder
 from jammy.generating.playback import get_music
 from jammy.generating.visualization import plot_piano_roll
-from jammy.utils import read_from_file
 from test.conftest import USE_FAMILIZED_MODEL
 
 if TYPE_CHECKING:
@@ -34,7 +34,7 @@ def test_decode_midi_text(miditok: MIDILike, fixtures_dir: Path, tmp_path: Path)
     if not fixture_file.exists():
         pytest.skip(f"Missing test fixture file: {fixture_file}")
 
-    generated_piece = read_from_file(str(fixture_file), is_json=True)["generated_midi"]
+    generated_piece = json.loads(fixture_file.read_text())["generated_midi"]
 
     output_midi = tmp_path / "decoded_test.mid"
     TextDecoder(miditok, USE_FAMILIZED_MODEL).get_midi(generated_piece, filename=str(output_midi))
