@@ -208,7 +208,16 @@ Organize `examples/` with two runnable scripts: encode/decode roundtrip (using R
 
 ---
 
-### Phase 11: Add Unit Tests
+### Phase 11: Notebook Cleanup & GitHub Pages
+**Effort:** ~2-3 hours | **Risk:** Low | **Impact:** Documentation, DX
+
+Make `exploring_the_embedding.ipynb` re-runnable (fix hardcoded paths, load from HuggingFace Hub), move notebook deps (`bertviz`, `ipykernel`) to optional group in `pyproject.toml`, and publish as a GitHub Page.
+
+**Details:** [Notebook & GitHub Pages](./notebook-github-pages.md)
+
+---
+
+### Phase 12: Add Unit Tests
 **Effort:** ~4 hours | **Risk:** Low | **Impact:** Reliability
 
 Add unit tests for refactored modules, target 70% coverage.
@@ -217,7 +226,7 @@ Add unit tests for refactored modules, target 70% coverage.
 
 ---
 
-### Phase 12: Genre Prediction Cleanup (Optional)
+### Phase 13: Genre Prediction Cleanup (Optional)
 **Effort:** ~4 hours | **Risk:** Medium | **Impact:** Separate system
 
 Fix module-level execution, deduplicate code.
@@ -226,7 +235,7 @@ Fix module-level execution, deduplicate code.
 
 ---
 
-### Phase 13: Dedicated Output Folder
+### Phase 14: Dedicated Output Folder
 **Effort:** ~30 min | **Risk:** Low | **Impact:** UX, repo cleanliness
 
 Create a dedicated `output/` folder for generated MIDI and audio files.
@@ -245,7 +254,7 @@ Create a dedicated `output/` folder for generated MIDI and audio files.
 
 ---
 
-### Phase 14: Python 3.13 Upgrade (Advanced)
+### Phase 15: Python 3.13 Upgrade (Advanced)
 **Effort:** ~2-4 hours | **Risk:** High | **Impact:** Future-proofing
 
 Upgrade from Python 3.11 to Python 3.13.
