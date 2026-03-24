@@ -19,6 +19,7 @@ Follow all guidelines from `CLAUDE.md`, in particular:
 - **Never push to main** — always use feature branches + PRs
 - **Never use `--no-verify`** to skip hooks
 - **Never use `--force` push** nor `--force-with-lease`
+- **Never amend commits** — always create new commits
 - **Resolve conflicts** rather than discarding changes
 - **Run ruff check + format before committing** to ensure code is clean
 
