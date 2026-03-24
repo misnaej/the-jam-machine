@@ -82,11 +82,19 @@ def generate_and_save(
     logger.info("Done! MIDI saved to %s", midi_path)
 
 
-def main() -> None:
-    """Run the MIDI generation example."""
+DEFAULT_OUTPUT_DIR = "output/examples/generation"
+
+
+def main(output_dir: str = DEFAULT_OUTPUT_DIR) -> None:
+    """Run the MIDI generation example.
+
+    Args:
+        output_dir: Directory for output files. Defaults to
+            ``output/examples/generation/``.
+    """
     setup_logging(log_to_file=False)
 
-    output_dir = define_generation_dir("output/examples/generation")
+    output_dir = define_generation_dir(output_dir)
 
     model, tokenizer = LoadModel(MODEL_REPO, from_huggingface=True).load_model_and_tokenizer()
 

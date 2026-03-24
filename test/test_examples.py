@@ -20,6 +20,6 @@ def test_encode_decode_example(tmp_path: Path) -> None:
     assert (tmp_path / "the_strokes-reptilia_piano_roll.png").exists()
 
 
-def test_generate_example() -> None:
+def test_generate_example(tmp_path: Path) -> None:
     """Test that the generation example runs without errors."""
-    generate.main()
+    generate.main(output_dir=str(tmp_path))
