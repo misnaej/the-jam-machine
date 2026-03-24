@@ -199,7 +199,16 @@ Fix typos, remove dead code, delete `unused/` directory.
 
 ---
 
-### Phase 10: Add Unit Tests
+### Phase 10: Examples Reorganization
+**Effort:** ~1-2 hours | **Risk:** Low | **Impact:** DX, documentation
+
+Organize `examples/` with two runnable scripts: encode/decode roundtrip (using Reptilia MIDI) and generation. Clean up scattered MIDI artifacts and test side effects.
+
+**Details:** [Examples Reorganization](./examples-reorganization.md)
+
+---
+
+### Phase 11: Add Unit Tests
 **Effort:** ~4 hours | **Risk:** Low | **Impact:** Reliability
 
 Add unit tests for refactored modules, target 70% coverage.
@@ -208,7 +217,7 @@ Add unit tests for refactored modules, target 70% coverage.
 
 ---
 
-### Phase 11: Genre Prediction Cleanup (Optional)
+### Phase 12: Genre Prediction Cleanup (Optional)
 **Effort:** ~4 hours | **Risk:** Medium | **Impact:** Separate system
 
 Fix module-level execution, deduplicate code.
@@ -217,7 +226,7 @@ Fix module-level execution, deduplicate code.
 
 ---
 
-### Phase 12: Dedicated Output Folder
+### Phase 13: Dedicated Output Folder
 **Effort:** ~30 min | **Risk:** Low | **Impact:** UX, repo cleanliness
 
 Create a dedicated `output/` folder for generated MIDI and audio files.
@@ -236,7 +245,7 @@ Create a dedicated `output/` folder for generated MIDI and audio files.
 
 ---
 
-### Phase 13: Python 3.13 Upgrade (Advanced)
+### Phase 14: Python 3.13 Upgrade (Advanced)
 **Effort:** ~2-4 hours | **Risk:** High | **Impact:** Future-proofing
 
 Upgrade from Python 3.11 to Python 3.13.
@@ -544,5 +553,5 @@ git commit -m "refactor: add postponed annotations to all modules"
 ## Continuation Prompt
 
 **Last completed:** Phase 8 (Split `embedding/decoder.py`)
-**Next step:** Phase 10 (Add Unit Tests)
+**Next step:** Phase 10 (Examples Reorganization)
 **Notes:** All ruff checks pass. 22 tests pass. On `refactor/split-embedding-decoder` branch.
