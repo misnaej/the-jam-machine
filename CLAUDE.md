@@ -18,6 +18,7 @@ Custom skills (slash commands) and agents are the standard workflow tools. **Use
 |-------|-------------|
 | `/check` | Run tests + lint + format |
 | `/lint` | Run ruff check + format |
+| `/commit` | Lint, commit, and push to current branch |
 | `/review` | Run design-reviewer + docs-reviewer agents in parallel |
 | `/pr` | Run pr-reviewer agent → squash merge message |
 
