@@ -70,18 +70,11 @@ def main(output_dir: Path = DEFAULT_OUTPUT_DIR) -> None:
     # --- Decode text back to MIDI ---
     decoder = TextDecoder(tokenizer, familized=USE_FAMILIZED)
     midi_path = output_dir / "the_strokes-reptilia_decoded.mid"
-    try:
-        decoded_midi = decoder.get_midi(piece_text, filename=str(midi_path))
-        logger.info("Decoded MIDI saved to: %s", midi_path)
-        decoded_instrument_count = len(decoded_midi.instruments)
-    except KeyError as e:
-        # Some MIDI files produce tokens (e.g. zero time shifts) that aren't
-        # in the tokenizer vocabulary. This is a known limitation.
-        logger.warning("Decoding failed on token %s — skipping MIDI output", e)
-        decoded_instrument_count = 0
+    decoded_midi = decoder.get_midi(piece_text, filename=str(midi_path))
+    logger.info("Decoded MIDI saved to: %s", midi_path)
 
-    # --- Generate piano roll from original MIDI ---
-    inst_midi, _ = get_music(str(MIDI_INPUT))
+    # --- Generate piano roll visualization ---
+    inst_midi, _ = get_music(str(midi_path))
     piano_roll = plot_piano_roll(inst_midi)
     piano_roll_path = output_dir / "the_strokes-reptilia_piano_roll.png"
     piano_roll.savefig(str(piano_roll_path), bbox_inches="tight")
@@ -91,7 +84,7 @@ def main(output_dir: Path = DEFAULT_OUTPUT_DIR) -> None:
     # --- Summary ---
     logger.info("--- Roundtrip Summary ---")
     logger.info("Original instruments: %d", len(midi.instruments))
-    logger.info("Decoded instruments:  %d", decoded_instrument_count)
+    logger.info("Decoded instruments:  %d", len(decoded_midi.instruments))
     logger.info("Output directory:     %s", output_dir)
 
 

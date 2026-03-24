@@ -16,6 +16,7 @@ def test_encode_decode_example(tmp_path: Path) -> None:
 
     # Verify outputs were created
     assert (tmp_path / "the_strokes-reptilia_encoded.txt").exists()
+    assert (tmp_path / "the_strokes-reptilia_decoded.mid").exists()
     assert (tmp_path / "the_strokes-reptilia_piano_roll.png").exists()
 
 
