@@ -5,7 +5,6 @@ from __future__ import annotations
 import functools
 import json
 import logging
-import shutil
 from pathlib import Path
 from time import perf_counter
 from typing import TYPE_CHECKING, TypeVar
@@ -13,8 +12,6 @@ from zipfile import ZIP_DEFLATED, ZipFile
 
 if TYPE_CHECKING:
     from collections.abc import Callable
-
-    import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -62,28 +59,6 @@ def write_to_file(path: str | Path, content: dict[str, object] | str | object) -
             f.write(content)
 
 
-def read_from_file(
-    path: str | Path,
-    *,
-    is_json: bool = False,
-) -> str | dict[str, object]:
-    """Read content from a file.
-
-    Args:
-        path: The file path to read from.
-        is_json: If True, parse the file as JSON.
-
-    Returns:
-        The file content as a string or parsed JSON object.
-    """
-    path = Path(path)
-    with path.open() as f:
-        if is_json:
-            return json.load(f)
-        else:
-            return f.read()
-
-
 def get_files(directory: Path, extension: str, *, recursive: bool = False) -> list[Path]:
     """Get a list of file paths matching a specified extension.
 
@@ -114,38 +89,6 @@ def load_jsonl(filepath: str | Path) -> list[dict[str, object]]:
     with filepath.open() as f:
         data = [json.loads(line) for line in f]
     return data
-
-
-def write_mp3(waveform: np.ndarray, output_path: Path, bitrate: str = "92k") -> None:
-    """Write a waveform to an MP3 file.
-
-    Args:
-        waveform: Numpy array of the waveform data.
-        output_path: Path object for the output MP3 file.
-        bitrate: Bitrate of the MP3 file (64k, 92k, 128k, 256k, 312k).
-    """
-    import numpy as np
-    from pydub import AudioSegment
-    from scipy.io.wavfile import write
-
-    # write the wav file
-    wav_path = output_path.with_suffix(".wav")
-    write(wav_path, 44100, waveform.astype(np.float32))
-    # compress the wav file as mp3
-    AudioSegment.from_wav(wav_path).export(output_path, format="mp3", bitrate=bitrate)
-    # remove the wav file
-    wav_path.unlink()
-
-
-def copy_file(input_file: Path, output_dir: Path) -> None:
-    """Copy an input file to the output directory.
-
-    Args:
-        input_file: Path to the file to copy.
-        output_dir: Path to the destination directory.
-    """
-    output_file = output_dir / input_file.name
-    shutil.copy(input_file, output_file)
 
 
 class FileCompressor:

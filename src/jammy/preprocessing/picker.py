@@ -8,11 +8,12 @@ Searches for all MIDI files in the input folder and copies matches to output.
 from __future__ import annotations
 
 import logging
+import shutil
 from pathlib import Path
 
 import pandas as pd
 
-from jammy.file_utils import copy_file, get_files
+from jammy.file_utils import get_files
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +38,7 @@ def pick_midis(input_dir: Path, output_dir: Path, reference_file: Path) -> None:
 
     # copy all files from the file_paths list to the output folder
     for f in file_paths:
-        copy_file(f, output_dir)
+        shutil.copy(f, output_dir / f.name)
 
     logger.info("All tracks copied successfully")
 

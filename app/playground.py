@@ -47,6 +47,10 @@ decoder = TextDecoder(miditok)
 class GeneratorResult(NamedTuple):
     """Result from the _generator function.
 
+    This is a NamedTuple (not a dataclass) because Gradio's event system
+    unpacks return values positionally into output components. NamedTuple
+    supports tuple unpacking natively, while dataclass would not.
+
     Attributes:
         inst_text: Generated text for the individual instrument track.
         inst_audio: Tuple of (sample_rate, waveform) for the instrument.

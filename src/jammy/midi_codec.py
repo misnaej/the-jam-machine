@@ -27,6 +27,38 @@ from jammy.tokens import (
 if TYPE_CHECKING:
     from miditok import Event
 
+# --- Encoding mappings (Event type → text token) ---
+
+# Event types that produce a bare token with no value (e.g. "PIECE_START ")
+_EVENT_NO_VALUE: dict[str, str] = {
+    "Piece-Start": PIECE_START,
+    "Track-Start": TRACK_START,
+    "Track-End": TRACK_END,
+    "Bar-Start": BAR_START,
+    "Bar-End": BAR_END,
+}
+
+# Event types that produce "TOKEN=value " format
+_EVENT_WITH_VALUE: dict[str, str] = {
+    "Density": DENSITY,
+    "Note-On": NOTE_ON,
+    "Note-Off": NOTE_OFF,
+}
+
+# --- Decoding mappings (text token → Event type) ---
+
+# Simple token-to-event-type mapping (value passed through unchanged)
+_TEXT_TO_EVENT_TYPE: dict[str, str] = {
+    PIECE_START: "Piece-Start",
+    TRACK_START: "Track-Start",
+    TRACK_END: "Track-End",
+    BAR_START: "Bar-Start",
+    BAR_END: "Bar-End",
+    TIME_SHIFT: "Time-Shift",
+    NOTE_ON: "Note-On",
+    NOTE_OFF: "Note-Off",
+}
+
 
 def get_beat_resolution(instrument: str) -> int:
     """Get the beat quantization resolution for an instrument.
@@ -101,32 +133,24 @@ def get_text(event: Event, instrument: str = "drums") -> str:
     Returns:
         The text representation of the event.
     """
-    match event.type:
-        case "Piece-Start":
-            return f"{PIECE_START} "
-        case "Track-Start":
-            return f"{TRACK_START} "
-        case "Track-End":
-            return f"{TRACK_END} "
-        case "Instrument":
-            if str(event.value).lower() == "drums":
-                return f"{INST}={DRUMS} "
-            else:
-                return f"{INST}={event.value} "
-        case "Density":
-            return f"{DENSITY}={event.value} "
-        case "Bar-Start":
-            return f"{BAR_START} "
-        case "Bar-End":
-            return f"{BAR_END} "
-        case "Time-Shift":
-            return f"{TIME_DELTA}={int_dec_base_to_delta(event.value, instrument)} "
-        case "Note-On":
-            return f"{NOTE_ON}={event.value} "
-        case "Note-Off":
-            return f"{NOTE_OFF}={event.value} "
-        case _:
-            return ""
+    # Bare tokens (no value)
+    if event.type in _EVENT_NO_VALUE:
+        return f"{_EVENT_NO_VALUE[event.type]} "
+
+    # Tokens with "TOKEN=value" format
+    if event.type in _EVENT_WITH_VALUE:
+        return f"{_EVENT_WITH_VALUE[event.type]}={event.value} "
+
+    # Special cases requiring custom logic
+    if event.type == "Instrument":
+        if str(event.value).lower() == "drums":
+            return f"{INST}={DRUMS} "
+        return f"{INST}={event.value} "
+
+    if event.type == "Time-Shift":
+        return f"{TIME_DELTA}={int_dec_base_to_delta(event.value, instrument)} "
+
+    return ""
 
 
 # Decoding functions
@@ -182,11 +206,7 @@ def time_delta_to_int_dec_base(time_delta: int | str, instrument: str = "drums")
 
 
 def get_event(text: str, value: str | None = None, instrument: str = "drums") -> Event | None:
-    """Convert a midi-text like event into a miditok like event.
-
-    Uses if/elif instead of match/case because the comparisons are against
-    imported module variables (e.g. PIECE_START), which match/case treats
-    as capture patterns rather than value comparisons.
+    """Convert a midi-text token into a miditok Event.
 
     Args:
         text: The event type text (e.g., "PIECE_START", "NOTE_ON").
@@ -198,27 +218,17 @@ def get_event(text: str, value: str | None = None, instrument: str = "drums") ->
     """
     from miditok import Event
 
-    if text == PIECE_START:
-        return Event("Piece-Start", value)
-    elif text == TRACK_START:
-        return Event("Track-Start", value)
-    elif text == TRACK_END:
-        return Event("Track-End", value)
-    elif text == INST:
+    # Simple mappings (value passed through unchanged)
+    if text in _TEXT_TO_EVENT_TYPE:
+        return Event(_TEXT_TO_EVENT_TYPE[text], value)
+
+    # Special cases requiring custom logic
+    if text == INST:
         if value == DRUMS:
             value = "Drums"
         return Event("Instrument", value)
-    elif text == BAR_START:
-        return Event("Bar-Start", value)
-    elif text == BAR_END:
-        return Event("Bar-End", value)
-    elif text == TIME_SHIFT:
-        return Event("Time-Shift", value)
-    elif text == TIME_DELTA:
+
+    if text == TIME_DELTA:
         return Event("Time-Shift", time_delta_to_int_dec_base(value, instrument))
-    elif text == NOTE_ON:
-        return Event("Note-On", value)
-    elif text == NOTE_OFF:
-        return Event("Note-Off", value)
-    else:
-        return None
+
+    return None
