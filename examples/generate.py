@@ -1,4 +1,14 @@
-"""Example script demonstrating MIDI generation with The Jam Machine."""
+"""Example: Generate new MIDI music with The Jam Machine.
+
+Generates a multi-track piece using the GPT-2 model, then decodes it
+to MIDI and saves a piano roll visualization.
+
+Setup:
+    pipenv install -e "."
+
+Usage:
+    pipenv run python examples/generate.py
+"""
 
 from __future__ import annotations
 
@@ -76,7 +86,7 @@ def main() -> None:
     """Run the MIDI generation example."""
     setup_logging(log_to_file=False)
 
-    output_dir = define_generation_dir(f"midi/generated/{MODEL_REPO}")
+    output_dir = define_generation_dir("output/examples/generation")
 
     model, tokenizer = LoadModel(MODEL_REPO, from_huggingface=True).load_model_and_tokenizer()
 

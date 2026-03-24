@@ -199,12 +199,14 @@ Fix typos, remove dead code, delete `unused/` directory.
 
 ---
 
-### Phase 10: Examples Reorganization
+### Phase 10: Examples Reorganization ✅
 **Effort:** ~1-2 hours | **Risk:** Low | **Impact:** DX, documentation
 
 Organize `examples/` with two runnable scripts: encode/decode roundtrip (using Reptilia MIDI) and generation. Clean up scattered MIDI artifacts and test side effects.
 
 **Details:** [Examples Reorganization](./examples-reorganization.md)
+
+**Completed:** Created `encode_decode.py`, renamed `generation_playground.py` → `generate.py`, fixed test side effects, cleaned up MIDI artifacts, added README, output to `output/examples/` (gitignored). 23 tests pass.
 
 ---
 
@@ -562,5 +564,5 @@ git commit -m "refactor: add postponed annotations to all modules"
 ## Continuation Prompt
 
 **Last completed:** Phase 8 (Split `embedding/decoder.py`)
-**Next step:** Phase 10 (Examples Reorganization)
+**Next step:** Phase 11 (Notebook Cleanup & GitHub Pages)
 **Notes:** All ruff checks pass. 22 tests pass. On `refactor/split-embedding-decoder` branch.
