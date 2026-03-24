@@ -4,6 +4,25 @@ Demonstrates the encoding/decoding pipeline using The Strokes - Reptilia
 as a reference MIDI file. This is the same pipeline used to prepare
 training data for the GPT-2 model.
 
+Pipeline overview::
+
+    MIDI File
+      → miditok extracts events (Note-On, Time-Shift, etc.)
+      → Time shifts are quantized to a fixed resolution
+      → Bar markers and density annotations are added
+      → Instruments are grouped into families (128 programs → 16 families)
+      → Events are serialized to text tokens
+      → Text tokens can be decoded back to MIDI
+
+Quantization caveat:
+    Time is quantized to 4 steps per beat (8th-note resolution).
+    Sub-quantization timing — such as near-simultaneous notes in guitar
+    strums, grace notes, or humanized timing offsets — is rounded to the
+    nearest step. Offsets smaller than one step are discarded entirely.
+    This means the decoded MIDI will not perfectly reproduce the original
+    timing. The quantization resolution is fixed by the trained model's
+    vocabulary and cannot be changed without retraining.
+
 Setup:
     pipenv install -e "."
 
