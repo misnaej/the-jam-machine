@@ -1,0 +1,111 @@
+"""Example: Encode a MIDI file to text tokens and decode back to MIDI.
+
+Demonstrates the encoding/decoding pipeline using The Strokes - Reptilia
+as a reference MIDI file. This is the same pipeline used to prepare
+training data for the GPT-2 model.
+
+Pipeline overview::
+
+    MIDI File
+      → miditok extracts events (Note-On, Time-Shift, etc.)
+      → Time shifts are quantized to a fixed resolution
+      → Bar markers and density annotations are added
+      → Instruments are grouped into families (128 programs → 16 families)
+      → Events are serialized to text tokens
+      → Text tokens can be decoded back to MIDI
+
+Quantization caveat:
+    Time is quantized to 4 steps per beat (8th-note resolution).
+    Sub-quantization timing — such as near-simultaneous notes in guitar
+    strums, grace notes, or humanized timing offsets — is rounded to the
+    nearest step. Offsets smaller than one step are discarded entirely.
+    This means the decoded MIDI will not perfectly reproduce the original
+    timing. The quantization resolution is fixed by the trained model's
+    vocabulary and cannot be changed without retraining.
+
+Setup:
+    pipenv install -e "."
+
+Usage:
+    pipenv run python examples/encode_decode.py
+"""
+
+from __future__ import annotations
+
+import logging
+from pathlib import Path
+
+from jammy.embedding.decoder import TextDecoder
+from jammy.embedding.encoder import MIDIEncoder
+from jammy.file_utils import write_to_file
+from jammy.generating.playback import get_music
+from jammy.generating.visualization import plot_piano_roll
+from jammy.logging_config import setup_logging
+from jammy.utils import get_miditok
+
+logger = logging.getLogger(__name__)
+
+MIDI_INPUT = Path("midi/the_strokes-reptilia.mid")
+USE_FAMILIZED = True
+DEFAULT_OUTPUT_DIR = "output/examples/encode_decode"
+
+
+def main(output_dir: str | Path = DEFAULT_OUTPUT_DIR) -> None:
+    """Run the encode/decode roundtrip example.
+
+    Args:
+        output_dir: Directory for output files. Defaults to
+            ``output/examples/encode_decode/``.
+    """
+    setup_logging(log_to_file=False)
+
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # --- Encode MIDI to text ---
+    logger.info("Loading MIDI file: %s", MIDI_INPUT)
+    # Runtime import — miditoolkit is heavy
+    from miditoolkit import MidiFile
+
+    midi = MidiFile(str(MIDI_INPUT))
+    logger.info(
+        "MIDI loaded: %d instruments, %d ticks per beat",
+        len(midi.instruments),
+        midi.ticks_per_beat,
+    )
+
+    tokenizer = get_miditok()
+    encoder = MIDIEncoder(tokenizer, familized=USE_FAMILIZED)
+    piece_text = encoder.get_piece_text(midi)
+
+    logger.info("Encoded text length: %d characters", len(piece_text))
+    logger.info("Preview: %s...", piece_text[:200])
+
+    # Save encoded text
+    text_path = output_dir / "the_strokes-reptilia_encoded.txt"
+    write_to_file(text_path, piece_text)
+    logger.info("Encoded text saved to: %s", text_path)
+
+    # --- Decode text back to MIDI ---
+    decoder = TextDecoder(tokenizer, familized=USE_FAMILIZED)
+    midi_path = output_dir / "the_strokes-reptilia_decoded.mid"
+    decoded_midi = decoder.get_midi(piece_text, filename=str(midi_path))
+    logger.info("Decoded MIDI saved to: %s", midi_path)
+
+    # --- Generate piano roll visualization ---
+    inst_midi, _ = get_music(str(midi_path))
+    piano_roll = plot_piano_roll(inst_midi)
+    piano_roll_path = output_dir / "the_strokes-reptilia_piano_roll.png"
+    piano_roll.savefig(str(piano_roll_path), bbox_inches="tight")
+    piano_roll.clear()
+    logger.info("Piano roll saved to: %s", piano_roll_path)
+
+    # --- Summary ---
+    logger.info("--- Roundtrip Summary ---")
+    logger.info("Original instruments: %d", len(midi.instruments))
+    logger.info("Decoded instruments:  %d", len(decoded_midi.instruments))
+    logger.info("Output directory:     %s", output_dir)
+
+
+if __name__ == "__main__":
+    main()

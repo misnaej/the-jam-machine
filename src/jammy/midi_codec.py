@@ -2,6 +2,14 @@
 
 Converts between miditok Event objects and the text token format
 used by the GPT-2 model.
+
+Note: Encoding quantizes time to a fixed resolution (see
+``DRUMS_BEAT_QUANTIZATION`` and ``NONE_DRUMS_BEAT_QUANTIZATION`` in
+``constants.py``). Time offsets smaller than one quantization step
+(e.g. near-simultaneous notes in guitar strums) are rounded to zero
+and discarded. This is a lossy transformation — the decoded MIDI will
+not perfectly reproduce the original timing at sub-quantization
+resolution.
 """
 
 from __future__ import annotations
@@ -148,7 +156,10 @@ def get_text(event: Event, instrument: str = "drums") -> str:
         return f"{INST}={event.value} "
 
     if event.type == "Time-Shift":
-        return f"{TIME_DELTA}={int_dec_base_to_delta(event.value, instrument)} "
+        delta = int_dec_base_to_delta(event.value, instrument)
+        if delta == 0:
+            return ""  # skip zero time shifts (sub-quantization rounding)
+        return f"{TIME_DELTA}={delta} "
 
     return ""
 
@@ -229,6 +240,8 @@ def get_event(text: str, value: str | None = None, instrument: str = "drums") ->
         return Event("Instrument", value)
 
     if text == TIME_DELTA:
+        if value is not None and int(value) == 0:
+            return None  # skip zero time shifts
         return Event("Time-Shift", time_delta_to_int_dec_base(value, instrument))
 
     return None

@@ -1,4 +1,14 @@
-"""Example script demonstrating MIDI generation with The Jam Machine."""
+"""Example: Generate new MIDI music with The Jam Machine.
+
+Generates a multi-track piece using the GPT-2 model, then decodes it
+to MIDI and saves a piano roll visualization.
+
+Setup:
+    pipenv install -e "."
+
+Usage:
+    pipenv run python examples/generate.py
+"""
 
 from __future__ import annotations
 
@@ -28,6 +38,7 @@ MODEL_REPO = "JammyMachina/elec-gmusic-familized-model-13-12__17-35-53"
 USE_FAMILIZED_MODEL = True
 N_BARS = 8
 TEMPERATURE = 0.7
+DEFAULT_OUTPUT_DIR = "output/examples/generation"
 TRACKS = [
     TrackConfig(instrument="DRUMS", density=3, temperature=TEMPERATURE),
     TrackConfig(instrument="4", density=2, temperature=TEMPERATURE),
@@ -72,11 +83,16 @@ def generate_and_save(
     logger.info("Done! MIDI saved to %s", midi_path)
 
 
-def main() -> None:
-    """Run the MIDI generation example."""
+def main(output_dir: str | Path = DEFAULT_OUTPUT_DIR) -> None:
+    """Run the MIDI generation example.
+
+    Args:
+        output_dir: Directory for output files. Defaults to
+            ``output/examples/generation/``.
+    """
     setup_logging(log_to_file=False)
 
-    output_dir = define_generation_dir(f"midi/generated/{MODEL_REPO}")
+    output_dir = define_generation_dir(output_dir)
 
     model, tokenizer = LoadModel(MODEL_REPO, from_huggingface=True).load_model_and_tokenizer()
 

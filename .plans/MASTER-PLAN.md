@@ -199,21 +199,23 @@ Fix typos, remove dead code, delete `unused/` directory.
 
 ---
 
-### Phase 10: Examples Reorganization
+### Phase 10: Examples Reorganization ✅
 **Effort:** ~1-2 hours | **Risk:** Low | **Impact:** DX, documentation
 
 Organize `examples/` with two runnable scripts: encode/decode roundtrip (using Reptilia MIDI) and generation. Clean up scattered MIDI artifacts and test side effects.
 
 **Details:** [Examples Reorganization](./examples-reorganization.md)
 
+**Completed:** Created `encode_decode.py`, renamed `generation_playground.py` → `generate.py`, fixed test side effects, cleaned up MIDI artifacts, added README, output to `output/examples/` (gitignored). 23 tests pass.
+
 ---
 
-### Phase 11: Notebook Cleanup & GitHub Pages
-**Effort:** ~2-3 hours | **Risk:** Low | **Impact:** Documentation, DX
+### Phase 11: GitHub Pages Documentation Site
+**Effort:** ~4-6 hours | **Risk:** Low | **Impact:** Documentation, DX
 
-Make `exploring_the_embedding.ipynb` re-runnable (fix hardcoded paths, load from HuggingFace Hub), move notebook deps (`bertviz`, `ipykernel`) to optional group in `pyproject.toml`, and publish as a GitHub Page.
+Build a GitHub Pages site with: landing page (what is The Jam Machine), encoding/decoding guide (pipeline walkthrough, quantization caveats, worked Reptilia example), and the embedding explorer notebook rendered as HTML. Also fix the notebook (hardcoded paths, broken cells, move deps to optional group).
 
-**Details:** [Notebook & GitHub Pages](./notebook-github-pages.md)
+**Details:** [GitHub Pages](./github-pages.md)
 
 ---
 
@@ -562,5 +564,5 @@ git commit -m "refactor: add postponed annotations to all modules"
 ## Continuation Prompt
 
 **Last completed:** Phase 8 (Split `embedding/decoder.py`)
-**Next step:** Phase 10 (Examples Reorganization)
+**Next step:** Phase 11 (Notebook Cleanup & GitHub Pages)
 **Notes:** All ruff checks pass. 22 tests pass. On `refactor/split-embedding-decoder` branch.

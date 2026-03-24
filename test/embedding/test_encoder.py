@@ -2,13 +2,17 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from jammy.embedding.encoder import from_midi_to_sectioned_text
-from jammy.file_utils import write_to_file
 from jammy.tokens import PIECE_START, TRACK_START
 from test.conftest import USE_FAMILIZED_MODEL
 
+if TYPE_CHECKING:
+    from pathlib import Path
 
-def test_encode_midi_file() -> None:
+
+def test_encode_midi_file(tmp_path: Path) -> None:
     """Test encoding a MIDI file to text representation.
 
     Verifies that:
@@ -18,8 +22,11 @@ def test_encode_midi_file() -> None:
     midi_filename = "midi/the_strokes-reptilia"
 
     piece_text = from_midi_to_sectioned_text(midi_filename, familized=USE_FAMILIZED_MODEL)
-    write_to_file(f"{midi_filename}_from_midi.txt", piece_text)
 
     assert piece_text is not None
     assert PIECE_START in piece_text
     assert TRACK_START in piece_text
+
+    # Write output to tmp_path (not the repo root)
+    output_file = tmp_path / "the_strokes-reptilia_from_midi.txt"
+    output_file.write_text(piece_text)
