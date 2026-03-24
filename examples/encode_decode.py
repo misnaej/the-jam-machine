@@ -28,10 +28,10 @@ logger = logging.getLogger(__name__)
 
 MIDI_INPUT = Path("midi/the_strokes-reptilia.mid")
 USE_FAMILIZED = True
-DEFAULT_OUTPUT_DIR = Path("output/examples/encode_decode")
+DEFAULT_OUTPUT_DIR = "output/examples/encode_decode"
 
 
-def main(output_dir: Path = DEFAULT_OUTPUT_DIR) -> None:
+def main(output_dir: str | Path = DEFAULT_OUTPUT_DIR) -> None:
     """Run the encode/decode roundtrip example.
 
     Args:

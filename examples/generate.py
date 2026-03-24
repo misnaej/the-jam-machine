@@ -38,6 +38,7 @@ MODEL_REPO = "JammyMachina/elec-gmusic-familized-model-13-12__17-35-53"
 USE_FAMILIZED_MODEL = True
 N_BARS = 8
 TEMPERATURE = 0.7
+DEFAULT_OUTPUT_DIR = "output/examples/generation"
 TRACKS = [
     TrackConfig(instrument="DRUMS", density=3, temperature=TEMPERATURE),
     TrackConfig(instrument="4", density=2, temperature=TEMPERATURE),
@@ -82,10 +83,7 @@ def generate_and_save(
     logger.info("Done! MIDI saved to %s", midi_path)
 
 
-DEFAULT_OUTPUT_DIR = "output/examples/generation"
-
-
-def main(output_dir: str = DEFAULT_OUTPUT_DIR) -> None:
+def main(output_dir: str | Path = DEFAULT_OUTPUT_DIR) -> None:
     """Run the MIDI generation example.
 
     Args:
