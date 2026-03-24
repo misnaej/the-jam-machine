@@ -2,6 +2,14 @@
 
 Converts between miditok Event objects and the text token format
 used by the GPT-2 model.
+
+Note: Encoding quantizes time to a fixed resolution (see
+``DRUMS_BEAT_QUANTIZATION`` and ``NONE_DRUMS_BEAT_QUANTIZATION`` in
+``constants.py``). Time offsets smaller than one quantization step
+(e.g. near-simultaneous notes in guitar strums) are rounded to zero
+and discarded. This is a lossy transformation — the decoded MIDI will
+not perfectly reproduce the original timing at sub-quantization
+resolution.
 """
 
 from __future__ import annotations

@@ -210,12 +210,12 @@ Organize `examples/` with two runnable scripts: encode/decode roundtrip (using R
 
 ---
 
-### Phase 11: Notebook Cleanup & GitHub Pages
-**Effort:** ~2-3 hours | **Risk:** Low | **Impact:** Documentation, DX
+### Phase 11: GitHub Pages Documentation Site
+**Effort:** ~4-6 hours | **Risk:** Low | **Impact:** Documentation, DX
 
-Make `exploring_the_embedding.ipynb` re-runnable (fix hardcoded paths, load from HuggingFace Hub), move notebook deps (`bertviz`, `ipykernel`) to optional group in `pyproject.toml`, and publish as a GitHub Page.
+Build a GitHub Pages site with: landing page (what is The Jam Machine), encoding/decoding guide (pipeline walkthrough, quantization caveats, worked Reptilia example), and the embedding explorer notebook rendered as HTML. Also fix the notebook (hardcoded paths, broken cells, move deps to optional group).
 
-**Details:** [Notebook & GitHub Pages](./notebook-github-pages.md)
+**Details:** [GitHub Pages](./github-pages.md)
 
 ---
 
