@@ -93,7 +93,6 @@ quote-style = "double"
 indent-style = "space"
 
 [tool.bandit]
-exclude_dirs = ["test/", "examples/"]
 skips = ["B101", "B311", "B105", "B106"]
 
 [tool.interrogate]

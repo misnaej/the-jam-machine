@@ -71,11 +71,7 @@ class LoadModel:
         Returns:
             The loaded GPT-2 language model.
         """
-        if self.revision is None:
-            model = GPT2LMHeadModel.from_pretrained(self.path)
-        else:
-            model = GPT2LMHeadModel.from_pretrained(self.path, revision=self.revision)
-        return model
+        return GPT2LMHeadModel.from_pretrained(self.path, revision=self.revision)
 
     def load_tokenizer(self) -> PreTrainedTokenizerFast:
         """Load the tokenizer.
@@ -90,5 +86,4 @@ class LoadModel:
             tokenizer_path = Path(self.path) / "tokenizer.json"
             if not tokenizer_path.exists():
                 raise FileNotFoundError(f"No 'tokenizer.json' file in {self.path}")
-        tokenizer = PreTrainedTokenizerFast.from_pretrained(self.path)
-        return tokenizer
+        return PreTrainedTokenizerFast.from_pretrained(self.path, revision=self.revision)

@@ -35,7 +35,9 @@ logger = logging.getLogger(__name__)
 # CONFIG:
 DATASET_NAME = "improved_4bars"
 HF_DATASET_REPO = f"JammyMachina/{DATASET_NAME}"
+HF_DATASET_REVISION = "30d476e0fe81cb982b0b85660b21fdcf788fe56f"
 HF_MODEL_REPO = f"{HF_DATASET_REPO}-mdl"
+HF_MODEL_REVISION = "27b0db76a0ff95ba299852c19806f1d7387e6149"
 MODEL_PATH = f"models/{DATASET_NAME}"
 TRAIN_FROM_CHECKPOINT = True
 EVAL_STEPS = 1024
@@ -57,10 +59,13 @@ data = load_dataset(
     HF_DATASET_REPO,
     data_files={"train": "train/*.zip", "eval": "validate/*.zip"},
     use_auth_token=HF_READ_TOKEN,
+    revision=HF_DATASET_REVISION,
 )
 
 if TRAIN_FROM_CHECKPOINT:
-    tokenizer = AutoTokenizer.from_pretrained(HF_MODEL_REPO, use_auth_token=HF_READ_TOKEN)
+    tokenizer = AutoTokenizer.from_pretrained(
+        HF_MODEL_REPO, use_auth_token=HF_READ_TOKEN, revision=HF_MODEL_REVISION
+    )
 else:
     tokenizer = train_tokenizer(MODEL_PATH, data["train"])
 

@@ -76,9 +76,9 @@ else
     # --- Security - Bandit ---
     echo "=== Security - Bandit ==="
     if command -v bandit &> /dev/null || pipenv run bandit --version &> /dev/null 2>&1; then
-        if ! pipenv run bandit -r src/jammy/ -c pyproject.toml -q; then
+        if ! pipenv run bandit -r src/ test/ app/ examples/ -c pyproject.toml -q; then
             echo "ERROR: Bandit found security issues."
-            echo "Run 'pipenv run bandit -r src/jammy/ -c pyproject.toml' for details."
+            echo "Run 'pipenv run bandit -r src/ test/ app/ examples/ -c pyproject.toml' for details."
             FAILED=1
         fi
     else
