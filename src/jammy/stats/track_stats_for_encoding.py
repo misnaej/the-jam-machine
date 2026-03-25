@@ -179,7 +179,5 @@ def stats_on_track(
     return stats
 
 
-# stats_on_track(midi_filename="655db1f86bc729a4af2167a2412ec29e")
-# stats_on_track(midi_filename="655a978c1de484a12e0ab2fd187d64f8")
-# stats_on_track(midi_filename="655c39feef571bbe52e9270994d8e6c5")
-stats_on_track()
+if __name__ == "__main__":
+    stats_on_track()

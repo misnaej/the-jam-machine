@@ -417,7 +417,7 @@ def average_tempo(pm: PrettyMIDI) -> int | None:
     """
     try:
         return round(pm.estimate_tempo())
-    except Exception:
+    except (ValueError, RuntimeError):
         logger.debug("Failed to estimate tempo for MIDI file")
         return None
 
@@ -560,7 +560,7 @@ class MidiStats:
         # Some Midi files are corrupted and cannot be parsed by PrettyMIDI
         try:
             pm = PrettyMIDI(str(midi_file))
-        except Exception:
+        except (OSError, ValueError, KeyError, EOFError):
             logger.warning("Failed to parse MIDI file: %s", midi_file)
             return None
 

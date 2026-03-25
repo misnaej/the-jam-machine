@@ -4,8 +4,6 @@ from __future__ import annotations
 
 import re
 
-import pytest
-
 from jammy.utils import compute_list_average, get_datetime, get_miditok, index_has_substring
 
 
@@ -52,10 +50,9 @@ class TestComputeListAverage:
         """Test average with integer inputs."""
         assert compute_list_average([10, 20]) == 15.0
 
-    def test_compute_list_average_empty_raises(self) -> None:
-        """Test that empty input raises ZeroDivisionError."""
-        with pytest.raises(ZeroDivisionError):
-            compute_list_average([])
+    def test_compute_list_average_empty_returns_zero(self) -> None:
+        """Test that empty input returns 0.0."""
+        assert compute_list_average([]) == 0.0
 
 
 class TestGetDatetime:
