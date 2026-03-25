@@ -40,7 +40,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-ci = ["ruff", "pytest", "pytest-cov", "pytest-html", "pip-audit"]
+ci = ["ruff", "pytest", "pytest-cov", "pytest-html", "pip-audit", "bandit", "interrogate"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -91,6 +91,16 @@ known-first-party = ["jammy"]
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
+
+[tool.bandit]
+skips = ["B101", "B311", "B105", "B106"]
+
+[tool.interrogate]
+ignore-init-method = true
+ignore-init-module = true
+fail-under = 95
+exclude = ["test/", "examples/"]
+verbose = 1
 
 [tool.pytest.ini_options]
 testpaths = ["test"]

@@ -13,7 +13,7 @@ from matplotlib.figure import (
     Figure,  # noqa: TC002 - needed at runtime for Gradio type introspection
 )
 
-from jammy.constants import INSTRUMENT_TRANSFER_CLASSES
+from jammy.constants import INSTRUMENT_TRANSFER_CLASSES, MODEL_REPO, MODEL_REVISION
 from jammy.embedding.decoder import TextDecoder
 from jammy.generating.config import TrackConfig
 from jammy.generating.generate import GenerateMidiText
@@ -31,13 +31,13 @@ setup_logging(output_dir="./output")
 
 sys.modules["pylab"] = pylab
 
-MODEL_REPO = "JammyMachina/elec-gmusic-familized-model-13-12__17-35-53"
 N_BAR_GENERATED = 8
 SAMPLE_RATE = 44100
 
 model, tokenizer = LoadModel(
     MODEL_REPO,
     from_huggingface=True,
+    revision=MODEL_REVISION,
 ).load_model_and_tokenizer()
 
 miditok = get_miditok()
@@ -277,7 +277,7 @@ with gr.Blocks() as demo:
         _instrument_col("Synth Bass 1", 1)
         _instrument_col("Synth Lead Square", 2)
 
-demo.launch(debug=True, server_name="0.0.0.0", share=False)  # noqa: S104
+demo.launch(debug=True, server_name="0.0.0.0", share=False)  # noqa: S104  # nosec B104
 
 # TODO: add improvise button
 # TODO: cleanup input output of generator

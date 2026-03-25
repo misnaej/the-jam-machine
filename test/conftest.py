@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
+from jammy.constants import MODEL_REPO, MODEL_REVISION
 from jammy.preprocessing.load import LoadModel
 from jammy.utils import get_miditok
 
@@ -20,8 +21,6 @@ if TYPE_CHECKING:
     from transformers import GPT2LMHeadModel, GPT2TokenizerFast
 
 
-# Default model configuration
-MODEL_REPO = "JammyMachina/elec-gmusic-familized-model-13-12__17-35-53"
 USE_FAMILIZED_MODEL = True
 
 
@@ -35,7 +34,7 @@ def model_and_tokenizer() -> tuple[GPT2LMHeadModel, GPT2TokenizerFast]:
     Returns:
         Tuple of (model, tokenizer) from HuggingFace.
     """
-    loader = LoadModel(MODEL_REPO, from_huggingface=True)
+    loader = LoadModel(MODEL_REPO, from_huggingface=True, revision=MODEL_REVISION)
     return loader.load_model_and_tokenizer()
 
 

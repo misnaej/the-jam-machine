@@ -15,6 +15,7 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
+from jammy.constants import MODEL_REPO, MODEL_REVISION
 from jammy.embedding.decoder import TextDecoder
 from jammy.generating.config import GenerationConfig, TrackConfig
 from jammy.generating.file_io import define_generation_dir, write_text_midi_to_file
@@ -28,13 +29,11 @@ from jammy.utils import get_miditok
 
 logger = logging.getLogger(__name__)
 
-# Instrument family mapping:
-# DRUMS = drums, 0 = piano, 1 = chromatic percussion, 2 = organ, 3 = guitar,
-# 4 = bass, 5 = strings, 6 = ensemble, 7 = brass, 8 = reed, 9 = pipe,
-# 10 = synth lead, 11 = synth pad, 12 = synth effects, 13 = ethnic,
-# 14 = percussive, 15 = sound effects
+# Instrument family numbers: see INSTRUMENT_CLASSES in jammy/constants.py
+# DRUMS, 0=piano, 1=chromatic perc, 2=organ, 3=guitar, 4=bass, 5=strings,
+# 6=ensemble, 7=brass, 8=reed, 9=pipe, 10=synth lead, 11=synth pad,
+# 12=synth fx, 13=ethnic, 14=percussive, 15=sound fx
 
-MODEL_REPO = "JammyMachina/elec-gmusic-familized-model-13-12__17-35-53"
 USE_FAMILIZED_MODEL = True
 N_BARS = 8
 TEMPERATURE = 0.7
@@ -94,7 +93,9 @@ def main(output_dir: str | Path = DEFAULT_OUTPUT_DIR) -> None:
 
     output_dir = define_generation_dir(output_dir)
 
-    model, tokenizer = LoadModel(MODEL_REPO, from_huggingface=True).load_model_and_tokenizer()
+    model, tokenizer = LoadModel(
+        MODEL_REPO, from_huggingface=True, revision=MODEL_REVISION
+    ).load_model_and_tokenizer()
 
     instruments = [t.instrument for t in TRACKS]
     check_if_prompt_inst_in_tokenizer_vocab(tokenizer, instruments)

@@ -1,20 +1,25 @@
 ---
 name: check
-description: Run tests and linting to verify everything passes
+description: Run all quality checks — lint, format, docstrings, security, and tests
 user-invocable: true
 disable-model-invocation: false
-allowed-tools: Bash(pipenv run pytest:*), Bash(pipenv run ruff:*)
+allowed-tools: Bash(pipenv run:*), Bash(./scripts/run-tests.sh:*)
 ---
 
 # Check
 
-Run the full verification suite: tests + lint + format.
+Run the full verification suite (same as pre-commit hook + tests).
 
-1. Run `pipenv run pytest test/ -v`
-2. Run `pipenv run ruff check src/ test/ app/ examples/`
-3. Run `pipenv run ruff format --check src/ test/ app/ examples/`
+1. Run `pipenv run ruff check src/ test/ app/ examples/` (auto-fix if needed)
+2. Run `pipenv run ruff format --check src/ test/ app/ examples/`
+3. Run `pipenv run interrogate src/jammy/ -v --fail-under 95`
+4. Run `pipenv run bandit -r src/jammy/ -c pyproject.toml`
+5. Run `./scripts/run-tests.sh` (tests with coverage, generates badges)
 
 Report:
+- Lint and format status
+- Docstring coverage percentage
+- Security issues (if any)
 - Number of tests passed/failed
-- Any lint or format issues
+- Test coverage percentage
 - Overall pass/fail status

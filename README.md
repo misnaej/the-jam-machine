@@ -6,6 +6,11 @@
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+![Tests](.githooks/badges/tests.svg)
+![Coverage](.githooks/badges/coverage.svg)
+![Docstring Coverage](.githooks/badges/docstring-coverage.svg)
+![Security](.githooks/badges/bandit.svg)
+![Claude Code](https://img.shields.io/badge/Claude_Code-555?logo=claude)
 
 ---
 

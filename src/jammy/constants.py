@@ -130,3 +130,7 @@ INSTRUMENT_TRANSFER_CLASSES = [
 DRUMS_BEAT_QUANTIZATION = 4  # 8th notes per beat
 NONE_DRUMS_BEAT_QUANTIZATION = 4  # 4th notes per beat
 BEATS_PER_BAR = 4  # 4/4 time
+
+# HuggingFace model — the familized GPT-2 model trained on electronic music
+MODEL_REPO = "JammyMachina/elec-gmusic-familized-model-13-12__17-35-53"
+MODEL_REVISION = "95b3c0905f6a97fdc147776a5b53edaf651916e4"  # pinned 2022-12-17
