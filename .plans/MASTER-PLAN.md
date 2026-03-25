@@ -210,21 +210,21 @@ Organize `examples/` with two runnable scripts: encode/decode roundtrip (using R
 
 ---
 
-### Phase 11: GitHub Pages Documentation Site
+### Phase 11: Pre-commit Hook Enhancements
+**Effort:** ~1-2 hours | **Risk:** Low | **Impact:** Code quality, security
+
+Add docstring coverage (interrogate) and security audit (bandit) to the pre-commit hook. All hook output logged to `.githooks/logs/` so agents and users can diagnose failures.
+
+**Details:** [CI Workflow, Badges & Security](./ci-badges.md) — Step 5 (hook updates)
+
+---
+
+### Phase 12: GitHub Pages Documentation Site
 **Effort:** ~4-6 hours | **Risk:** Low | **Impact:** Documentation, DX
 
 Build a GitHub Pages site with: landing page (what is The Jam Machine), encoding/decoding guide (pipeline walkthrough, quantization caveats, worked Reptilia example), and the embedding explorer notebook rendered as HTML. Also fix the notebook (hardcoded paths, broken cells, move deps to optional group).
 
 **Details:** [GitHub Pages](./github-pages.md)
-
----
-
-### Phase 12: CI Workflow, Badges & Security
-**Effort:** ~2 hours | **Risk:** Low | **Impact:** CI/CD, visibility, security
-
-Set up GitHub Actions CI with pytest + coverage (Codecov), docstring coverage (interrogate), security audit (pip-audit + bandit), and lint check. Add badges to README. Enable Dependabot for dependency updates.
-
-**Details:** [CI Workflow, Badges & Security](./ci-badges.md)
 
 ---
 
@@ -237,7 +237,21 @@ Add unit tests for refactored modules, target 70% coverage.
 
 ---
 
-### Phase 14: Genre Prediction Cleanup (Optional)
+### Phase 14: Replace `dict[str, Any]` with typed dataclasses in PieceBuilder
+**Effort:** ~4 hours | **Risk:** Medium | **Impact:** Type safety, expressiveness
+
+Replace `list[dict[str, Any]]` in PieceBuilder with a `TrackState` dataclass. Propagate through generate.py, prompt_handler.py, and playground.py.
+
+---
+
+### Phase 15: Add Doctest for Code Examples
+**Effort:** ~1-2 hours | **Risk:** Low | **Impact:** Documentation reliability
+
+Add `--doctest-modules` to pytest, add Example sections to key public functions.
+
+---
+
+### Phase 16: Genre Prediction Cleanup (Optional)
 **Effort:** ~4 hours | **Risk:** Medium | **Impact:** Separate system
 
 Fix module-level execution, deduplicate code.
@@ -246,148 +260,19 @@ Fix module-level execution, deduplicate code.
 
 ---
 
-### Phase 15: Dedicated Output Folder
-**Effort:** ~30 min | **Risk:** Low | **Impact:** UX, repo cleanliness
-
-Create a dedicated `output/` folder for generated MIDI and audio files.
-
-**Tasks:**
-1. Create `output/` directory (gitignored)
-2. Add `OUTPUT_DIR` constant to `constants.py`
-3. Update `TextDecoder.get_midi()` to use output folder by default
-4. Update `playground.py` to save files to output folder
-5. Add `output/` to `.gitignore`
-
-**Why:**
-- Keeps generated files organized
-- Prevents accidental commits of generated files
-- Cleaner project root
-
----
-
-### Phase 16: Python 3.13 Upgrade (Advanced)
+### Phase 17: Python 3.13 Upgrade (Advanced)
 **Effort:** ~2-4 hours | **Risk:** High | **Impact:** Future-proofing
 
-Upgrade from Python 3.11 to Python 3.13.
-
-**Prerequisites:**
-- All tests passing
-- All refactoring complete
-
-**Tasks:**
-1. Check dependency compatibility with Python 3.13
-   - `torch`, `transformers`, `miditok`, `note-seq` are critical
-   - Run `pip index versions <package>` to check support
-2. Update `pyproject.toml`: `requires-python = ">=3.13"`
-3. Update `CLAUDE.md` prerequisites
-4. Update `README.md` badge and prerequisites
-5. Test full pipeline (encode, generate, decode)
-6. Fix any deprecation warnings or breaking changes
-
-**Blockers to check:**
-- PyTorch 3.13 wheels availability
-- note-seq compatibility (often lags behind)
-- Any C extensions that need rebuilding
-
-**Rollback plan:**
-- Keep 3.11 as fallback until all deps confirmed working
+Upgrade from Python 3.11 to Python 3.13. Check torch/transformers/miditok compatibility first.
 
 ---
 
-### Phase 14: Add Doctest for Code Examples
-**Effort:** ~1-2 hours | **Risk:** Low | **Impact:** Documentation reliability
+### Phase 18: CI Workflow & Badges (when needed)
+**Effort:** ~2 hours | **Risk:** Low | **Impact:** CI/CD, visibility
 
-Add doctest to verify all code examples in docstrings are functional.
+Set up GitHub Actions CI with pytest + coverage (Codecov), docstring coverage (interrogate), security audit (pip-audit + bandit), lint check, and Dependabot. Add badges to README.
 
-**Why:**
-- Code examples in documentation can become stale
-- Non-functioning examples mislead users
-- Doctest catches drift between code and docs automatically
-
-**Tasks:**
-1. Add `--doctest-modules` to pytest configuration in `pyproject.toml`
-2. Review and fix existing docstring examples
-3. Add `Example:` sections to key public functions (encoder, decoder, generator)
-4. Configure CI to run doctests
-
-**Verification:**
-```bash
-pipenv run pytest --doctest-modules src/
-```
-
----
-
-### Phase 15: Remove Backward Compatibility Code
-**Effort:** ~30 min | **Risk:** Low | **Impact:** Code cleanliness
-
-Remove all backward compatibility aliases and deprecated parameters.
-
-**Tasks:**
-1. **encoder.py** (line 585): Remove `from_MIDI_to_sectionned_text` alias
-2. **utils.py**:
-   - Remove `writeToFile` alias (line 330)
-   - Remove `readFromFile` alias (line 358)
-   - Remove deprecated `isJSON` parameter from `read_from_file()`
-3. Search for any remaining usages and update to new names
-4. Remove associated `# noqa: N816` comments
-
-**Verification:**
-```bash
-pipenv run ruff check src/ test/
-pipenv run pytest test/
-```
-
-**Why:**
-- The old camelCase names violate Python naming conventions
-- Backward compatibility was only needed during migration
-- Cleaner codebase without legacy aliases
-
----
-
-### Phase 16: Replace `dict[str, Any]` with typed dataclasses in PieceBuilder
-**Effort:** ~4 hours | **Risk:** Medium | **Impact:** Type safety, expressiveness, future features
-
-**Two-step plan:**
-
-#### Step 1: `TrackState` dataclass (replaces `dict[str, Any]`)
-
-`PieceBuilder` stores tracks as `list[dict[str, Any]]` with a fixed shape `{label, instrument, density, temperature, bars}`. This weak typing propagates to `generate.py`, `prompt_handler.py`, `utils.py`, and `app/playground.py`.
-
-Replace with:
-```python
-@dataclass
-class TrackState:
-    """Mutable state of a track during generation."""
-    instrument: str
-    density: int
-    temperature: float
-    bars: list[str] = field(default_factory=list)
-```
-
-- No `label` field — derive from index (`f"track_{i}"`)
-- `PieceBuilder.piece_by_track` becomes `list[TrackState]`
-- All `track["bars"]` → `track.bars`, etc.
-- `WriteTextMidiToFile` uses `dataclasses.asdict()` for JSON serialization
-
-**Files:** `config.py`, `piece_builder.py`, `generate.py`, `prompt_handler.py`, `utils.py`, `app/playground.py`, test
-
-#### Step 2: `BarConfig` — per-bar generation parameters (future)
-
-Once `TrackState` is in place, the natural next step is splitting density/temperature out so they can evolve per bar. The type hierarchy would be:
-- **`BarConfig`** — atomic generation params: `density`, `temperature`
-- **`TrackConfig`** — generation input: `instrument` + `BarConfig`
-- **`TrackState`** — runtime state: `instrument` + `bars` + current `BarConfig`
-
-This would enable things like "a drum track that gets denser over 8 bars."
-
-**Open questions (for when we get here):**
-- Should `BarConfig` live inside `TrackState` or be passed separately per bar?
-- How does this interact with `generate_one_more_bar()` in the Gradio app?
-- Convenience for the common case of uniform bars?
-
-**Prerequisites:**
-- Phase 4 (Config Dataclasses) ✅
-- Step 1 (`TrackState`) must be done first
+**Details:** [CI Workflow, Badges & Security](./ci-badges.md) — all steps except Step 5 (hooks)
 
 ---
 
@@ -573,5 +458,5 @@ git commit -m "refactor: add postponed annotations to all modules"
 ## Continuation Prompt
 
 **Last completed:** Phase 8 (Split `embedding/decoder.py`)
-**Next step:** Phase 11 (Notebook Cleanup & GitHub Pages)
+**Next step:** Phase 11 (Pre-commit Hook Enhancements)
 **Notes:** All ruff checks pass. 22 tests pass. On `refactor/split-embedding-decoder` branch.

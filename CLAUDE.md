@@ -357,7 +357,11 @@ Or run `./scripts/setup-env.sh` which sets up hooks automatically.
 The pre-commit hook runs:
 - Ruff linting (auto-fixes when possible)
 - Ruff formatting (auto-applies)
-- pip-audit security scan (informational)
+- Docstring coverage via interrogate (fails below 95%)
+- Security scan via bandit (blocks on issues)
+- pip-audit dependency scan (informational, non-blocking)
+
+**Hook logs:** All output is saved to `.githooks/logs/`. Read `.githooks/logs/latest.log` to diagnose failures.
 
 **Important:**
 - **Never use `--no-verify`** to skip hooks unless explicitly requested by the user

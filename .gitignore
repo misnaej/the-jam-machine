@@ -173,6 +173,9 @@ test/*.png
 test/*.json
 run.sh
 
+# Pre-commit hook logs
+.githooks/logs/
+
 # Claude Code local files (settings.local.json is personal, not shared)
 .claude/settings.local.json
 

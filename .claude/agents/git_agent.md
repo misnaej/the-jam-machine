@@ -22,6 +22,7 @@ Follow all guidelines from `CLAUDE.md`, in particular:
 - **Never amend commits** — always create new commits
 - **Resolve conflicts** rather than discarding changes
 - **Run ruff check + format before committing** to ensure code is clean
+- **If a commit fails**, read `.githooks/logs/latest.log` to diagnose the issue
 
 ## Operations
 
