@@ -28,6 +28,7 @@ Custom skills (slash commands) and agents are the standard workflow tools. **Use
 |-------|---------|
 | `design-reviewer` | SOLID, DRY, YAGNI, KISS checks |
 | `docs-reviewer` | Docstrings, type hints, comments |
+| `test-writer` | Write tests + review test quality, mocking, coverage |
 | `pr-reviewer` | PR wrap-up + squash merge message |
 | `git-workflow` | All git operations: commit, push, sync, branches, conflicts, PRs |
 
@@ -271,6 +272,14 @@ class Generator:
 - Keep comments up to date with code changes
 - Use `TODO:` for planned improvements (include your name/date if long-term)
 - Use `FIXME:` for known issues that need addressing
+
+### Testing
+
+- Write real tests first — mock only when the real dependency is slow (>5s), has side effects, or is non-deterministic
+- Every mock **must** have a comment documenting **what** is mocked, **how**, and **why** (what time/complexity it saves)
+- Tests must be fast: target <30s for the full suite, <5s per individual test
+- Use `tmp_path` for file I/O — never write to the repo
+- See `.claude/agents/test_agent.md` for full testing guidelines
 
 ---
 

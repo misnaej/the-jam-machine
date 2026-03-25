@@ -73,13 +73,16 @@ class TestCheckIfPromptInstInTokenizerVocab:
 
     def test_valid_instruments_pass(self) -> None:
         """Test that valid instruments don't raise."""
+        # Mock: tokenizer — only .vocab dict is accessed
+        # Avoids loading the real HF tokenizer (~8s model download)
+        # The function only does dict key lookup, so a fake vocab is equivalent
         tokenizer = MagicMock()
         tokenizer.vocab = {f"{INST}=DRUMS": 0, f"{INST}=4": 1, f"{INST}=3": 2}
-        # Should not raise
         check_if_prompt_inst_in_tokenizer_vocab(tokenizer, ["DRUMS", "4", "3"])
 
     def test_invalid_instrument_raises(self) -> None:
         """Test that an invalid instrument raises ValueError."""
+        # Mock: tokenizer — same rationale as test_valid_instruments_pass
         tokenizer = MagicMock()
         tokenizer.vocab = {f"{INST}=DRUMS": 0, f"{INST}=4": 1}
         with pytest.raises(ValueError, match="not in the tokenizer vocabulary"):
