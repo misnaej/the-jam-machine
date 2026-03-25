@@ -5,7 +5,6 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
-import torch
 from transformers import GPT2LMHeadModel, PreTrainedTokenizerFast
 
 logger = logging.getLogger(__name__)
@@ -48,8 +47,7 @@ def load_model_and_tokenizer(
             msg = f"No 'tokenizer.json' file in {path}"
             raise FileNotFoundError(msg)
 
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    logger.info("Loading model from %s (device=%s, revision=%s)", path, device, revision)
+    logger.info("Loading model from %s (revision=%s)", path, revision)
 
     model = GPT2LMHeadModel.from_pretrained(path, revision=revision)
     tokenizer = PreTrainedTokenizerFast.from_pretrained(path, revision=revision)
