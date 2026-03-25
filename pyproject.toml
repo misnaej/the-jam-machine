@@ -58,7 +58,7 @@ select = ["ALL"]
 ignore = [
     "D100",    # missing module docstring
     "D104",    # missing package docstring
-    "ISC001",  # implicit string concat — can conflict with formatter
+    "ISC001",  # implicit string concat — conflicts with ruff formatter
     "PLR2004", # magic value comparison — expected with token strings/numbers
     "FBT001",  # boolean positional arg — too strict for Gradio callbacks
     "FBT002",  # boolean default arg — same
@@ -105,7 +105,6 @@ testpaths = ["test"]
 python_files = ["test_*.py"]
 python_functions = ["test_*"]
 addopts = "-v --tb=short"
-markers = ["slow: marks tests as slow (use -m 'not slow' to skip)"]
 filterwarnings = [
     "ignore::DeprecationWarning",
     "ignore::PendingDeprecationWarning",
