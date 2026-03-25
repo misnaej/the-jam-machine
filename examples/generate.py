@@ -24,7 +24,7 @@ from jammy.generating.playback import get_music
 from jammy.generating.validation import check_instruments_in_vocab
 from jammy.generating.visualization import plot_piano_roll
 from jammy.logging_config import setup_logging
-from jammy.preprocessing.load import LoadModel
+from jammy.preprocessing.load import load_model_and_tokenizer
 from jammy.utils import get_miditok
 
 logger = logging.getLogger(__name__)
@@ -93,11 +93,11 @@ def main(output_dir: str | Path = DEFAULT_OUTPUT_DIR) -> None:
 
     output_dir = define_generation_dir(output_dir)
 
-    model, tokenizer = LoadModel(
+    model, tokenizer = load_model_and_tokenizer(
         MODEL_REPO,
         from_huggingface=True,
         revision=MODEL_REVISION,
-    ).load_model_and_tokenizer()
+    )
 
     instruments = [t.instrument for t in TRACKS]
     check_instruments_in_vocab(tokenizer, instruments)

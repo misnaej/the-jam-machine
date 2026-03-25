@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Any
 from joblib import Parallel, delayed
 from pretty_midi import PrettyMIDI, program_to_instrument_name
 
-from jammy.constants import INSTRUMENT_CLASSES
+from jammy.constants import get_instrument_class
 from jammy.file_utils import get_files
 from jammy.utils import compute_list_average
 
@@ -36,10 +36,8 @@ def categorize_midi_instrument(program_number: int) -> str | None:
     Returns:
         The instrument class name, or None if not found.
     """
-    for instrument_class in INSTRUMENT_CLASSES:
-        if program_number in instrument_class["program_range"]:
-            return instrument_class["name"]
-    return None
+    cls = get_instrument_class(program_number)
+    return cls["name"] if cls else None
 
 
 def track_name(midi_file: str | Path) -> str:
@@ -545,115 +543,94 @@ def lyrics_boolean(pm: PrettyMIDI) -> bool:
     return bool(pm.lyrics)
 
 
-class MidiStats:
-    """Class for computing statistics from MIDI files."""
+def single_file_statistics(midi_file: str | Path) -> dict[str, Any] | None:
+    """Compute statistics for a single MIDI file.
 
-    def single_file_statistics(self, midi_file: str | Path) -> dict[str, Any] | None:
-        """Compute statistics for a single MIDI file.
+    Args:
+        midi_file: Path to the MIDI file.
 
-        Args:
-            midi_file: Path to the MIDI file.
+    Returns:
+        A dictionary of statistics, or None if the file cannot be parsed.
+    """
+    try:
+        pm = PrettyMIDI(str(midi_file))
+    except (OSError, ValueError, KeyError, EOFError):
+        logger.warning("Failed to parse MIDI file: %s", midi_file)
+        return None
 
-        Returns:
-            A dictionary of statistics, or None if the file cannot be parsed.
-        """
-        # Some Midi files are corrupted and cannot be parsed by PrettyMIDI
-        try:
-            pm = PrettyMIDI(str(midi_file))
-        except (OSError, ValueError, KeyError, EOFError):
-            logger.warning("Failed to parse MIDI file: %s", midi_file)
-            return None
+    avg_pitch_range = average_range_of_note_pitches_per_instrument(pm)
+    avg_pitch_classes = average_number_of_note_pitch_classes_per_instrument(pm)
 
-        # Compute statistics
-        avg_pitch_range = average_range_of_note_pitches_per_instrument(pm)
-        avg_pitch_classes = average_number_of_note_pitch_classes_per_instrument(pm)
+    return {
+        "md5": track_name(midi_file),
+        "n_instruments": n_instruments(pm),
+        "n_unique_instruments": n_unique_instruments(pm),
+        "instrument_names": instrument_names(pm),
+        "instrument_families": instrument_families(pm),
+        "number_of_instrument_families": number_of_instrument_families(pm),
+        "n_notes": number_of_notes(pm),
+        "n_unique_notes": number_of_unique_notes(pm),
+        "average_n_unique_notes_per_instrument": avg_number_of_unique_notes_per_instrument(pm),
+        "average_note_duration": average_note_duration(pm),
+        "average_note_velocity": average_note_velocity(pm),
+        "average_note_pitch": average_note_pitch(pm),
+        "range_of_note_pitches": range_of_note_pitches(pm),
+        "average_range_of_note_pitches_per_instrument": avg_pitch_range,
+        "number_of_note_pitch_classes": number_of_note_pitch_classes(pm),
+        "average_number_of_note_pitch_classes_per_instrument": avg_pitch_classes,
+        "number_of_octaves": number_of_octaves(pm),
+        "average_number_of_octaves_per_instrument": average_number_of_octaves_per_instrument(pm),
+        "number_of_notes_per_second": number_of_notes_per_second(pm),
+        "shortest_note_length": shortest_note_length(pm),
+        "longest_note_length": longest_note_length(pm),
+        "main_key_signature": main_key_signature(pm),
+        "n_key_changes": n_key_changes(pm),
+        "n_tempo_changes": n_tempo_changes(pm),
+        "tempo_estimate": average_tempo(pm),
+        "main_time_signature": main_time_signature(pm),
+        "all_time_signatures": all_time_signatures(pm),
+        "four_to_the_floor": four_to_the_floor(pm),
+        "n_time_signature_changes": n_time_signature_changes(pm),
+        "track_length_in_seconds": track_length_in_seconds(pm),
+        "lyrics_nb_words": lyrics_number_of_words(pm),
+        "lyrics_unique_words": lyrics_number_of_unique_words(pm),
+        "lyrics_bool": lyrics_boolean(pm),
+    }
 
-        return {
-            # track md5 hash name without extension
-            "md5": track_name(midi_file),
-            # instruments
-            "n_instruments": n_instruments(pm),
-            "n_unique_instruments": n_unique_instruments(pm),
-            "instrument_names": instrument_names(pm),
-            "instrument_families": instrument_families(pm),
-            "number_of_instrument_families": number_of_instrument_families(pm),
-            # notes
-            "n_notes": number_of_notes(pm),
-            "n_unique_notes": number_of_unique_notes(pm),
-            "average_n_unique_notes_per_instrument": (
-                avg_number_of_unique_notes_per_instrument(pm)
-            ),
-            "average_note_duration": average_note_duration(pm),
-            "average_note_velocity": average_note_velocity(pm),
-            "average_note_pitch": average_note_pitch(pm),
-            "range_of_note_pitches": range_of_note_pitches(pm),
-            "average_range_of_note_pitches_per_instrument": avg_pitch_range,
-            "number_of_note_pitch_classes": number_of_note_pitch_classes(pm),
-            "average_number_of_note_pitch_classes_per_instrument": avg_pitch_classes,
-            "number_of_octaves": number_of_octaves(pm),
-            "average_number_of_octaves_per_instrument": (
-                average_number_of_octaves_per_instrument(pm)
-            ),
-            "number_of_notes_per_second": number_of_notes_per_second(pm),
-            "shortest_note_length": shortest_note_length(pm),
-            "longest_note_length": longest_note_length(pm),
-            # key signatures
-            "main_key_signature": main_key_signature(pm),  # hacky
-            "n_key_changes": n_key_changes(pm),
-            # tempo
-            "n_tempo_changes": n_tempo_changes(pm),
-            "tempo_estimate": average_tempo(pm),  # hacky
-            # time signatures
-            "main_time_signature": main_time_signature(pm),  # hacky
-            "all_time_signatures": all_time_signatures(pm),
-            "four_to_the_floor": four_to_the_floor(pm),
-            "n_time_signature_changes": n_time_signature_changes(pm),
-            # track length
-            "track_length_in_seconds": track_length_in_seconds(pm),
-            # lyrics
-            "lyrics_nb_words": lyrics_number_of_words(pm),
-            "lyrics_unique_words": lyrics_number_of_unique_words(pm),
-            "lyrics_bool": lyrics_boolean(pm),
-        }
 
-    def get_stats(
-        self,
-        input_directory: str | Path,
-        recursive: bool = False,
-        n_jobs: int = -1,
-    ) -> list[dict[str, Any]]:
-        """Compute statistics for a list of MIDI files.
+def get_stats(
+    input_directory: str | Path,
+    recursive: bool = False,
+    n_jobs: int = -1,
+) -> list[dict[str, Any]]:
+    """Compute statistics for a list of MIDI files.
 
-        Args:
-            input_directory: Path to the directory containing the MIDI files.
-            recursive: If True, recursively search for MIDI files in subdirectories.
-            n_jobs: Number of parallel jobs (-1 for all CPUs).
+    Args:
+        input_directory: Path to the directory containing the MIDI files.
+        recursive: If True, recursively search for MIDI files in subdirectories.
+        n_jobs: Number of parallel jobs (-1 for all CPUs).
 
-        Returns:
-            A list of statistics dictionaries for each successfully parsed file.
-        """
-        midi_files = get_files(Path(input_directory), "mid", recursive=recursive)
+    Returns:
+        A list of statistics dictionaries for each successfully parsed file.
+    """
+    midi_files = get_files(Path(input_directory), "mid", recursive=recursive)
 
-        statistics = Parallel(n_jobs, verbose=1)(
-            delayed(self.single_file_statistics)(midi_file) for midi_file in midi_files
-        )
+    statistics = Parallel(n_jobs, verbose=1)(
+        delayed(single_file_statistics)(midi_file) for midi_file in midi_files
+    )
 
-        # Remove None values, where statistics could not be computed
-        return [s for s in statistics if s is not None]
+    return [s for s in statistics if s is not None]
 
 
 if __name__ == "__main__":
     import pandas as pd
 
-    # Select the path to the MIDI files
     input_directory = Path("data/music_picks/electronic_artists").resolve()
     logger.info("Processing MIDI files from: %s", input_directory)
-
-    # Select the path to save the statistics
     output_directory = Path("data/music_picks").resolve()
 
     # Compute statistics using parallel processing
-    statistics = MidiStats().get_stats(input_directory, recursive=True)
+    statistics = get_stats(input_directory, recursive=True)
 
     # export df to csv
     df = pd.DataFrame(statistics)

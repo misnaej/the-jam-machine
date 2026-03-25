@@ -1,3 +1,5 @@
+"""Model and tokenizer loading from HuggingFace or local path."""
+
 from __future__ import annotations
 
 import logging
@@ -9,83 +11,47 @@ from transformers import GPT2LMHeadModel, PreTrainedTokenizerFast
 logger = logging.getLogger(__name__)
 
 
-class LoadModel:
+def load_model_and_tokenizer(
+    path: str,
+    *,
+    from_huggingface: bool = True,
+    revision: str | None = None,
+) -> tuple[GPT2LMHeadModel, PreTrainedTokenizerFast]:
     """Load GPT-2 model and tokenizer from HuggingFace or local path.
 
+    Args:
+        path: HuggingFace repo ID or local path to model.
+        from_huggingface: Whether to load from HuggingFace Hub.
+        revision: Specific model revision/commit to load.
+
+    Returns:
+        Tuple of (model, tokenizer).
+
+    Raises:
+        FileNotFoundError: If local path does not exist or tokenizer.json is missing.
+
     Example:
-        # Load from HuggingFace
-        model_repo = "misnaej/the-jam-machine"
-        model, tokenizer = LoadModel(
-            model_repo, from_huggingface=True
-        ).load_model_and_tokenizer()
-
-        # Load from local folder
-        model_path = "models/model_2048_wholedataset"
-        model, tokenizer = LoadModel(
-            model_path, from_huggingface=False
-        ).load_model_and_tokenizer()
+        >>> model, tokenizer = load_model_and_tokenizer(
+        ...     "JammyMachina/elec-gmusic-familized-model-13-12__17-35-53",
+        ...     from_huggingface=True,
+        ...     revision="95b3c0905f6a97fdc147776a5b53edaf651916e4",
+        ... )
     """
+    if not from_huggingface and not Path(path).exists():
+        msg = f"Model path does not exist: {path}"
+        logger.error(msg)
+        raise FileNotFoundError(msg)
 
-    def __init__(
-        self,
-        path: str,
-        from_huggingface: bool = True,
-        device: str = "cpu",
-        revision: str | None = None,
-    ) -> None:
-        """Initialize the model loader.
-
-        Args:
-            path: HuggingFace repo ID or local path to model.
-            from_huggingface: Whether to load from HuggingFace Hub.
-            device: Device to load model on ('cpu' or 'cuda').
-            revision: Specific model revision/commit to load.
-
-        Raises:
-            FileNotFoundError: If local path does not exist.
-        """
-        if not from_huggingface and not Path(path).exists():
-            msg = f"Model path does not exist: {path}"
-            logger.error(msg)
+    if not from_huggingface:
+        tokenizer_path = Path(path) / "tokenizer.json"
+        if not tokenizer_path.exists():
+            msg = f"No 'tokenizer.json' file in {path}"
             raise FileNotFoundError(msg)
 
-        self.from_huggingface = from_huggingface
-        self.path = path
-        self.device = device
-        self.revision = revision
-        if torch.cuda.is_available():
-            self.device = "cuda"
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    logger.info("Loading model from %s (device=%s, revision=%s)", path, device, revision)
 
-    def load_model_and_tokenizer(self) -> tuple[GPT2LMHeadModel, PreTrainedTokenizerFast]:
-        """Load both model and tokenizer.
+    model = GPT2LMHeadModel.from_pretrained(path, revision=revision)
+    tokenizer = PreTrainedTokenizerFast.from_pretrained(path, revision=revision)
 
-        Returns:
-            Tuple of (model, tokenizer).
-        """
-        model = self.load_model()
-        tokenizer = self.load_tokenizer()
-        return model, tokenizer
-
-    def load_model(self) -> GPT2LMHeadModel:
-        """Load the GPT-2 model.
-
-        Returns:
-            The loaded GPT-2 language model.
-        """
-        return GPT2LMHeadModel.from_pretrained(self.path, revision=self.revision)
-
-    def load_tokenizer(self) -> PreTrainedTokenizerFast:
-        """Load the tokenizer.
-
-        Returns:
-            The loaded tokenizer.
-
-        Raises:
-            FileNotFoundError: If tokenizer.json not found in local path.
-        """
-        if not self.from_huggingface:
-            tokenizer_path = Path(self.path) / "tokenizer.json"
-            if not tokenizer_path.exists():
-                msg = f"No 'tokenizer.json' file in {self.path}"
-                raise FileNotFoundError(msg)
-        return PreTrainedTokenizerFast.from_pretrained(self.path, revision=self.revision)
+    return model, tokenizer
