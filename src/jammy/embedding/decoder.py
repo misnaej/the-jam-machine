@@ -73,10 +73,7 @@ class TextDecoder:
         Returns:
             List of token lists for each instrument.
         """
-        tokens = []
-        for inst in events:
-            tokens.append(self.tokenizer.events_to_tokens(inst["events"]))
-        return tokens
+        return [self.tokenizer.events_to_tokens(inst["events"]) for inst in events]
 
     def get_midi(self, text: str, filename: str | None = None) -> MidiFile:
         """Convert text tokens to MIDI.

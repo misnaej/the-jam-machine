@@ -115,6 +115,7 @@ def _generator(
         GeneratorResult with generated text, audio, piano roll, and updated state.
     """
     genesis = GenerateMidiText(model, tokenizer, piece_by_track)
+    state = list(state)  # work on a copy to avoid mutating Gradio's state
     track = {
         "label": label,
         "instrument": instrument,
@@ -185,10 +186,7 @@ def _generated_text_from_state(state: list[dict[str, Any]]) -> str:
     Returns:
         Combined piece text.
     """
-    result = f"{PIECE_START} "
-    for track in state:
-        result += track["text"]
-    return result
+    return f"{PIECE_START} " + "".join(track["text"] for track in state)
 
 
 def _instrument_col(default_inst: str, col_id: int) -> None:
