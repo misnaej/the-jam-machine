@@ -10,27 +10,28 @@ The Jam Machine is a generative AI music composition tool that creates MIDI sequ
 
 ---
 
-## CRITICAL: Use Custom Agents
+## Skills and Agents
 
-Custom agents are defined in `agents/` (symlinked to `.claude/agents/`). **You MUST use these agents for their designated tasks:**
+Custom skills (slash commands) and agents are the standard workflow tools. **Use them instead of doing these tasks ad-hoc:**
 
-| Agent | Name | Use For |
-|-------|------|---------|
-| `pr_review_agent.md` | `pr-reviewer` | **PR wrap-up**: Review changes, check design/docs, generate squash merge message |
-| `design_agent.md` | `design-reviewer` | **Design review**: Check code against SOLID, DRY, YAGNI, KISS principles |
-| `documentation_agent.md` | `docs-reviewer` | **Documentation review**: Check docstrings, type hints, comments |
+| Skill | What it does |
+|-------|-------------|
+| `/check` | Run tests + lint + format |
+| `/lint` | Run ruff check + format |
+| `/commit` | Lint, commit, and push to current branch |
+| `/review` | Run design-reviewer + docs-reviewer agents in parallel |
+| `/pr` | Run pr-reviewer agent → squash merge message |
 
-**When to use:**
-- **Before merging any PR** → Run `pr-reviewer`
-- **After ANY code change** → Run `docs-reviewer` (MANDATORY - docs must match code)
-- **After writing new code** → Run `design-reviewer`
-- **During code review** → Run both design and docs reviewers
+**Agents** are defined in `.claude/agents/`:
 
-**Why agents are critical:**
-- They follow systematic checklists and don't skip steps
-- They produce structured, consistent output
-- They maintain dedicated context for the task
-- They catch issues that ad-hoc reviews miss
+| Agent | Use for |
+|-------|---------|
+| `design-reviewer` | SOLID, DRY, YAGNI, KISS checks |
+| `docs-reviewer` | Docstrings, type hints, comments |
+| `pr-reviewer` | PR wrap-up + squash merge message |
+| `git-workflow` | All git operations: commit, push, sync, branches, conflicts, PRs |
+
+**All git operations should go through the `git-workflow` agent.** This ensures branch workflow rules are followed consistently.
 
 ---
 
@@ -46,7 +47,7 @@ src/jammy/                 # Main package
 app/playground.py          # Gradio web interface
 examples/                  # Example scripts
 test/                      # Test suite
-agents/                    # Custom agent definitions
+.claude/                   # Claude Code config (agents, skills, hooks)
 ```
 
 ## Environment Setup
@@ -101,11 +102,11 @@ Before modifying files, check for pre-existing lint issues that would block comm
 
 ```bash
 # Check files you plan to modify
-pipenv run ruff check src/the_jam_machine/path/to/files/
+pipenv run ruff check src/jammy/path/to/files/
 
 # If many issues exist, fix them first
-pipenv run ruff check --fix src/the_jam_machine/path/to/files/
-pipenv run ruff format src/the_jam_machine/path/to/files/
+pipenv run ruff check --fix src/jammy/path/to/files/
+pipenv run ruff format src/jammy/path/to/files/
 ```
 
 **Workflow for files with many pre-existing issues:**
@@ -367,6 +368,7 @@ The pre-commit hook runs:
 - **No AI attribution**: Do not add "Generated with Claude Code", "Co-Authored-By: Claude", or similar AI authorship markers to commits or PRs
 - Keep commit messages concise and focused on the "why"
 - **Squash and merge title**: Max 100 characters
+- **Squash and merge body**: Max 50 words, ideally less. Focus on what was done in broad strokes — no need to enumerate details, counts, or line numbers
 - PR descriptions should explain changes clearly without boilerplate
 
 ---
@@ -481,4 +483,4 @@ This ensures work can resume smoothly after context resets.
 | Security audit | `pipenv run pip-audit` |
 | Enable git hooks | `git config core.hooksPath .githooks` |
 | Run Gradio app | `pipenv run python app/playground.py` |
-| Run example | `pipenv run python examples/generation_playground.py` |
+| Run example | `pipenv run python examples/generate.py` |

@@ -4,6 +4,8 @@
 
 [![Try it on HuggingFace](https://img.shields.io/badge/🤗-Try%20Demo-yellow)](https://huggingface.co/spaces/JammyMachina/the-jam-machine-app)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ---
 
@@ -84,7 +86,7 @@ The GPT-2 model learns patterns from 5000 songs and generates new, coherent sequ
 
 ### Option 1: Try Online (No Installation)
 
-👉 **[Launch on HuggingFace](https://huggingface.co/spaces/JammyMachina/the-jam-machine-app)**
+**[Launch on HuggingFace](https://huggingface.co/spaces/JammyMachina/the-jam-machine-app)**
 
 ### Option 2: Local Installation
 
@@ -142,10 +144,11 @@ Open the URL shown in your terminal (usually http://localhost:7860).
 ### Python API
 
 ```python
-from the_jam_machine.preprocessing.load import LoadModel
-from the_jam_machine.generating.generate import GenerateMidiText
-from the_jam_machine.embedding.decoder import TextDecoder
-from the_jam_machine.utils import get_miditok
+from jammy.preprocessing.load import LoadModel
+from jammy.generating.config import GenerationConfig, TrackConfig
+from jammy.generating.generate import GenerateMidiText
+from jammy.embedding.decoder import TextDecoder
+from jammy.utils import get_miditok
 
 # Load model
 model, tokenizer = LoadModel(
@@ -154,28 +157,31 @@ model, tokenizer = LoadModel(
 ).load_model_and_tokenizer()
 
 # Generate
-generator = GenerateMidiText(model, tokenizer)
-generator.generate_piece(
-    instrument_list=["DRUMS", "4", "3"],  # Drums, Bass, Guitar
-    density_list=[3, 2, 3],
-    temperature_list=[0.7, 0.7, 0.7],
-)
+tracks = [
+    TrackConfig(instrument="DRUMS", density=3, temperature=0.7),
+    TrackConfig(instrument="4", density=2, temperature=0.7),   # Bass
+    TrackConfig(instrument="3", density=2, temperature=0.7),   # Guitar
+]
+generator = GenerateMidiText(model, tokenizer, config=GenerationConfig(n_bars=8))
+generator.generate_piece(tracks)
 
-# Get the generated text
-piece_text = generator.get_whole_piece_from_bar_dict()
-
-# Convert to MIDI
+# Get the generated text and convert to MIDI
+piece_text = generator.get_piece_text()
 decoder = TextDecoder(get_miditok())
 decoder.get_midi(piece_text, filename="my_song.mid")
 ```
 
-### Example Script
-
-For more experimental generation:
+### Examples
 
 ```bash
-pipenv run python examples/generation_playground.py
+# Generate new music
+pipenv run python examples/generate.py
+
+# Encode/decode a MIDI file (roundtrip demo)
+pipenv run python examples/encode_decode.py
 ```
+
+Output goes to `output/examples/`. See [examples/README.md](examples/README.md) for details.
 
 ---
 
@@ -185,21 +191,18 @@ pipenv run python examples/generation_playground.py
 the-jam-machine/
 ├── app/
 │   └── playground.py          # Gradio web interface
-├── src/the_jam_machine/
+├── src/jammy/                 # Main package
 │   ├── embedding/             # MIDI ↔ text conversion
-│   │   ├── encoder.py         # MIDI → text
-│   │   └── decoder.py         # text → MIDI
-│   ├── generating/            # Music generation
-│   │   ├── generate.py        # Main orchestrator
-│   │   ├── generation_engine.py  # GPT-2 interaction
-│   │   ├── piece_builder.py   # Multi-track piece assembly
-│   │   ├── track_builder.py   # Single track generation
-│   │   └── prompt_handler.py  # Token prompt construction
+│   ├── generating/            # Music generation (GPT-2)
 │   ├── preprocessing/         # Model loading
-│   └── training/              # Model training pipelines
-├── examples/                  # Example scripts
-├── .plans/                    # Refactoring plans and audits
-└── test/                      # Test suite
+│   ├── midi_codec.py          # Token encoding/decoding
+│   ├── file_utils.py          # File I/O utilities
+│   ├── tokens.py              # Token vocabulary constants
+│   └── constants.py           # Configuration constants
+├── examples/                  # Runnable example scripts
+├── test/                      # Test suite
+├── .claude/                   # Claude Code config (agents, skills, hooks)
+└── .plans/                    # Refactoring plans and audits
 ```
 
 ---
@@ -209,22 +212,42 @@ the-jam-machine/
 ### Running Tests
 
 ```bash
-pipenv run pytest test/
+pipenv run pytest test/ -v
 ```
 
 ### Code Quality
 
 ```bash
 # Lint
-pipenv run ruff check src/ app/
+pipenv run ruff check src/ test/ app/ examples/
 
 # Format
-pipenv run ruff format src/ app/
+pipenv run ruff format src/ test/ app/ examples/
+
+# Security audit
+pipenv run pip-audit
 ```
 
-See [CLAUDE.md](CLAUDE.md) for development guidelines.
+### Contributing with Claude Code
 
-Development of this repository is supported by [Claude Code](https://claude.ai/claude-code).
+Development of this repository is supported by [Claude Code](https://claude.ai/claude-code). The project includes custom skills and agents for a structured workflow:
+
+| Skill | What it does |
+|-------|-------------|
+| `/check` | Run tests + lint + format |
+| `/lint` | Run ruff check + format |
+| `/commit` | Lint, commit, and push to current branch |
+| `/review` | Run design + docs review agents |
+| `/pr` | Generate squash merge message |
+
+**Workflow:**
+1. Create a feature branch from `main`
+2. Make changes, run `/check` to verify
+3. Run `/commit` to lint, commit, and push
+4. Create a PR, run `/pr` for review and merge message
+5. Squash and merge into `main`
+
+See [CLAUDE.md](CLAUDE.md) for full development guidelines.
 
 ---
 
@@ -264,5 +287,3 @@ The model (~500MB) downloads automatically on first run. If it fails:
 ## License
 
 MIT License - feel free to use, modify, and distribute.
-
-**Have Fun Making Music! 🎵**

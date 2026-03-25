@@ -50,19 +50,16 @@ git config core.hooksPath .githooks
 chmod +x .githooks/*
 echo "✓ Git hooks configured"
 
-# Set up Claude Code custom agents
+# Make Claude hooks executable
 echo ""
-echo "Setting up Claude Code agents..."
-mkdir -p .claude/agents
-ln -sf ../../agents/design_agent.md .claude/agents/ 2>/dev/null || true
-ln -sf ../../agents/pr_review_agent.md .claude/agents/ 2>/dev/null || true
-ln -sf ../../agents/documentation_agent.md .claude/agents/ 2>/dev/null || true
-echo "✓ Claude agents configured"
+echo "Setting up Claude Code hooks..."
+chmod +x .claude/hooks/*.sh 2>/dev/null || true
+echo "✓ Claude hooks configured"
 
 # Verify installation
 echo ""
 echo "Verifying installation..."
-pipenv run python -c "import the_jam_machine; print('✓ the_jam_machine package importable')"
+pipenv run python -c "import jammy; print('✓ jammy package importable')"
 pipenv run ruff --version > /dev/null && echo "✓ ruff available"
 pipenv run pytest --version > /dev/null && echo "✓ pytest available"
 
