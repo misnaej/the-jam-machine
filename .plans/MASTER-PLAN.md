@@ -219,7 +219,16 @@ Build a GitHub Pages site with: landing page (what is The Jam Machine), encoding
 
 ---
 
-### Phase 12: Add Unit Tests
+### Phase 12: CI Workflow, Badges & Security
+**Effort:** ~2 hours | **Risk:** Low | **Impact:** CI/CD, visibility, security
+
+Set up GitHub Actions CI with pytest + coverage (Codecov), docstring coverage (interrogate), security audit (pip-audit + bandit), and lint check. Add badges to README. Enable Dependabot for dependency updates.
+
+**Details:** [CI Workflow, Badges & Security](./ci-badges.md)
+
+---
+
+### Phase 13: Add Unit Tests
 **Effort:** ~4 hours | **Risk:** Low | **Impact:** Reliability
 
 Add unit tests for refactored modules, target 70% coverage.
@@ -228,7 +237,7 @@ Add unit tests for refactored modules, target 70% coverage.
 
 ---
 
-### Phase 13: Genre Prediction Cleanup (Optional)
+### Phase 14: Genre Prediction Cleanup (Optional)
 **Effort:** ~4 hours | **Risk:** Medium | **Impact:** Separate system
 
 Fix module-level execution, deduplicate code.
@@ -237,7 +246,7 @@ Fix module-level execution, deduplicate code.
 
 ---
 
-### Phase 14: Dedicated Output Folder
+### Phase 15: Dedicated Output Folder
 **Effort:** ~30 min | **Risk:** Low | **Impact:** UX, repo cleanliness
 
 Create a dedicated `output/` folder for generated MIDI and audio files.
@@ -256,7 +265,7 @@ Create a dedicated `output/` folder for generated MIDI and audio files.
 
 ---
 
-### Phase 15: Python 3.13 Upgrade (Advanced)
+### Phase 16: Python 3.13 Upgrade (Advanced)
 **Effort:** ~2-4 hours | **Risk:** High | **Impact:** Future-proofing
 
 Upgrade from Python 3.11 to Python 3.13.
