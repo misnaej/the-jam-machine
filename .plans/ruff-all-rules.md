@@ -21,7 +21,7 @@ Switch from a curated ruleset to `select = ["ALL"]` with a targeted ignore list.
 |------|-------|-------------|--------|
 | `PLR2004` | 52 | Magic value in comparison | **Ignore** — token strings/numbers are expected |
 | `ERA001` | 37 | Commented-out code | **Fix** — remove dead comments (overlaps with WP10) |
-| `COM812` | 37 | Missing trailing comma | **Ignore** — conflicts with ruff formatter |
+| `COM812` | 37 | Missing trailing comma | **Fix** — auto-fixable with `--fix` |
 | `FBT001` | 27 | Boolean positional arg | **Ignore** — too strict for Gradio callbacks |
 | `FBT002` | 25 | Boolean default arg | **Ignore** — same |
 | `PLC0415` | 6 | Import not at top level | **Fix** — move imports to module level |
@@ -42,8 +42,7 @@ Switch from a curated ruleset to `select = ["ALL"]` with a targeted ignore list.
 ```toml
 select = ["ALL"]
 ignore = [
-    "COM812",  # trailing comma — conflicts with ruff formatter
-    "ISC001",  # implicit string concat — conflicts with ruff formatter
+    "ISC001",  # implicit string concat — can conflict with formatter in some cases
     "PLR2004", # magic value comparison — expected with token strings
     "FBT001",  # boolean positional arg — too strict
     "FBT002",  # boolean default arg — too strict
