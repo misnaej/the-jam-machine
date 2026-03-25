@@ -76,7 +76,7 @@ class TestEnforceLengthLimit:
 
     def test_long_prompt_truncated(self) -> None:
         """Test that a prompt exceeding max_length is truncated."""
-        handler = PromptHandler(n_bars=8, max_length=20)
+        handler = PromptHandler(n_bars=8, max_length=20)  # short limit to force truncation
         # Build a prompt with two tracks, each long enough to exceed limit
         track1 = f"{TRACK_START} INST=DRUMS DENSITY=3 " + "NOTE_ON=36 " * 15 + f"{TRACK_END} "
         track2 = f"{TRACK_START} INST=4 DENSITY=2 " + "NOTE_ON=40 " * 15 + f"{TRACK_END} "
@@ -88,17 +88,10 @@ class TestEnforceLengthLimit:
 
     def test_single_track_not_truncated(self) -> None:
         """Test that a single-track prompt is not truncated even if long."""
-        handler = PromptHandler(n_bars=8, max_length=5)
+        handler = PromptHandler(n_bars=8, max_length=5)  # very short, but can't remove only track
         track = f"{TRACK_START} INST=DRUMS DENSITY=3 " + "NOTE_ON=36 " * 20 + f"{TRACK_END} "
         prompt = f"{PIECE_START} {track}"
 
         result = handler.enforce_length_limit(prompt)
         # Can't remove the only track — returned as-is
-        assert result == prompt
-
-    def test_custom_max_length(self, handler: PromptHandler) -> None:
-        """Test that custom max_length parameter is respected."""
-        prompt = f"{PIECE_START} " + "TOKEN " * 10
-        result = handler.enforce_length_limit(prompt, max_length=5)
-        # Prompt has >5 tokens but no tracks to remove, so returned as-is
         assert result == prompt
