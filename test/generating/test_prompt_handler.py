@@ -64,6 +64,44 @@ class TestBuildNextBarPrompt:
         prompt = handler.build_next_bar_prompt(piece_two_tracks, 0, verbose=False)
         assert "NOTE_ON=36" in prompt or "NOTE_ON=38" in prompt or "NOTE_ON=42" in prompt
 
+    def test_build_next_bar_prompt_adds_side_track_when_longer(self) -> None:
+        """Test that a longer side track's context is included in the prompt."""
+        handler = PromptHandler(n_bars=8, max_length=1500)
+        pb = PieceBuilder()
+        pb.init_track("DRUMS", 3, 0.7)
+        pb.init_track("4", 2, 0.5)
+
+        # Drums has 3 bars, bass has 5 — bass is longer
+        drums_bars = (
+            f"{TRACK_START} INST=DRUMS DENSITY=3 "
+            f"{BAR_START} NOTE_ON=36 BAR_END "
+            f"{BAR_START} NOTE_ON=38 BAR_END "
+            f"{BAR_START} NOTE_ON=42 BAR_END "
+        )
+        bass_bars = (
+            f"{TRACK_START} INST=4 DENSITY=2 "
+            f"{BAR_START} NOTE_ON=40 BAR_END "
+            f"{BAR_START} NOTE_ON=43 BAR_END "
+            f"{BAR_START} NOTE_ON=45 BAR_END "
+            f"{BAR_START} NOTE_ON=47 BAR_END "
+            f"{BAR_START} NOTE_ON=50 BAR_END "
+        )
+        pb.add_bars_to_track(0, drums_bars)
+        pb.add_bars_to_track(1, bass_bars)
+
+        # Generate prompt for bass (track 1) — drums is shorter, so
+        # when generating for drums (track 0), bass context should be included
+        prompt = handler.build_next_bar_prompt(pb, 0, verbose=False)
+        # The side track (bass) has TRACK_END in the pre-prompt
+        assert f"{TRACK_END}" in prompt
+
+    def test_build_next_bar_prompt_verbose(
+        self, handler: PromptHandler, piece_two_tracks: PieceBuilder
+    ) -> None:
+        """Test that verbose=True doesn't crash (covers logging branches)."""
+        prompt = handler.build_next_bar_prompt(piece_two_tracks, 0, verbose=True)
+        assert prompt.startswith(f"{PIECE_START} ")
+
 
 class TestEnforceLengthLimit:
     """Tests for PromptHandler.enforce_length_limit."""

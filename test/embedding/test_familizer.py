@@ -2,10 +2,15 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
 
 from jammy.embedding.familizer import Familizer
 from jammy.tokens import INST
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class TestGetFamilyNumber:
@@ -62,6 +67,13 @@ class TestReplaceInstrumentToken:
         program = int(result.split("=")[1])
         assert 32 <= program < 40
 
+    def test_replace_instrument_token_unknown_operation(self) -> None:
+        """Test that unknown operation returns token unchanged."""
+        f = Familizer()
+        f.operation = "unknown"
+        token = f"{INST}=33"
+        assert f.replace_instrument_token(token) == token
+
 
 class TestReplaceInstrumentInText:
     """Tests for Familizer.replace_instrument_in_text."""
@@ -82,3 +94,18 @@ class TestReplaceInstrumentInText:
         text = f"TRACK_START {INST}=DRUMS DENSITY=3 BAR_START BAR_END TRACK_END"
         result = f.replace_instrument_in_text(text)
         assert f"{INST}=DRUMS" in result
+
+
+class TestReplaceInstrumentsInFile:
+    """Tests for Familizer.replace_instruments_in_file."""
+
+    def test_replace_instruments_in_file_modifies_content(self, tmp_path: Path) -> None:
+        """Test that instrument tokens in a file are replaced in place."""
+        f = Familizer()
+        f.operation = "family"
+        txt = tmp_path / "track.txt"
+        txt.write_text(f"TRACK_START {INST}=33 DENSITY=2 BAR_START NOTE_ON=40 BAR_END TRACK_END")
+        f.replace_instruments_in_file(txt)
+        result = txt.read_text()
+        assert f"{INST}=4" in result
+        assert f"{INST}=33" not in result
