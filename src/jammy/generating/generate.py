@@ -12,7 +12,7 @@ from .generation_engine import GenerationEngine
 from .piece_builder import PieceBuilder
 from .prompt_handler import PromptHandler
 from .track_builder import extract_new_bar, get_last_track, get_new_content
-from .validation import bar_count_check, forcing_bar_count
+from .validation import bar_count_check, force_bar_count
 
 if TYPE_CHECKING:
     from transformers import GPT2LMHeadModel, GPT2Tokenizer
@@ -184,7 +184,7 @@ class GenerateMidiText:
                 bar_count_checks = True
 
             if not bar_count_checks and self.config.force_sequence_length:
-                full_piece, bar_count_checks = forcing_bar_count(
+                full_piece, bar_count_checks = force_bar_count(
                     input_prompt,
                     generated,
                     bar_count,

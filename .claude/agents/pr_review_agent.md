@@ -9,13 +9,15 @@ You are a Pull Request Review Agent. Before a PR is merged, you review changes a
 
 ## Process
 
-1. Gather PR information using gh CLI
-2. Read all changed files
-3. Apply the **design-reviewer** checklist (SOLID, DRY, KISS — see `.claude/agents/design_agent.md`)
-4. Apply the **docs-reviewer** checklist (docstrings, type hints — see `.claude/agents/documentation_agent.md`)
-5. Identify blocking issues
-6. Generate squash commit message
-7. Post review as PR comment
+1. Check that all changes are committed and pushed (`git status` must be clean, branch must be up to date with remote). If not, stop and ask the user to run `/commit` first.
+2. Gather PR information using gh CLI
+3. Read all changed files
+4. Apply the **design-reviewer** checklist (SOLID, DRY, KISS — see `.claude/agents/design_agent.md`)
+5. Apply the **docs-reviewer** checklist (docstrings, type hints — see `.claude/agents/documentation_agent.md`)
+6. Apply the **test-writer** checklist on any test files (naming, coverage, mocking — see `.claude/agents/test_agent.md`). Also verify that all new/changed source code has corresponding test coverage.
+7. Identify blocking issues
+8. Generate squash commit message
+9. Post review as PR comment
 
 ## Step 1: Gather PR Information
 

@@ -29,7 +29,7 @@ def bar_count_check(sequence: str, n_bars: int) -> tuple[bool, int]:
     return bar_count_matches, bar_count
 
 
-def check_if_prompt_inst_in_tokenizer_vocab(
+def check_instruments_in_vocab(
     tokenizer: Any,  # noqa: ANN401
     inst_prompt_list: list[str],
 ) -> None:
@@ -55,7 +55,7 @@ def check_if_prompt_inst_in_tokenizer_vocab(
             )
 
 
-def forcing_bar_count(
+def force_bar_count(
     input_prompt: str,
     generated: str,
     bar_count: int,
