@@ -21,6 +21,7 @@ Custom skills (slash commands) and agents are the standard workflow tools. **Use
 | `/commit` | Lint, commit, and push to current branch |
 | `/review` | Run design-reviewer + docs-reviewer agents in parallel |
 | `/pr` | Run pr-reviewer agent → squash merge message |
+| `/next` | Sync main, clean stale branches, identify and start next task |
 
 **Agents** are defined in `.claude/agents/`:
 
