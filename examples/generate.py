@@ -21,7 +21,7 @@ from jammy.generating.config import GenerationConfig, TrackConfig
 from jammy.generating.file_io import define_generation_dir, write_text_midi_to_file
 from jammy.generating.generate import GenerateMidiText
 from jammy.generating.playback import get_music
-from jammy.generating.validation import check_if_prompt_inst_in_tokenizer_vocab
+from jammy.generating.validation import check_instruments_in_vocab
 from jammy.generating.visualization import plot_piano_roll
 from jammy.logging_config import setup_logging
 from jammy.preprocessing.load import LoadModel
@@ -98,7 +98,7 @@ def main(output_dir: str | Path = DEFAULT_OUTPUT_DIR) -> None:
     ).load_model_and_tokenizer()
 
     instruments = [t.instrument for t in TRACKS]
-    check_if_prompt_inst_in_tokenizer_vocab(tokenizer, instruments)
+    check_instruments_in_vocab(tokenizer, instruments)
 
     config = GenerationConfig(n_bars=N_BARS)
     generator = GenerateMidiText(model, tokenizer, config=config)
