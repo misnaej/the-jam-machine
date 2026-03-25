@@ -26,7 +26,7 @@ def test_generate_midi_text(
     """Test generating a full MIDI piece end-to-end.
 
     This is an integration test that loads the real model and generates
-    actual output. Marked slow (~10s) due to model inference.
+    actual output (~10s due to model inference).
 
     Args:
         model: Session-scoped GPT-2 model from HuggingFace.
