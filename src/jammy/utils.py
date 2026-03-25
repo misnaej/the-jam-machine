@@ -51,6 +51,8 @@ def compute_list_average(values: Sequence[float]) -> float:
     Returns:
         The arithmetic mean of the values.
     """
+    if not values:
+        return 0.0
     return sum(values) / len(values)
 
 
