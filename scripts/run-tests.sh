@@ -32,12 +32,16 @@ echo ""
 
 # --- Run tests with coverage ---
 FAILED=0
-if pipenv run pytest "$TEST_PATH" -v --tb=short --cov=jammy --cov-report=term-missing; then
+TEST_OUTPUT=$(pipenv run pytest "$TEST_PATH" -v --tb=short --cov=jammy --cov-report=term-missing 2>&1)
+TEST_EXIT=$?
+echo "$TEST_OUTPUT"
+
+if [ "$TEST_EXIT" -eq 0 ]; then
     echo ""
     echo "✓ All tests passed"
 
-    # Extract coverage percentage
-    COV_PCT=$(pipenv run pytest "$TEST_PATH" --cov=jammy --cov-report=term -q 2>/dev/null | grep "^TOTAL" | awk '{print $NF}' | tr -d '%')
+    # Extract coverage percentage from the output (no second run)
+    COV_PCT=$(echo "$TEST_OUTPUT" | grep "^TOTAL" | awk '{print $NF}' | tr -d '%')
 
     # Generate test passing badge
     curl -s "https://img.shields.io/badge/tests-passing-brightgreen" -o "$BADGE_DIR/tests.svg" 2>/dev/null || true
