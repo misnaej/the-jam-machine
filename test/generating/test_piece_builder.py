@@ -41,12 +41,12 @@ def builder_with_bars() -> PieceBuilder:
 class TestInitTrack:
     """Tests for PieceBuilder.init_track."""
 
-    def test_adds_track_to_empty(self, empty_builder: PieceBuilder) -> None:
+    def test_init_track_adds_to_empty_builder(self, empty_builder: PieceBuilder) -> None:
         """Test adding a track to an empty builder."""
         empty_builder.init_track("DRUMS", 3, 0.7)
         assert empty_builder.get_track_count() == 1
 
-    def test_track_has_correct_fields(self, empty_builder: PieceBuilder) -> None:
+    def test_init_track_sets_correct_fields(self, empty_builder: PieceBuilder) -> None:
         """Test that initialized track has all expected fields."""
         empty_builder.init_track("4", 2, 0.5)
         track = empty_builder.get_track(0)
@@ -56,7 +56,7 @@ class TestInitTrack:
         assert track["bars"] == []
         assert track["label"] == "track_0"
 
-    def test_multiple_tracks_sequential_labels(self, empty_builder: PieceBuilder) -> None:
+    def test_init_track_assigns_sequential_labels(self, empty_builder: PieceBuilder) -> None:
         """Test that multiple tracks get sequential labels."""
         empty_builder.init_track("DRUMS", 3, 0.7)
         empty_builder.init_track("4", 2, 0.5)
@@ -65,23 +65,23 @@ class TestInitTrack:
         assert empty_builder.get_track_count() == 2
 
 
-class TestAddBars:
+class TestAddBarsToTrack:
     """Tests for PieceBuilder.add_bars_to_track."""
 
-    def test_adds_bars_to_track(self, builder_with_track: PieceBuilder) -> None:
+    def test_add_bars_to_track_appends_bars(self, builder_with_track: PieceBuilder) -> None:
         """Test that bars are added to the track."""
         bars = f"{BAR_START} NOTE_ON=36 BAR_END {BAR_START} NOTE_ON=38 BAR_END "
         builder_with_track.add_bars_to_track(0, bars)
         assert len(builder_with_track.get_track_bars(0)) == 2
 
-    def test_strips_track_end_before_adding(self, builder_with_track: PieceBuilder) -> None:
+    def test_add_bars_to_track_strips_track_end(self, builder_with_track: PieceBuilder) -> None:
         """Test that TRACK_END is stripped from bars text."""
         bars = f"{BAR_START} NOTE_ON=36 BAR_END {TRACK_END} "
         builder_with_track.add_bars_to_track(0, bars)
         for bar in builder_with_track.get_track_bars(0):
             assert TRACK_END not in bar
 
-    def test_negative_index_adds_to_last_track(self, empty_builder: PieceBuilder) -> None:
+    def test_add_bars_to_track_negative_index_uses_last(self, empty_builder: PieceBuilder) -> None:
         """Test that track_id=-1 adds to the last track."""
         empty_builder.init_track("DRUMS", 3, 0.7)
         empty_builder.init_track("4", 2, 0.5)
@@ -94,7 +94,7 @@ class TestAddBars:
 class TestDeleteTrack:
     """Tests for PieceBuilder.delete_track."""
 
-    def test_removes_track(self, empty_builder: PieceBuilder) -> None:
+    def test_delete_track_removes_by_index(self, empty_builder: PieceBuilder) -> None:
         """Test that delete_track removes the specified track."""
         empty_builder.init_track("DRUMS", 3, 0.7)
         empty_builder.init_track("4", 2, 0.5)
@@ -106,7 +106,7 @@ class TestDeleteTrack:
 class TestGetTrackConfig:
     """Tests for PieceBuilder.get_track_config."""
 
-    def test_returns_correct_config(self, builder_with_track: PieceBuilder) -> None:
+    def test_get_track_config_returns_matching(self, builder_with_track: PieceBuilder) -> None:
         """Test that get_track_config returns a matching TrackConfig."""
         config = builder_with_track.get_track_config(0)
         assert isinstance(config, TrackConfig)
@@ -115,10 +115,10 @@ class TestGetTrackConfig:
         assert config.temperature == 0.7
 
 
-class TestSetTemperature:
+class TestSetTrackTemperature:
     """Tests for PieceBuilder.set_track_temperature."""
 
-    def test_updates_temperature(self, builder_with_track: PieceBuilder) -> None:
+    def test_set_track_temperature_updates_value(self, builder_with_track: PieceBuilder) -> None:
         """Test that temperature is updated correctly."""
         builder_with_track.set_track_temperature(0, 0.3)
         assert builder_with_track.get_track_temperature(0) == 0.3

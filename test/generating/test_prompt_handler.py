@@ -43,21 +43,21 @@ def piece_two_tracks() -> PieceBuilder:
 class TestBuildNextBarPrompt:
     """Tests for PromptHandler.build_next_bar_prompt."""
 
-    def test_prompt_starts_with_piece_start(
+    def test_build_next_bar_prompt_starts_with_piece_start(
         self, handler: PromptHandler, piece_two_tracks: PieceBuilder
     ) -> None:
         """Test that prompt starts with PIECE_START."""
         prompt = handler.build_next_bar_prompt(piece_two_tracks, 0, verbose=False)
         assert prompt.startswith(f"{PIECE_START} ")
 
-    def test_prompt_ends_with_bar_start(
+    def test_build_next_bar_prompt_ends_with_bar_start(
         self, handler: PromptHandler, piece_two_tracks: PieceBuilder
     ) -> None:
         """Test that prompt ends with BAR_START to trigger generation."""
         prompt = handler.build_next_bar_prompt(piece_two_tracks, 0, verbose=False)
         assert prompt.rstrip().endswith(f"{BAR_START}")
 
-    def test_prompt_contains_track_content(
+    def test_build_next_bar_prompt_includes_track_notes(
         self, handler: PromptHandler, piece_two_tracks: PieceBuilder
     ) -> None:
         """Test that prompt contains content from the target track."""
@@ -68,13 +68,13 @@ class TestBuildNextBarPrompt:
 class TestEnforceLengthLimit:
     """Tests for PromptHandler.enforce_length_limit."""
 
-    def test_short_prompt_unchanged(self, handler: PromptHandler) -> None:
+    def test_enforce_length_limit_short_prompt_unchanged(self, handler: PromptHandler) -> None:
         """Test that a short prompt is returned unchanged."""
         prompt = f"{PIECE_START} {TRACK_START} INST=DRUMS DENSITY=3 {TRACK_END} "
         result = handler.enforce_length_limit(prompt)
         assert result == prompt
 
-    def test_long_prompt_truncated(self) -> None:
+    def test_enforce_length_limit_truncates_long_prompt(self) -> None:
         """Test that a prompt exceeding max_length is truncated."""
         handler = PromptHandler(n_bars=8, max_length=20)  # short limit to force truncation
         # Build a prompt with two tracks, each long enough to exceed limit
@@ -86,7 +86,7 @@ class TestEnforceLengthLimit:
         # Should have removed one track
         assert result.count(TRACK_END) == 1
 
-    def test_single_track_not_truncated(self) -> None:
+    def test_enforce_length_limit_keeps_single_track(self) -> None:
         """Test that a single-track prompt is not truncated even if long."""
         handler = PromptHandler(n_bars=8, max_length=5)  # very short, but can't remove only track
         track = f"{TRACK_START} INST=DRUMS DENSITY=3 " + "NOTE_ON=36 " * 20 + f"{TRACK_END} "

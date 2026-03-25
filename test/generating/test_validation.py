@@ -17,28 +17,28 @@ from jammy.tokens import BAR_END, INST, TRACK_END
 class TestBarCountCheck:
     """Tests for bar_count_check."""
 
-    def test_exact_match(self) -> None:
+    def test_bar_count_check_exact_match_returns_true(self) -> None:
         """Test that exact bar count returns True."""
         sequence = f"NOTE_ON=36 {BAR_END} NOTE_ON=38 {BAR_END} "
         matches, count = bar_count_check(sequence, 2)
         assert matches is True
         assert count == 2
 
-    def test_too_many_bars(self) -> None:
+    def test_bar_count_check_too_many_returns_false(self) -> None:
         """Test that too many bars returns False."""
         sequence = f"{BAR_END} {BAR_END} {BAR_END} "
         matches, count = bar_count_check(sequence, 2)
         assert matches is False
         assert count == 3
 
-    def test_too_few_bars(self) -> None:
+    def test_bar_count_check_too_few_returns_false(self) -> None:
         """Test that too few bars returns False."""
         sequence = f"NOTE_ON=36 {BAR_END} "
         matches, count = bar_count_check(sequence, 3)
         assert matches is False
         assert count == 1
 
-    def test_zero_bars(self) -> None:
+    def test_bar_count_check_zero_bars(self) -> None:
         """Test sequence with no bars."""
         sequence = "NOTE_ON=36 NOTE_OFF=36 "
         matches, count = bar_count_check(sequence, 0)
@@ -49,7 +49,7 @@ class TestBarCountCheck:
 class TestForcingBarCount:
     """Tests for forcing_bar_count."""
 
-    def test_truncates_when_too_long(self) -> None:
+    def test_forcing_bar_count_truncates_extra_bars(self) -> None:
         """Test that extra bars are trimmed when sequence is too long."""
         prompt = "PROMPT "
         generated = f"NOTE_ON=36 {BAR_END} NOTE_ON=38 {BAR_END} NOTE_ON=40 {BAR_END} "
@@ -59,7 +59,7 @@ class TestForcingBarCount:
         assert full_piece.count(BAR_END) == 2
         assert TRACK_END in full_piece
 
-    def test_returns_false_when_too_short(self) -> None:
+    def test_forcing_bar_count_returns_false_when_short(self) -> None:
         """Test that too-short sequence triggers regeneration."""
         prompt = "PROMPT "
         generated = f"NOTE_ON=36 {BAR_END} "
@@ -68,10 +68,10 @@ class TestForcingBarCount:
         assert full_piece == prompt + generated
 
 
-class TestCheckIfPromptInstInTokenizerVocab:
+class TestCheckInstInVocab:
     """Tests for check_if_prompt_inst_in_tokenizer_vocab."""
 
-    def test_valid_instruments_pass(self) -> None:
+    def test_check_inst_in_vocab_valid_passes(self) -> None:
         """Test that valid instruments don't raise."""
         # Mock: tokenizer — only .vocab dict is accessed
         # Avoids loading the real HF tokenizer (~8s model download)
@@ -80,7 +80,7 @@ class TestCheckIfPromptInstInTokenizerVocab:
         tokenizer.vocab = {f"{INST}=DRUMS": 0, f"{INST}=4": 1, f"{INST}=3": 2}
         check_if_prompt_inst_in_tokenizer_vocab(tokenizer, ["DRUMS", "4", "3"])
 
-    def test_invalid_instrument_raises(self) -> None:
+    def test_check_inst_in_vocab_invalid_raises(self) -> None:
         """Test that an invalid instrument raises ValueError."""
         # Mock: tokenizer — same rationale as test_valid_instruments_pass
         tokenizer = MagicMock()

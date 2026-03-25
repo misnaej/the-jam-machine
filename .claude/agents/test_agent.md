@@ -38,12 +38,42 @@ tokenizer = MagicMock()
 tokenizer.vocab = {f"{INST}=DRUMS": 0}
 ```
 
+### Naming conventions (strict)
+
+**Test files** mirror source structure exactly:
+- `src/jammy/generating/piece_builder.py` → `test/generating/test_piece_builder.py`
+- `src/jammy/utils.py` → `test/test_utils.py`
+
+**Test functions** MUST include the function/method being tested:
+```
+test_<function_name>_<expected_behavior_or_condition>
+```
+
+Examples:
+```python
+# Good — function name is in the test name
+def test_init_track_adds_to_empty_builder():
+def test_bar_count_check_exact_match_returns_true():
+def test_enforce_length_limit_truncates_long_prompt():
+def test_delete_track_removes_by_index():
+
+# Bad — missing which function is being tested
+def test_adds_track_to_empty():       # what function?
+def test_exact_match():                # match of what?
+def test_short_prompt_unchanged():     # which function?
+def test_removes_track():              # what removes it?
+```
+
+**Test classes** (if used for grouping) must be named after the function:
+```python
+class TestBarCountCheck:     # Good — matches bar_count_check()
+class TestAddBars:           # Bad — should be TestAddBarsToTrack
+```
+
 ### Test structure
 - Use `pytest` — no `unittest.TestCase`
 - Fixtures over setup/teardown
 - One assertion per test when practical (but multiple related assertions are fine)
-- Test names: `test_<what>_<expected_behavior>` or `test_<what>_<condition>`
-- Test files mirror source structure: `src/jammy/foo.py` → `test/test_foo.py` or `test/subdir/test_foo.py`
 
 ### What to test
 - Public API behavior, not implementation details
@@ -77,9 +107,21 @@ tokenizer.vocab = {f"{INST}=DRUMS": 0}
 5. Check coverage improved: `pipenv run pytest test/<file> --cov=jammy.<module> --cov-report=term-missing`
 6. Run ruff on test files: `pipenv run ruff check test/`
 
+## Source Code Review
+
+When writing or reviewing tests, also audit the source code being tested:
+- **Function names** must be descriptive and follow snake_case
+- **Parameter names** must be clear and non-ambiguous
+- **Return types** must match docstrings
+- **Public API** should be minimal — flag any public method that could be private
+- Report source naming issues alongside test findings
+
 ## When Reviewing Tests
 
 Check for:
+- [ ] **Naming**: test function includes the function/method being tested (`test_<function_name>_<behavior>`)
+- [ ] **Naming**: test file mirrors source file (`src/jammy/foo.py` → `test/test_foo.py`)
+- [ ] **Naming**: test class (if used) matches the function being tested
 - [ ] Every test has a docstring
 - [ ] All mocks have what/how/why comments
 - [ ] No tests take > 5 seconds
