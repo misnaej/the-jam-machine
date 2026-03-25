@@ -237,21 +237,71 @@ Add unit tests for all core modules. Currently 55% coverage, target 80%+. Three 
 
 ---
 
-### Phase 14: Replace `dict[str, Any]` with typed dataclasses in PieceBuilder
+### Phase 14: Design Audit Fixes
+**Effort:** ~6-8 hours (multiple PRs) | **Risk:** Medium | **Impact:** Code quality, security, correctness
+
+Fix 43 findings from the full codebase design audit. Grouped into 10 work packages: security fixes (Critical), module-level side effects, error handling, complexity reduction, classes→functions, DRY violations, pythonic idioms, logic bugs, testability, and cleanup.
+
+**Details:** [Design Audit Findings](./design-audit-findings.md)
+
+**Note:** WP7 (string joins in piece_builder, track_builder, encoder) and WP8 (logic bugs) overlap with the test PRs — fix alongside test work.
+
+---
+
+### Phase 15: HuggingFace Space Deployment from GitHub
+**Effort:** ~2-3 hours | **Risk:** Medium | **Impact:** Deployment, DX
+
+The HuggingFace Space is currently a stale manual copy of flat Python files. Modernize it to build directly from the GitHub repo.
+
+**Approach:**
+- Configure the HF Space to use a `Dockerfile` or `app.py` entry point that installs from the repo
+- The Space should only contain: `Dockerfile` (or `requirements.txt` + `app.py` shim), `README.md`, and `packages.txt` (for FluidSynth)
+- The `app.py` shim just imports and runs `app/playground.py` from the installed `jammy` package
+- No code duplication — the Space pulls from `main` on every rebuild
+
+**Options:**
+1. **Docker-based Space**: `Dockerfile` that clones the repo, installs deps, runs the app
+2. **GitHub-linked Space**: HF Spaces supports linking to a GitHub repo directly (auto-sync on push)
+3. **pip-installable + shim**: `requirements.txt` with `git+https://github.com/misnaej/the-jam-machine.git` and a thin `app.py`
+
+**Tasks:**
+1. Research which approach HF Spaces supports best for Gradio apps
+2. Create the deployment config (Dockerfile or requirements.txt)
+3. Test locally with Docker
+4. Deploy to HuggingFace, verify the app works
+5. Set up auto-rebuild on push to `main` (if using GitHub sync)
+
+---
+
+### Phase 16: Docker Build
+**Effort:** ~1-2 hours | **Risk:** Low | **Impact:** Deployment, reproducibility
+
+Create a Dockerfile for local development and deployment.
+
+**Tasks:**
+1. Create `Dockerfile` — Python 3.11, FluidSynth, pip install from repo
+2. Create `docker-compose.yml` — mount volumes for output, expose Gradio port
+3. Create `.dockerignore` — exclude `.git`, `midi/generated/`, `output/`, etc.
+4. Document in README: `docker compose up` to run the app
+5. Optionally reuse the same Dockerfile for the HuggingFace Space (Phase 14)
+
+---
+
+### Phase 17: Replace `dict[str, Any]` with typed dataclasses
 **Effort:** ~4 hours | **Risk:** Medium | **Impact:** Type safety, expressiveness
 
 Replace `list[dict[str, Any]]` in PieceBuilder with a `TrackState` dataclass. Propagate through generate.py, prompt_handler.py, and playground.py.
 
 ---
 
-### Phase 15: Add Doctest for Code Examples
+### Phase 18: Add Doctest for Code Examples
 **Effort:** ~1-2 hours | **Risk:** Low | **Impact:** Documentation reliability
 
 Add `--doctest-modules` to pytest, add Example sections to key public functions.
 
 ---
 
-### Phase 16: Genre Prediction Cleanup (Optional)
+### Phase 19: Genre Prediction Cleanup (Optional)
 **Effort:** ~4 hours | **Risk:** Medium | **Impact:** Separate system
 
 Fix module-level execution, deduplicate code.
@@ -260,14 +310,14 @@ Fix module-level execution, deduplicate code.
 
 ---
 
-### Phase 17: Python 3.13 Upgrade (Advanced)
+### Phase 20: Python 3.13 Upgrade (Advanced)
 **Effort:** ~2-4 hours | **Risk:** High | **Impact:** Future-proofing
 
 Upgrade from Python 3.11 to Python 3.13. Check torch/transformers/miditok compatibility first.
 
 ---
 
-### Phase 18: CI Workflow & Badges (when needed)
+### Phase 21: CI Workflow & Badges (when needed)
 **Effort:** ~2 hours | **Risk:** Low | **Impact:** CI/CD, visibility
 
 Set up GitHub Actions CI with pytest + coverage (Codecov), docstring coverage (interrogate), security audit (pip-audit + bandit), lint check, and Dependabot. Add badges to README.
