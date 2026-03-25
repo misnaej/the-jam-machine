@@ -7,7 +7,7 @@
 
 ## Goal
 
-Set up GitHub Actions CI with automated checks and README badges for: tests passing, test coverage, docstring coverage, and security audit. Enable Dependabot for automated dependency updates.
+Set up GitHub Actions CI with automated checks and README badges for: tests passing, test coverage, docstring coverage, and security audit. Update the pre-commit hook to also run docstring coverage and security checks, with all output logged to a known location. Enable Dependabot for automated dependency updates.
 
 ---
 
@@ -114,7 +114,42 @@ exclude = ["test/", "examples/"]
 verbose = 1
 ```
 
-### Step 5: Add badges to README
+### Step 5: Update pre-commit hook
+
+Update `.githooks/pre-commit` to add docstring coverage and security checks. All hook output should be logged to `.githooks/logs/` so agents and users can consult the logs when the pre-commit fails.
+
+**Log directory:** `.githooks/logs/` (gitignored). Each run writes to a timestamped log file, e.g. `.githooks/logs/pre-commit-20260325_143012.log`. The hook also keeps a symlink `.githooks/logs/latest.log` pointing to the most recent run.
+
+**New hook steps** (in addition to existing ruff lint + format):
+
+1. **Ruff lint** (blocking) — existing, auto-fixes when possible
+2. **Ruff format** (blocking) — existing, auto-applies
+3. **Docstring coverage** (blocking) — `interrogate` on staged Python files, fail under 80%
+4. **Bandit security** (blocking) — `bandit` on staged Python files
+5. **pip-audit** (informational) — existing, non-blocking
+
+**Log format:**
+```
+=== Pre-commit run: 2026-03-25 14:30:12 ===
+=== Ruff Linting ===
+<output>
+=== Ruff Formatting ===
+<output>
+=== Docstring Coverage ===
+<output>
+=== Security - Bandit ===
+<output>
+=== Security - pip-audit (informational) ===
+<output>
+=== Result: PASS/FAIL ===
+```
+
+**Document the log location** in:
+- CLAUDE.md (so agents know where to look)
+- `.githooks/README.md` (so developers know)
+- The git-workflow agent definition
+
+### Step 6: Add badges to README
 
 ```markdown
 [![CI](https://github.com/misnaej/the-jam-machine/actions/workflows/ci.yml/badge.svg)](https://github.com/misnaej/the-jam-machine/actions/workflows/ci.yml)
@@ -124,7 +159,7 @@ verbose = 1
 
 The docstring badge will need to be updated manually (or via a GitHub Action that updates the badge dynamically). Codecov provides its own dynamic badge once connected.
 
-### Step 6: Enable Dependabot
+### Step 7: Enable Dependabot
 
 Create `.github/dependabot.yml`:
 
@@ -142,7 +177,11 @@ updates:
 
 This will automatically create PRs when dependencies have security updates or new versions.
 
-### Step 7: Run locally first
+### Step 8: Update .gitignore
+
+Add `.githooks/logs/` to `.gitignore`.
+
+### Step 9: Run locally first
 
 Before pushing the workflow, verify everything passes locally:
 
@@ -188,8 +227,13 @@ Codecov has better GitHub integration, PR comments with coverage diffs, and a ge
 |------|--------|
 | `.github/workflows/ci.yml` | **CREATE** |
 | `.github/dependabot.yml` | **CREATE** |
+| `.githooks/pre-commit` | **UPDATE** add interrogate, bandit, logging |
+| `.githooks/README.md` | **UPDATE** document log location |
+| `.gitignore` | **UPDATE** add `.githooks/logs/` |
 | `pyproject.toml` | **UPDATE** add bandit, interrogate to ci deps + tool config |
 | `README.md` | **UPDATE** add CI, coverage, docstring badges |
+| `CLAUDE.md` | **UPDATE** document hook log location |
+| `.claude/agents/git_agent.md` | **UPDATE** reference hook logs |
 
 ---
 
@@ -202,6 +246,13 @@ pipenv run pytest test/ -v --cov=jammy
 pipenv run interrogate src/jammy/ -v
 pipenv run bandit -r src/jammy/
 pipenv run pip-audit
+
+# Test the pre-commit hook
+echo "test" > /tmp/test.py && git add /tmp/test.py  # trigger hook
+git commit -m "test"  # should run all checks and write logs
+
+# Check logs
+cat .githooks/logs/latest.log
 
 # Push and verify GitHub Actions passes
 git push origin feature/ci-badges
