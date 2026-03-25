@@ -27,10 +27,7 @@ def index_has_substring(items: Sequence[str], substring: str) -> int:
     Returns:
         The index of the first item containing the substring, or -1 if not found.
     """
-    for i, s in enumerate(items):
-        if substring in s:
-            return i
-    return -1
+    return next((i for i, s in enumerate(items) if substring in s), -1)
 
 
 @functools.lru_cache(maxsize=1)

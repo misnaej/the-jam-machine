@@ -29,7 +29,7 @@ class PieceBuilder:
         Args:
             piece_by_track: Optional existing piece state to restore.
         """
-        self.piece_by_track: list[dict[str, Any]] = piece_by_track if piece_by_track else []
+        self.piece_by_track: list[dict[str, Any]] = list(piece_by_track) if piece_by_track else []
 
     def init_track(
         self,
@@ -156,11 +156,8 @@ class PieceBuilder:
         Returns:
             Full track text ending with TRACK_END.
         """
-        text = ""
-        for bar in self.piece_by_track[track_id]["bars"]:
-            text += bar
-        text += f"{TRACK_END} "
-        return text
+        bars = "".join(self.piece_by_track[track_id]["bars"])
+        return f"{bars}{TRACK_END} "
 
     def build_piece_text(self) -> str:
         """Combine all tracks into final piece text.
@@ -168,7 +165,5 @@ class PieceBuilder:
         Returns:
             Full piece text starting with PIECE_START.
         """
-        text = f"{PIECE_START} "
-        for track_id in range(len(self.piece_by_track)):
-            text += self.build_track_text(track_id)
-        return text
+        tracks = "".join(self.build_track_text(i) for i in range(len(self.piece_by_track)))
+        return f"{PIECE_START} {tracks}"

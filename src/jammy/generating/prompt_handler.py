@@ -80,8 +80,7 @@ class PromptHandler:
                         )
                     # If other track is longer, this one should catch up
                     pre_prompt += other_bars[0]
-                    for bar in track_bars[-self.n_bars :]:
-                        pre_prompt += bar
+                    pre_prompt += "".join(track_bars[-self.n_bars :])
                     pre_prompt += f"{TRACK_END} "
 
         # Build main prompt from track to extend
@@ -92,8 +91,7 @@ class PromptHandler:
                 len(track_bars[-(self.n_bars - 1) :]),
                 track_idx,
             )
-        for bar in track_bars[-(self.n_bars - 1) :]:
-            processed_prompt += bar
+        processed_prompt += "".join(track_bars[-(self.n_bars - 1) :])
 
         processed_prompt += f"{BAR_START} "
 

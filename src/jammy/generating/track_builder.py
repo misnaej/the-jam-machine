@@ -54,10 +54,7 @@ def combine_tracks(track_list: list[str]) -> str:
     Returns:
         Combined piece text starting with PIECE_START.
     """
-    piece = f"{PIECE_START} "
-    for track in track_list:
-        piece += track
-    return piece
+    return f"{PIECE_START} " + "".join(track_list)
 
 
 def get_new_content(full_text: str, prompt: str) -> str:

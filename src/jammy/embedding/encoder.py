@@ -101,13 +101,13 @@ def events_to_text(events: list[Event]) -> str:
     Returns:
         Text representation of the events.
     """
-    text = ""
+    parts: list[str] = []
     current_instrument = "undefined"
     for event in events:
         if event.type == "Instrument":
             current_instrument = str(event.value)
-        text += get_text(event, current_instrument)
-    return text
+        parts.append(get_text(event, current_instrument))
+    return "".join(parts)
 
 
 def from_midi_to_sectioned_text(midi_filename: str, familized: bool = False) -> str:
