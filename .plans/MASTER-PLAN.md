@@ -32,14 +32,11 @@ This document is the **central reference** for all refactoring and improvement w
 
 | # | Plan | Status | Purpose |
 |---|------|--------|---------|
-| 1 | [Code Audit Plan](./code-audit-plan.md) | ✅ Phase 1-4 done | Original audit and setup |
-| 2 | [Refactor Generate Plan](./refactor-generate-plan.md) | ✅ Complete | Split generate.py |
-| 3 | [Main Package Audit](./audit-main-package.md) | 📋 Reference | Detailed module analysis |
-| 4 | [Genre Prediction Audit](./audit-genre-prediction.md) | 📋 Reference | Separate system analysis |
-| 5 | [Design Audit](./design-audit.md) | 📋 Reference | Quick summary of issues |
-| 6 | [Design Audit Implementation](./design-audit-implementation-plan.md) | 🔜 Next | Detailed implementation steps |
-| 7 | [Test Coverage Audit](./test-coverage-audit.md) | 🔜 Pending | Test improvements |
-| 8 | [Postponed Annotations Plan](#phase-1-postponed-annotations) | ✅ Done | Type hint cleanup |
+| 1 | [Test Plan](./test-plan.md) | 🔜 In progress | Unit tests (3 PRs) |
+| 2 | [Design Audit Findings](./design-audit-findings.md) | 🔜 Planned | 43 issues in 10 work packages |
+| 3 | [GitHub Pages](./github-pages.md) | 🔜 Planned | Documentation site |
+| 4 | [CI Badges](./ci-badges.md) | 🔜 Planned | CI workflow + badges |
+| 5 | [Genre Prediction Audit](./audit-genre-prediction.md) | 📋 Reference | Separate system (optional) |
 
 ---
 
@@ -99,7 +96,7 @@ Get all tests passing before making more changes.
 2. Skip or delete `test_decode` and `test_gradio`
 3. Add assertions to `test_generate` and `test_encode`
 
-**Details:** [Test Coverage Audit](./test-coverage-audit.md) - Phase 1
+**Details:** *(plan archived — phase complete)*
 
 ---
 
@@ -127,7 +124,7 @@ Create `TrackConfig` and `GenerationConfig` dataclasses.
 
 **Status:** Complete — `TrackConfig` (frozen) and `GenerationConfig` dataclasses in `src/jammy/generating/config.py`. `GenerateMidiText` constructor accepts `config=` parameter. `examples/generation_playground.py` refactored to use both.
 
-**Details:** [Design Audit Implementation](./design-audit-implementation-plan.md) - Phase 1
+**Details:** *(plan archived — phase complete)*
 
 ---
 
@@ -157,7 +154,7 @@ Created `src/jammy/tokens.py` with all MIDI text token constants and replaced ~1
 - Removed all token-related `# noqa: S105/S106` suppressions
 - All 12 tests pass, all lint checks pass
 
-**Details:** [Design Audit Implementation](./design-audit-implementation-plan.md) - Phase 2
+**Details:** *(plan archived — phase complete)*
 
 ---
 
@@ -166,7 +163,7 @@ Created `src/jammy/tokens.py` with all MIDI text token constants and replaced ~1
 
 Split into `file_io.py`, `validation.py`, `visualization.py`. Also replaced `WriteTextMidiToFile` class with `write_text_midi_to_file()` function (class was over-engineered — no shared state). Deleted `get_max_time()` (unused). Made `print_inst_classes()` private.
 
-**Details:** [Design Audit Implementation](./design-audit-implementation-plan.md) - Phase 3
+**Details:** *(plan archived — phase complete)*
 
 ---
 
@@ -175,7 +172,7 @@ Split into `file_io.py`, `validation.py`, `visualization.py`. Also replaced `Wri
 
 Split 594-line file into `time_processing.py`, `bar_processing.py`, `section_building.py` + slimmed `encoder.py`. Converted 10 `@staticmethod` methods to module functions. Replaced fragile `chain()` with explicit pipeline. Deleted unused `get_text_by_section`, `get_piece_sections`, backward compat alias, `__main__` block.
 
-**Details:** [Design Audit Implementation](./design-audit-implementation-plan.md) - Phase 4
+**Details:** *(plan archived — phase complete)*
 
 ---
 
@@ -184,7 +181,7 @@ Split 594-line file into `time_processing.py`, `bar_processing.py`, `section_bui
 
 Split 470-line file into `text_parsing.py`, `event_processing.py` + slimmed `decoder.py`. Converted 10 `@staticmethod` + 1 pseudo-instance method to module functions. No caller changes needed.
 
-**Details:** [Design Audit Implementation](./design-audit-implementation-plan.md) - Phase 5
+**Details:** *(plan archived — phase complete)*
 
 ---
 
@@ -193,7 +190,7 @@ Split 470-line file into `text_parsing.py`, `event_processing.py` + slimmed `dec
 
 Fix typos, remove dead code, delete `unused/` directory.
 
-**Details:** [Design Audit Implementation](./design-audit-implementation-plan.md) - Phase 6
+**Details:** *(plan archived — phase complete)*
 
 **Completed:** Deleted `unused/` directory, removed dead `track_index` variable, removed 3 legacy method aliases in `generate.py`, removed camelCase aliases and deprecated `isJSON` param in `utils.py`, removed dead `__main__` block, updated all callers.
 
@@ -204,7 +201,7 @@ Fix typos, remove dead code, delete `unused/` directory.
 
 Organize `examples/` with two runnable scripts: encode/decode roundtrip (using Reptilia MIDI) and generation. Clean up scattered MIDI artifacts and test side effects.
 
-**Details:** [Examples Reorganization](./examples-reorganization.md)
+**Details:** *(plan archived — phase complete)*
 
 **Completed:** Created `encode_decode.py`, renamed `generation_playground.py` → `generate.py`, fixed test side effects, cleaned up MIDI artifacts, added README, output to `output/examples/` (gitignored). 23 tests pass.
 
