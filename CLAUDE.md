@@ -22,7 +22,7 @@ Custom skills (slash commands) and agents are the standard workflow tools. **Use
 | `/review` | Run design-reviewer + docs-reviewer agents in parallel |
 | `/pr` | Run pr-reviewer agent → squash merge message |
 
-**Agents** are defined in `agents/` (symlinked to `.claude/agents/`):
+**Agents** are defined in `.claude/agents/`:
 
 | Agent | Use for |
 |-------|---------|
@@ -47,7 +47,7 @@ src/jammy/                 # Main package
 app/playground.py          # Gradio web interface
 examples/                  # Example scripts
 test/                      # Test suite
-agents/                    # Custom agent definitions
+.claude/                   # Claude Code config (agents, skills, hooks)
 ```
 
 ## Environment Setup

@@ -50,15 +50,6 @@ git config core.hooksPath .githooks
 chmod +x .githooks/*
 echo "✓ Git hooks configured"
 
-# Set up Claude Code custom agents
-echo ""
-echo "Setting up Claude Code agents..."
-mkdir -p .claude/agents
-ln -sf ../../agents/design_agent.md .claude/agents/ 2>/dev/null || true
-ln -sf ../../agents/pr_review_agent.md .claude/agents/ 2>/dev/null || true
-ln -sf ../../agents/documentation_agent.md .claude/agents/ 2>/dev/null || true
-echo "✓ Claude agents configured"
-
 # Make Claude hooks executable
 echo ""
 echo "Setting up Claude Code hooks..."
