@@ -110,11 +110,23 @@ class TestAddBars:           # Bad — should be TestAddBarsToTrack
 ## Source Code Review
 
 When writing or reviewing tests, also audit the source code being tested:
-- **Function names** must be descriptive and follow snake_case
-- **Parameter names** must be clear and non-ambiguous
-- **Return types** must match docstrings
+
+### Naming (all levels)
+- **Package/module names**: lowercase, snake_case, descriptive (`generating/`, `piece_builder.py`)
+- **Class names**: PascalCase, noun-based (`PieceBuilder`, `TrackConfig`)
+- **Function/method names**: snake_case, verb-based, describes what it does (`build_piece_text`, `delete_track`)
+- **Parameter names**: clear, non-ambiguous, snake_case — avoid single letters except in lambdas/comprehensions
+- **Constants**: UPPER_SNAKE_CASE (`PIECE_START`, `MODEL_REVISION`)
+
+### Consistency checks
+- Test file name must match source file: `piece_builder.py` → `test_piece_builder.py`
+- Test function name must include the source function: `delete_track()` → `test_delete_track_removes_by_index()`
+- Test class name (if used) must match the function: `TestDeleteTrack`
+- Report mismatches between test names and source names alongside test findings
+
+### API surface
 - **Public API** should be minimal — flag any public method that could be private
-- Report source naming issues alongside test findings
+- **Return types** must match docstrings
 
 ## When Reviewing Tests
 

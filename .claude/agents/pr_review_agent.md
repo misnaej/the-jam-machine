@@ -13,9 +13,10 @@ You are a Pull Request Review Agent. Before a PR is merged, you review changes a
 2. Read all changed files
 3. Apply the **design-reviewer** checklist (SOLID, DRY, KISS — see `.claude/agents/design_agent.md`)
 4. Apply the **docs-reviewer** checklist (docstrings, type hints — see `.claude/agents/documentation_agent.md`)
-5. Identify blocking issues
-6. Generate squash commit message
-7. Post review as PR comment
+5. Apply the **test-writer** checklist on any test files (naming, coverage, mocking — see `.claude/agents/test_agent.md`). Also verify that all new/changed source code has corresponding test coverage.
+6. Identify blocking issues
+7. Generate squash commit message
+8. Post review as PR comment
 
 ## Step 1: Gather PR Information
 
