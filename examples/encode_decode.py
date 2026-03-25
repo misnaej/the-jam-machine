@@ -35,6 +35,8 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
+from miditoolkit import MidiFile
+
 from jammy.embedding.decoder import TextDecoder
 from jammy.embedding.encoder import MIDIEncoder
 from jammy.file_utils import write_to_file
@@ -64,9 +66,6 @@ def main(output_dir: str | Path = DEFAULT_OUTPUT_DIR) -> None:
 
     # --- Encode MIDI to text ---
     logger.info("Loading MIDI file: %s", MIDI_INPUT)
-    # Runtime import — miditoolkit is heavy
-    from miditoolkit import MidiFile
-
     midi = MidiFile(str(MIDI_INPUT))
     logger.info(
         "MIDI loaded: %d instruments, %d ticks per beat",

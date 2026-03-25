@@ -55,12 +55,13 @@ class TokenizeDataset:
         Returns:
             Tokenized dataset with 'text' column removed.
         """
-        dataset_tokenized = dataset.map(self.tokenize, batched=True, remove_columns=["text"])
-        return dataset_tokenized
+        return dataset.map(self.tokenize, batched=True, remove_columns=["text"])
 
 
 def train_tokenizer(
-    model_path: str, train_data: Dataset, verbose: bool = True
+    model_path: str,
+    train_data: Dataset,
+    verbose: bool = True,
 ) -> PreTrainedTokenizerFast:
     """Train a word-level tokenizer on the training data.
 
@@ -114,7 +115,7 @@ def check_tokenized_data(
         for data in dataset["text"]:
             inst_tokens += [token.strip("INST=") for token in data.split(" ") if "INST=" in token]
         token_occ = np.array(
-            [[token, int(inst_tokens.count(token))] for token in np.unique(inst_tokens)]
+            [[token, int(inst_tokens.count(token))] for token in np.unique(inst_tokens)],
         ).T
         sorted_occurences = np.sort(token_occ[1].astype(int))
         sorted_tokens = [token_occ[0][idx] for idx in np.argsort(token_occ[1].astype(int))]

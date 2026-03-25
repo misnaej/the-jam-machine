@@ -3,7 +3,7 @@ from __future__ import annotations
 # fmt: off
 # Instrument mapping and mapping functions
 INSTRUMENT_CLASSES = [
-    {"name": "Piano", "program_range": range(0, 8), "family_number": 0},
+    {"name": "Piano", "program_range": range(8), "family_number": 0},
     {"name": "Chromatic Percussion", "program_range": range(8, 16), "family_number": 1},
     {"name": "Organ", "program_range": range(16, 24), "family_number": 2},
     {"name": "Guitar", "program_range": range(24, 32), "family_number": 3},
@@ -18,7 +18,7 @@ INSTRUMENT_CLASSES = [
     {"name": "Synth Effects", "program_range": range(96, 104), "family_number": 12},
     {"name": "Ethnic", "program_range": range(104, 112), "family_number": 13},
     {"name": "Percussive", "program_range": range(112, 120), "family_number": 14},
-    {"name": "Sound Effects", "program_range": range(120, 128), "family_number": 15,},
+    {"name": "Sound Effects", "program_range": range(120, 128), "family_number": 15},
 ]
 # fmt: on
 

@@ -8,7 +8,7 @@ Domain-specific utilities have been moved to focused modules:
 from __future__ import annotations
 
 import functools
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 from miditok import MIDILike
@@ -37,7 +37,7 @@ def get_miditok() -> MIDILike:
     Returns:
         A configured MIDILike tokenizer with full pitch range and 8th note resolution.
     """
-    pitch_range = range(0, 127)  # was (21, 109)
+    pitch_range = range(127)  # was (21, 109)
     beat_res = {(0, 400): 8}
     return MIDILike(pitch_range, beat_res)
 
@@ -60,4 +60,4 @@ def get_datetime() -> str:
     Returns:
         The current datetime in YYYYMMDD_HHMMSS format.
     """
-    return datetime.now().strftime("%Y%m%d_%H%M%S")
+    return datetime.now(tz=UTC).strftime("%Y%m%d_%H%M%S")

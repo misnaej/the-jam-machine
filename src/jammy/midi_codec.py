@@ -14,7 +14,7 @@ resolution.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from miditok import Event
 
 from jammy.constants import DRUMS_BEAT_QUANTIZATION, NONE_DRUMS_BEAT_QUANTIZATION
 from jammy.tokens import (
@@ -31,9 +31,6 @@ from jammy.tokens import (
     TRACK_END,
     TRACK_START,
 )
-
-if TYPE_CHECKING:
-    from miditok import Event
 
 # --- Encoding mappings (Event type → text token) ---
 
@@ -179,8 +176,7 @@ def time_delta_to_beat(time_delta: int | str, instrument: str = "drums") -> floa
         The beat value as a float.
     """
     beat_res = get_beat_resolution(instrument)
-    beats = float(time_delta) / beat_res
-    return beats
+    return float(time_delta) / beat_res
 
 
 def beat_to_int_dec_base(beat: float, beat_res: int = 8) -> str:
@@ -227,8 +223,6 @@ def get_event(text: str, value: str | None = None, instrument: str = "drums") ->
     Returns:
         A miditok Event object, or None if the text is not recognized.
     """
-    from miditok import Event
-
     # Simple mappings (value passed through unchanged)
     if text in _TEXT_TO_EVENT_TYPE:
         return Event(_TEXT_TO_EVENT_TYPE[text], value)

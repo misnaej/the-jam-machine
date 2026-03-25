@@ -45,8 +45,9 @@ class LoadModel:
             FileNotFoundError: If local path does not exist.
         """
         if not from_huggingface and not Path(path).exists():
-            logger.error("Model path does not exist: %s", path)
-            raise FileNotFoundError(f"Model path does not exist: {path}")
+            msg = f"Model path does not exist: {path}"
+            logger.error(msg)
+            raise FileNotFoundError(msg)
 
         self.from_huggingface = from_huggingface
         self.path = path
@@ -85,5 +86,6 @@ class LoadModel:
         if not self.from_huggingface:
             tokenizer_path = Path(self.path) / "tokenizer.json"
             if not tokenizer_path.exists():
-                raise FileNotFoundError(f"No 'tokenizer.json' file in {self.path}")
+                msg = f"No 'tokenizer.json' file in {self.path}"
+                raise FileNotFoundError(msg)
         return PreTrainedTokenizerFast.from_pretrained(self.path, revision=self.revision)

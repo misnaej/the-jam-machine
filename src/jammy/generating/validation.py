@@ -49,10 +49,11 @@ def check_instruments_in_vocab(
             )
             for inst_class in INSTRUMENT_CLASSES:
                 logger.info("%s", inst_class)
-            raise ValueError(
+            msg = (
                 f"The instrument {inst} is not in the tokenizer vocabulary. "
                 f"Available Instruments: {instruments_in_dataset}"
             )
+            raise ValueError(msg)
 
 
 def force_bar_count(

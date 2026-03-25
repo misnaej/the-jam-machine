@@ -117,7 +117,7 @@ def stats_on_track(
         max_end_all_instruments.append(note.end / miditoolk_data.ticks_per_beat)
 
         note_coverage_all_instrument.append(
-            100 * (note_coverage_instrument / miditoolk_data.max_tick)
+            100 * (note_coverage_instrument / miditoolk_data.max_tick),
         )
         unique_idx_list = []
         for idx_list in note_coverage_instrument_idx:
@@ -130,7 +130,7 @@ def stats_on_track(
         if verbose:
             print(instruments.name)  # noqa: T201
             print(  # noqa: T201
-                f"There are {note_counts_all_instrument[idx]} notes from {instruments.name}"
+                f"There are {note_counts_all_instrument[idx]} notes from {instruments.name}",
             )
             coverage = note_coverage_true_all_instrument[idx]
             print(f"{instruments.name} covers {coverage:.0f} % of the track")  # noqa: T201

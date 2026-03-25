@@ -15,9 +15,7 @@ def strip_track_ends(text: str) -> str:
         Text with TRACK_END removed.
     """
     text = text.rstrip(" ")
-    if text.endswith(TRACK_END):
-        text = text[: -len(TRACK_END)]
-    return text
+    return text.removesuffix(TRACK_END)
 
 
 def extract_tracks(piece_text: str) -> list[str]:

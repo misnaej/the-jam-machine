@@ -5,8 +5,6 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-import pytest
-
 from jammy.generating.config import TrackConfig
 from jammy.generating.file_io import define_generation_dir, write_text_midi_to_file
 from jammy.generating.generate import GenerateMidiText
@@ -20,7 +18,6 @@ if TYPE_CHECKING:
 N_BAR_GENERATED = 8
 
 
-@pytest.mark.slow
 def test_generate_midi_text(
     model: GPT2LMHeadModel,
     tokenizer: GPT2TokenizerFast,
@@ -29,7 +26,7 @@ def test_generate_midi_text(
     """Test generating a full MIDI piece end-to-end.
 
     This is an integration test that loads the real model and generates
-    actual output. Marked slow (~10s) due to model inference.
+    actual output (~10s due to model inference).
 
     Args:
         model: Session-scoped GPT-2 model from HuggingFace.

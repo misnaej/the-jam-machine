@@ -45,7 +45,8 @@ def simplify_events_for_comparison(generated_event: str, encoded_event: str) -> 
 
 
 def check_sequence_word_by_word(
-    generated_text: str, encoded_text: str
+    generated_text: str,
+    encoded_text: str,
 ) -> tuple[bool, list[dict[str, str | int]]]:
     """Check if generated and encoded sequences match word by word.
 
@@ -72,7 +73,8 @@ def check_sequence_word_by_word(
     min_len = min(len(generated_tokens), len(encoded_tokens))
     for i in range(min_len):
         generated_word, encoded_word = simplify_events_for_comparison(
-            generated_tokens[i], encoded_tokens[i]
+            generated_tokens[i],
+            encoded_tokens[i],
         )
 
         if generated_word != encoded_word:
@@ -81,7 +83,7 @@ def check_sequence_word_by_word(
                     "position": i,
                     "generated": generated_tokens[i],
                     "encoded": encoded_tokens[i],
-                }
+                },
             )
 
     return len(differences) == 0, differences

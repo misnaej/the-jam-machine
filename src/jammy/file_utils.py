@@ -10,6 +10,8 @@ from time import perf_counter
 from typing import TYPE_CHECKING, TypeVar
 from zipfile import ZIP_DEFLATED, ZipFile
 
+from joblib import Parallel, delayed
+
 if TYPE_CHECKING:
     from collections.abc import Callable
 
@@ -72,8 +74,7 @@ def get_files(directory: Path, extension: str, *, recursive: bool = False) -> li
     """
     if recursive:
         return list(directory.rglob(f"*.{extension}"))
-    else:
-        return list(directory.glob(f"*.{extension}"))
+    return list(directory.glob(f"*.{extension}"))
 
 
 def load_jsonl(filepath: str | Path) -> list[dict[str, object]]:
@@ -87,8 +88,7 @@ def load_jsonl(filepath: str | Path) -> list[dict[str, object]]:
     """
     filepath = Path(filepath)
     with filepath.open() as f:
-        data = [json.loads(line) for line in f]
-    return data
+        return [json.loads(line) for line in f]
 
 
 class FileCompressor:
@@ -129,15 +129,11 @@ class FileCompressor:
     @timeit
     def unzip(self) -> None:
         """Uncompress all zip files in the input directory."""
-        from joblib import Parallel, delayed
-
         files = get_files(self.input_directory, extension="zip")
         Parallel(n_jobs=self.n_jobs)(delayed(self.unzip_file)(file) for file in files)
 
     @timeit
     def zip(self) -> None:
         """Compress all text files in output directory to zip files and remove originals."""
-        from joblib import Parallel, delayed
-
         files = get_files(self.output_directory, extension="txt")
         Parallel(n_jobs=self.n_jobs)(delayed(self.zip_file)(file) for file in files)

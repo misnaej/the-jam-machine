@@ -8,13 +8,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from miditoolkit import MidiFile
+
 from jammy.embedding import bar_processing, section_building, time_processing
 from jammy.midi_codec import get_text
 from jammy.utils import get_miditok
 
 if TYPE_CHECKING:
     from miditok import Event, MIDILike
-    from miditoolkit import MidiFile
 
 
 class MIDIEncoder:
@@ -83,7 +84,9 @@ class MIDIEncoder:
 
         # Section building
         sections = section_building.make_sections(
-            midi_events, midi.instruments, familized=self.familized
+            midi_events,
+            midi.instruments,
+            familized=self.familized,
         )
         sections = bar_processing.add_density_to_sections(sections)
 
@@ -120,9 +123,6 @@ def from_midi_to_sectioned_text(midi_filename: str, familized: bool = False) -> 
     Returns:
         Text representation of the MIDI file.
     """
-    # Runtime import needed -- the module-level import is TYPE_CHECKING only
-    from miditoolkit import MidiFile
-
     midi = MidiFile(f"{midi_filename}.mid")
     midi_like = get_miditok()
     return MIDIEncoder(midi_like, familized=familized).get_piece_text(midi)

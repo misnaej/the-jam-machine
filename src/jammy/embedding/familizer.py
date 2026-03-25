@@ -71,7 +71,7 @@ class Familizer:
         self.reference_programs: dict[int, int] = {}
         for family in int_class:
             self.reference_programs[family["family_number"]] = random.choice(  # noqa: S311
-                family["program_range"]
+                family["program_range"],
             )
 
     def get_program_number(self, family_number: int) -> int:
@@ -90,7 +90,8 @@ class Familizer:
             KeyError: If family_number is not in reference_programs.
         """
         if family_number not in self.reference_programs:
-            raise KeyError(f"Family number {family_number} not found")
+            msg = f"Family number {family_number} not found"
+            raise KeyError(msg)
         return self.reference_programs[family_number]
 
     def replace_instrument_token(self, token: str) -> str:
@@ -108,7 +109,7 @@ class Familizer:
         inst_number = int(token.split("=")[1])
         if self.operation == "family":
             return f"{INST}={self.get_family_number(inst_number)}"
-        elif self.operation == "program":
+        if self.operation == "program":
             return f"{INST}={self.get_program_number(inst_number)}"
         return token
 
@@ -127,7 +128,7 @@ class Familizer:
                 if token.startswith(f"{INST}=") and token != f"{INST}={DRUMS}"
                 else token
                 for token in text.split(" ")
-            ]
+            ],
         )
 
     def replace_instruments_in_file(self, file: Path) -> None:

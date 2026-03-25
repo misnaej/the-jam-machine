@@ -44,21 +44,27 @@ class TestBuildNextBarPrompt:
     """Tests for PromptHandler.build_next_bar_prompt."""
 
     def test_build_next_bar_prompt_starts_with_piece_start(
-        self, handler: PromptHandler, piece_two_tracks: PieceBuilder
+        self,
+        handler: PromptHandler,
+        piece_two_tracks: PieceBuilder,
     ) -> None:
         """Test that prompt starts with PIECE_START."""
         prompt = handler.build_next_bar_prompt(piece_two_tracks, 0, verbose=False)
         assert prompt.startswith(f"{PIECE_START} ")
 
     def test_build_next_bar_prompt_ends_with_bar_start(
-        self, handler: PromptHandler, piece_two_tracks: PieceBuilder
+        self,
+        handler: PromptHandler,
+        piece_two_tracks: PieceBuilder,
     ) -> None:
         """Test that prompt ends with BAR_START to trigger generation."""
         prompt = handler.build_next_bar_prompt(piece_two_tracks, 0, verbose=False)
         assert prompt.rstrip().endswith(f"{BAR_START}")
 
     def test_build_next_bar_prompt_includes_track_notes(
-        self, handler: PromptHandler, piece_two_tracks: PieceBuilder
+        self,
+        handler: PromptHandler,
+        piece_two_tracks: PieceBuilder,
     ) -> None:
         """Test that prompt contains content from the target track."""
         prompt = handler.build_next_bar_prompt(piece_two_tracks, 0, verbose=False)
@@ -96,7 +102,9 @@ class TestBuildNextBarPrompt:
         assert f"{TRACK_END}" in prompt
 
     def test_build_next_bar_prompt_verbose(
-        self, handler: PromptHandler, piece_two_tracks: PieceBuilder
+        self,
+        handler: PromptHandler,
+        piece_two_tracks: PieceBuilder,
     ) -> None:
         """Test that verbose=True doesn't crash (covers logging branches)."""
         prompt = handler.build_next_bar_prompt(piece_two_tracks, 0, verbose=True)
