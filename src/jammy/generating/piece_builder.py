@@ -29,7 +29,7 @@ class PieceBuilder:
         Args:
             piece_by_track: Optional existing piece state to restore.
         """
-        self.piece_by_track: list[dict[str, Any]] = piece_by_track if piece_by_track else []
+        self.piece_by_track: list[dict[str, Any]] = list(piece_by_track) if piece_by_track else []
 
     def init_track(
         self,

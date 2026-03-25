@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from miditok import Event
+
 from jammy.midi_codec import (
     get_beat_resolution,
     get_event,
@@ -52,22 +54,16 @@ class TestGetText:
 
     def test_get_text_piece_start(self) -> None:
         """Test encoding Piece-Start event to text."""
-        from miditok import Event
-
         event = Event("Piece-Start", None)
         assert get_text(event) == f"{PIECE_START} "
 
     def test_get_text_bar_end(self) -> None:
         """Test encoding Bar-End event to text."""
-        from miditok import Event
-
         event = Event("Bar-End", None)
         assert get_text(event) == f"{BAR_END} "
 
     def test_get_text_unknown_returns_empty(self) -> None:
         """Test that an unknown event type returns empty string."""
-        from miditok import Event
-
         event = Event("Unknown-Type", None)
         assert get_text(event) == ""
 
