@@ -54,29 +54,27 @@ line-length = 100
 src = ["src", "test"]
 
 [tool.ruff.lint]
-select = [
-    "E",      # pycodestyle errors
-    "W",      # pycodestyle warnings
-    "F",      # Pyflakes
-    "I",      # isort
-    "B",      # flake8-bugbear
-    "C4",     # flake8-comprehensions
-    "UP",     # pyupgrade
-    "ARG",    # flake8-unused-arguments
-    "SIM",    # flake8-simplify
-    "TCH",    # flake8-type-checking
-    "PTH",    # flake8-use-pathlib
-    "RUF",    # Ruff-specific rules
-    "D",      # pydocstyle (docstrings)
-    "ANN",    # flake8-annotations (type hints)
-    "S",      # flake8-bandit (security)
-    "N",      # pep8-naming
-    "T20",    # flake8-print
-    "TID252", # banned-relative-imports (enforce absolute imports)
-]
+select = ["ALL"]
 ignore = [
-    "D100",   # missing module docstring (can be noisy initially)
-    "D104",   # missing package docstring
+    "D100",    # missing module docstring
+    "D104",    # missing package docstring
+    "ISC001",  # implicit string concat — can conflict with formatter
+    "PLR2004", # magic value comparison — expected with token strings/numbers
+    "FBT001",  # boolean positional arg — too strict for Gradio callbacks
+    "FBT002",  # boolean default arg — same
+    "TD002",   # TODO missing author
+    "TD003",   # TODO missing issue link
+    "FIX002",  # TODO found — intentional
+    "INP001",  # implicit namespace package — app/ and examples/ are not packages
+    "ERA001",  # commented-out code — clean up in Phase 14
+    "PD002",   # pandas inplace — preprocessing scripts
+    "ICN001",  # unconventional import alias
+    "BLE001",  # blind except — narrow in Phase 14
+    "A001",    # shadowing builtin — fix in Phase 14
+    "PLR0913", # too many args — structural, Phase 14
+    "PLR0911", # too many returns — inherent to dispatch functions
+    "PLR0915", # too many statements — structural, Phase 14
+    "C901",    # too complex — structural, Phase 14
 ]
 
 [tool.ruff.lint.per-file-ignores]

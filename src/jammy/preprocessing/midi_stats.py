@@ -93,7 +93,7 @@ def instrument_names(pm: PrettyMIDI) -> list[list[str]] | None:
     """
     if pm.instruments:
         return [
-            list({program_to_instrument_name(instrument.program) for instrument in pm.instruments})
+            list({program_to_instrument_name(instrument.program) for instrument in pm.instruments}),
         ]
     return None
 
@@ -109,7 +109,7 @@ def instrument_families(pm: PrettyMIDI) -> list[list[str | None]] | None:
     """
     if pm.instruments:
         return [
-            list({categorize_midi_instrument(instrument.program) for instrument in pm.instruments})
+            list({categorize_midi_instrument(instrument.program) for instrument in pm.instruments}),
         ]
     return None
 
@@ -125,7 +125,7 @@ def number_of_instrument_families(pm: PrettyMIDI) -> int | None:
     """
     if pm.instruments:
         return len(
-            {categorize_midi_instrument(instrument.program) for instrument in pm.instruments}
+            {categorize_midi_instrument(instrument.program) for instrument in pm.instruments},
         )
     return None
 
@@ -169,7 +169,7 @@ def avg_number_of_unique_notes_per_instrument(pm: PrettyMIDI) -> float | None:
     """
     if pm.instruments:
         return compute_list_average(
-            [len({note.pitch for note in instrument.notes}) for instrument in pm.instruments]
+            [len({note.pitch for note in instrument.notes}) for instrument in pm.instruments],
         )
     return None
 
@@ -185,7 +185,7 @@ def average_note_duration(pm: PrettyMIDI) -> float | None:
     """
     if pm.instruments:
         return compute_list_average(
-            [note.end - note.start for instrument in pm.instruments for note in instrument.notes]
+            [note.end - note.start for instrument in pm.instruments for note in instrument.notes],
         )
     return None
 
@@ -201,7 +201,7 @@ def average_note_velocity(pm: PrettyMIDI) -> float | None:
     """
     if pm.instruments:
         return compute_list_average(
-            [note.velocity for instrument in pm.instruments for note in instrument.notes]
+            [note.velocity for instrument in pm.instruments for note in instrument.notes],
         )
     return None
 
@@ -217,7 +217,7 @@ def average_note_pitch(pm: PrettyMIDI) -> float | None:
     """
     if pm.instruments:
         return compute_list_average(
-            [note.pitch for instrument in pm.instruments for note in instrument.notes]
+            [note.pitch for instrument in pm.instruments for note in instrument.notes],
         )
     return None
 
@@ -252,7 +252,7 @@ def average_range_of_note_pitches_per_instrument(pm: PrettyMIDI) -> float | None
                 max(note.pitch for note in instrument.notes)
                 - min(note.pitch for note in instrument.notes)
                 for instrument in pm.instruments
-            ]
+            ],
         )
     return None
 
@@ -282,7 +282,7 @@ def average_number_of_note_pitch_classes_per_instrument(pm: PrettyMIDI) -> float
     """
     if pm.instruments:
         return compute_list_average(
-            [len({note.pitch % 12 for note in instrument.notes}) for instrument in pm.instruments]
+            [len({note.pitch % 12 for note in instrument.notes}) for instrument in pm.instruments],
         )
     return None
 
@@ -312,7 +312,7 @@ def average_number_of_octaves_per_instrument(pm: PrettyMIDI) -> float | None:
     """
     if pm.instruments:
         return compute_list_average(
-            [len({note.pitch // 12 for note in instrument.notes}) for instrument in pm.instruments]
+            [len({note.pitch // 12 for note in instrument.notes}) for instrument in pm.instruments],
         )
     return None
 
@@ -568,7 +568,7 @@ class MidiStats:
         avg_pitch_range = average_range_of_note_pitches_per_instrument(pm)
         avg_pitch_classes = average_number_of_note_pitch_classes_per_instrument(pm)
 
-        statistics = {
+        return {
             # track md5 hash name without extension
             "md5": track_name(midi_file),
             # instruments
@@ -615,7 +615,6 @@ class MidiStats:
             "lyrics_unique_words": lyrics_number_of_unique_words(pm),
             "lyrics_bool": lyrics_boolean(pm),
         }
-        return statistics
 
     def get_stats(
         self,

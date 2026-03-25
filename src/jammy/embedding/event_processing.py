@@ -102,20 +102,11 @@ def remove_unwanted_tokens(
     Returns:
         Modified list with unwanted tokens removed.
     """
+    unwanted = {"Bar-Start", "Bar-End", "Track-Start", "Track-End", "Piece-Start", "Instrument"}
     for inst_index, inst_event in enumerate(events):
-        new_inst_event = []
-        for event in inst_event["events"]:
-            if event.type not in (
-                "Bar-Start",
-                "Bar-End",
-                "Track-Start",
-                "Track-End",
-                "Piece-Start",
-                "Instrument",
-            ):
-                new_inst_event.append(event)
-        # replace the events list with the new one
-        events[inst_index]["events"] = new_inst_event
+        events[inst_index]["events"] = [
+            event for event in inst_event["events"] if event.type not in unwanted
+        ]
     return events
 
 

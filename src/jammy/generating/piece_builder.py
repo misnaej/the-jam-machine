@@ -2,14 +2,12 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from jammy.tokens import BAR_START, PIECE_START, TRACK_END, TRACK_START
 
+from .config import TrackConfig
 from .track_builder import strip_track_ends
-
-if TYPE_CHECKING:
-    from .config import TrackConfig
 
 
 class PieceBuilder:
@@ -52,7 +50,7 @@ class PieceBuilder:
                 "density": density,
                 "temperature": temperature,
                 "bars": [],
-            }
+            },
         )
 
     def add_bars_to_track(self, track_id: int, bars_text: str) -> None:
@@ -113,8 +111,6 @@ class PieceBuilder:
         Returns:
             TrackConfig with instrument, density, and temperature.
         """
-        from .config import TrackConfig
-
         track = self.piece_by_track[track_id]
         return TrackConfig(
             instrument=track["instrument"],

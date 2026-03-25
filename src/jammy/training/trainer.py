@@ -51,7 +51,8 @@ if not Path(MODEL_PATH).exists():
     Path(MODEL_PATH).mkdir(parents=True, exist_ok=True)
 
 if "WANDB_API_KEY" not in os.environ:
-    raise OSError("WANDB_API_KEY environment variable must be set")
+    msg = "WANDB_API_KEY environment variable must be set"
+    raise OSError(msg)
 wandb.init(project="the-jammy-machine")
 create_repo(HF_MODEL_REPO, token=HF_WRITE_TOKEN, exist_ok=True)
 
@@ -64,7 +65,9 @@ data = load_dataset(
 
 if TRAIN_FROM_CHECKPOINT:
     tokenizer = AutoTokenizer.from_pretrained(
-        HF_MODEL_REPO, use_auth_token=HF_READ_TOKEN, revision=HF_MODEL_REVISION
+        HF_MODEL_REPO,
+        use_auth_token=HF_READ_TOKEN,
+        revision=HF_MODEL_REVISION,
     )
 else:
     tokenizer = train_tokenizer(MODEL_PATH, data["train"])
@@ -89,7 +92,7 @@ else:
             n_head=8,
             n_layer=6,
             n_positions=2048,
-        )
+        ),
     )
 
 training_args = TrainingArguments(

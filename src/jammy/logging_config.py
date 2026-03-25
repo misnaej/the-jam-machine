@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 import sys
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 
@@ -35,7 +35,7 @@ def setup_logging(
     log_dir.mkdir(parents=True, exist_ok=True)
 
     # Create log filename with timestamp
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.now(tz=UTC).strftime("%Y%m%d_%H%M%S")
     log_file = log_dir / f"jam_machine_{timestamp}.log"
 
     # Configure root logger
@@ -66,7 +66,8 @@ def setup_logging(
         root_logger.addHandler(file_handler)
 
     # Log initial message
-    logging.info("Logging initialized - output: %s", log_file if log_to_file else "console only")
+    logger = logging.getLogger(__name__)
+    logger.info("Logging initialized - output: %s", log_file if log_to_file else "console only")
 
     return log_file if log_to_file else None
 

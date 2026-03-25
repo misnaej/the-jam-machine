@@ -60,11 +60,10 @@ class MetadataExtractor:
         try:
             artist = row[0][1]
             title = row[0][0]
-            return artist, title
-        except Exception:
+        except (IndexError, TypeError):
             artist = row[0][0]
             title = "unknown"
-            return artist, title
+        return artist, title
 
     def get_artist_and_titles(self) -> None:
         """Extract artist and title from the MMD scraped data."""
@@ -91,8 +90,7 @@ class MetadataExtractor:
         string = re.sub("|".join(unwanted_characters), "", string)
         string = re.sub(r"\([^)]*\)", "", string)
         string = re.sub(r"\.\d+", "", string)
-        string = re.sub(r"(?<!^)(?=[A-Z])", " ", string)
-        return string
+        return re.sub(r"(?<!^)(?=[A-Z])", " ", string)
 
     def find_and_replace_duplicates(self, str_list: list[str]) -> list[str]:
         """Compare strings and replace duplicates with canonical versions.
@@ -144,13 +142,13 @@ class MetadataExtractor:
 
         df_artists = pd.DataFrame({"artist_old": unique_artists, "artist_new": similar_artists})
         self.stats["artist"] = self.stats["artist_old"].replace(
-            df_artists.set_index("artist_old")["artist_new"]
+            df_artists.set_index("artist_old")["artist_new"],
         )
 
     def deduplicate_genre(self) -> None:
         """Get most common genre per artist and remove duplicates."""
         self.stats["genre"] = self.stats.groupby("artist")["genre"].transform(
-            lambda x: x.value_counts().index[0]
+            lambda x: x.value_counts().index[0],
         )
         self.stats.drop_duplicates(subset=["md5"], inplace=True)
 
@@ -220,7 +218,7 @@ class MetadataExtractor:
             self.stats = self.stats[self.stats["four_to_the_floor"] == True]  # noqa: E712
         if single_version:
             self.stats.sort_values("number_of_notes_per_second", ascending=False).groupby(
-                ["title", "artist"]
+                ["title", "artist"],
             ).first()
 
 

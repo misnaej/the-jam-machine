@@ -214,7 +214,11 @@ def _instrument_col(default_inst: str, col_id: int) -> None:
         gen_btn = gr.Button("Generate")
         inst_audio = gr.Audio(label="TRACK Audio", show_label=True)
         output_txt = gr.Textbox(
-            label="output", lines=10, max_lines=10, show_label=False, visible=False
+            label="output",
+            lines=10,
+            max_lines=10,
+            show_label=False,
+            visible=False,
         )
 
     gen_btn.click(
@@ -255,7 +259,7 @@ with gr.Blocks() as demo:
     state = gr.State([])
     gr.Markdown(
         """# Demo-App of The-Jam-Machine
-## A Generative AI trained on text transcription of MIDI music"""
+## A Generative AI trained on text transcription of MIDI music""",
     )
 
     gr.Markdown(DESCRIPTION)

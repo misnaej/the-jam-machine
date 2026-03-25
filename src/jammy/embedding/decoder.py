@@ -61,8 +61,7 @@ class TextDecoder:
         events = event_processing.add_missing_timeshifts_in_bar(inst_events)
         events = event_processing.remove_unwanted_tokens(events)
         events = event_processing.aggregate_timeshifts(events)
-        events = event_processing.add_velocity(events)
-        return events
+        return event_processing.add_velocity(events)
 
     def tokenize(self, events: list[dict[str, Any]]) -> list[list[str]]:
         """Convert events to MidiTok tokens.

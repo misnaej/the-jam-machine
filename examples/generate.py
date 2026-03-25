@@ -94,7 +94,9 @@ def main(output_dir: str | Path = DEFAULT_OUTPUT_DIR) -> None:
     output_dir = define_generation_dir(output_dir)
 
     model, tokenizer = LoadModel(
-        MODEL_REPO, from_huggingface=True, revision=MODEL_REVISION
+        MODEL_REPO,
+        from_huggingface=True,
+        revision=MODEL_REVISION,
     ).load_model_and_tokenizer()
 
     instruments = [t.instrument for t in TRACKS]

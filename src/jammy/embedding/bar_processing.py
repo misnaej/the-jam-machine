@@ -35,11 +35,10 @@ def add_bars(midi_events: list[list[Event]]) -> list[list[Event]]:
                     new_inst_events.append(event)
                     continue
 
-                else:
-                    new_inst_events.append(Event("Bar-End", bar_index))
-                    bar_index += 1
-                    new_inst_events.append(Event("Bar-Start", bar_index))
-                    bar_end = False
+                new_inst_events.append(Event("Bar-End", bar_index))
+                bar_index += 1
+                new_inst_events.append(Event("Bar-Start", bar_index))
+                bar_end = False
 
             # keeping track of the beat count within the bar
             if event.type == "Time-Shift":
@@ -93,10 +92,9 @@ def add_density_to_bar(midi_events: list[list[Event]]) -> list[list[Event]]:
                     Event(
                         "Bar-Density",
                         round(note_onset_count_in_bar / BEATS_PER_BAR),
-                    )
+                    ),
                 )
-                for temp_event in temp_event_list:
-                    new_inst_events.append(temp_event)
+                new_inst_events.extend(temp_event_list)
 
         new_midi_events.append(new_inst_events)
     return new_midi_events
@@ -135,7 +133,8 @@ def add_density_to_sections(
 
             # add section density -> set to mode of bar density within that section
             density = stats.mode(
-                np.array(note_count_distribution).astype(np.int16), keepdims=False
+                np.array(note_count_distribution).astype(np.int16),
+                keepdims=False,
             )[0]
             new_section = [
                 *section[: instrument_token_location + 1],

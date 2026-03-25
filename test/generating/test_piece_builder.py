@@ -139,7 +139,8 @@ class TestBuildText:
         assert "NOTE_ON=38" in text
 
     def test_build_piece_text_starts_with_piece_start(
-        self, builder_with_bars: PieceBuilder
+        self,
+        builder_with_bars: PieceBuilder,
     ) -> None:
         """Test that piece text starts with PIECE_START."""
         text = builder_with_bars.build_piece_text()
