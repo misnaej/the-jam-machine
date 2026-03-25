@@ -1,83 +1,66 @@
 # Git Hooks
 
-This directory contains Git hooks for The Jam Machine project.
-
 ## Setup
-
-To enable these hooks, run:
 
 ```bash
 git config core.hooksPath .githooks
 chmod +x .githooks/*
 ```
 
-Or use the setup script:
+Or use `./scripts/setup-env.sh`.
 
-```bash
-./scripts/setup-env.sh
+## Pre-commit Hook
+
+Runs automatically before each commit:
+
+| Check | Tool | Blocking | Auto-fix |
+|-------|------|----------|----------|
+| Linting | ruff check | Yes | Yes (re-stages) |
+| Formatting | ruff format | Yes | Yes (re-stages) |
+| Docstring coverage | interrogate (95%) | Yes | No |
+| Code security | bandit | Yes | No |
+| Dependency CVEs | pip-audit | No (informational) | No |
+
+After checks pass, the hook generates badge SVGs in `.githooks/badges/`.
+
+## Logs
+
+All hook output is saved to `.githooks/logs/`:
+
+```
+.githooks/logs/
+├── latest.log                    # Symlink to most recent run
+├── pre-commit-20260325_100641.log
+├── pre-commit-20260325_103012.log
+└── ...
 ```
 
-## Available Hooks
-
-### pre-commit
-
-Runs automatically before each commit. It performs:
-
-1. **Ruff Linting**: Checks staged Python files for code quality issues
-   - Attempts auto-fix for fixable issues
-   - Re-stages fixed files automatically
-   - Blocks commit if unfixable issues remain
-
-2. **Ruff Formatting**: Ensures consistent code formatting
-   - Applies formatting automatically
-   - Re-stages formatted files
-
-3. **Security Audit**: Runs pip-audit (informational only)
-   - Does not block commits
-   - Reports potential vulnerabilities in dependencies
-
-## Bypassing Hooks
-
-If you need to bypass the pre-commit hook (not recommended):
+**When a commit fails**, read the log to see what went wrong:
 
 ```bash
-git commit --no-verify
+cat .githooks/logs/latest.log
 ```
+
+## Badges
+
+Generated SVGs in `.githooks/badges/`:
+
+| Badge | Source |
+|-------|--------|
+| `docstring-coverage.svg` | interrogate |
+| `bandit.svg` | shields.io (pass/fail) |
+
+Referenced from `README.md` as local images.
 
 ## Troubleshooting
 
-### Hook not running
-
-1. Check hooks path is set:
-   ```bash
-   git config core.hooksPath
-   ```
-   Should return `.githooks`
-
-2. Check hook is executable:
-   ```bash
-   ls -la .githooks/pre-commit
-   ```
-   Should have `x` permission
-
-3. Re-run setup:
-   ```bash
-   git config core.hooksPath .githooks
-   chmod +x .githooks/*
-   ```
-
-### pipenv not found
-
-The hooks require pipenv to be installed and available in PATH:
-
+**Hook not running?**
 ```bash
-pip install pipenv
+git config core.hooksPath  # should return .githooks
+ls -la .githooks/pre-commit  # should have x permission
 ```
 
-### pip-audit not installed
-
-Install with:
-
+**Tools not found?**
 ```bash
-pipenv run pip install pip-audit
+pipenv install -e ".[ci]"
 ```

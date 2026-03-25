@@ -104,6 +104,28 @@ else
     echo "pip-audit not installed. Skipping."
 fi
 
+# --- Generate badges ---
+echo ""
+echo "=== Generating Badges ==="
+BADGE_DIR=".githooks/badges"
+mkdir -p "$BADGE_DIR"
+
+# Docstring coverage badge
+if command -v interrogate &> /dev/null || pipenv run interrogate --version &> /dev/null 2>&1; then
+    pipenv run interrogate src/jammy/ --generate-badge "$BADGE_DIR/docstring-coverage.svg" -q 2>/dev/null || true
+    echo "Docstring badge: $BADGE_DIR/docstring-coverage.svg"
+fi
+
+# Bandit badge (pass/fail)
+if [ "$FAILED" -eq 0 ]; then
+    curl -s "https://img.shields.io/badge/bandit-passing-brightgreen" -o "$BADGE_DIR/bandit.svg" 2>/dev/null || true
+else
+    curl -s "https://img.shields.io/badge/bandit-failing-red" -o "$BADGE_DIR/bandit.svg" 2>/dev/null || true
+fi
+
+# Stage badges if they changed
+git add "$BADGE_DIR"/*.svg 2>/dev/null || true
+
 echo ""
 echo "=== Result: PASS ==="
 echo "✓ Pre-commit checks complete (log: $LOG_FILE)"
