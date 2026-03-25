@@ -75,3 +75,51 @@ def test_generate_midi_text(
     assert PIECE_START in generated_piece
     assert TRACK_END in generated_piece
     assert Path(filename).exists()
+
+
+class TestGenerateSetters:
+    """Tests for GenerateMidiText configuration setters.
+
+    These test the simple setter methods that don't require generation.
+    """
+
+    def test_set_n_bars_generated(
+        self, model: GPT2LMHeadModel, tokenizer: GPT2TokenizerFast
+    ) -> None:
+        """Test that set_n_bars_generated updates config and prompts."""
+        gen = GenerateMidiText(model, tokenizer)
+        gen.set_n_bars_generated(4)
+        assert gen.config.n_bars == 4
+        assert gen.prompts.n_bars == 4
+
+    def test_set_force_sequence_length(
+        self, model: GPT2LMHeadModel, tokenizer: GPT2TokenizerFast
+    ) -> None:
+        """Test that set_force_sequence_length updates config."""
+        gen = GenerateMidiText(model, tokenizer)
+        gen.set_force_sequence_length(False)
+        assert gen.config.force_sequence_length is False
+
+    def test_set_improvisation_level(
+        self, model: GPT2LMHeadModel, tokenizer: GPT2TokenizerFast
+    ) -> None:
+        """Test that set_improvisation_level updates config and engine."""
+        gen = GenerateMidiText(model, tokenizer)
+        gen.set_improvisation_level(3)
+        assert gen.config.improvisation_level == 3
+
+    def test_reset_temperature(self, model: GPT2LMHeadModel, tokenizer: GPT2TokenizerFast) -> None:
+        """Test that reset_temperature updates the track temperature."""
+        gen = GenerateMidiText(model, tokenizer)
+        gen.piece.init_track("DRUMS", 3, 0.7)
+        gen.reset_temperature(0, 0.3)
+        assert gen.piece.get_track_temperature(0) == 0.3
+
+    def test_delete_track(self, model: GPT2LMHeadModel, tokenizer: GPT2TokenizerFast) -> None:
+        """Test that delete_track removes from piece state."""
+        gen = GenerateMidiText(model, tokenizer)
+        gen.piece.init_track("DRUMS", 3, 0.7)
+        gen.piece.init_track("4", 2, 0.5)
+        gen.delete_track(0)
+        assert gen.piece.get_track_count() == 1
+        assert gen.piece.get_track(0)["instrument"] == "4"

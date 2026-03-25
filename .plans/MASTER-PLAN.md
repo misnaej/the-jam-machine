@@ -229,11 +229,11 @@ Build a GitHub Pages site with: landing page (what is The Jam Machine), encoding
 ---
 
 ### Phase 13: Add Unit Tests
-**Effort:** ~4 hours | **Risk:** Low | **Impact:** Reliability
+**Effort:** ~6 hours (3 PRs) | **Risk:** Low | **Impact:** Reliability
 
-Add unit tests for refactored modules, target 70% coverage.
+Add unit tests for all core modules. Currently 55% coverage, target 80%+. Three PRs: generating module (biggest gap), utilities, embedding + misc. Real tests first, mock only when >5s.
 
-**Details:** [Test Coverage Audit](./test-coverage-audit.md) - Phases 2-4
+**Details:** [Test Plan](./test-plan.md)
 
 ---
 
