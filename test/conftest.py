@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING
 import pytest
 
 from jammy.constants import MODEL_REPO, MODEL_REVISION
-from jammy.preprocessing.load import load_model_and_tokenizer
+from jammy.load import load_model_and_tokenizer
 from jammy.utils import get_miditok
 
 if TYPE_CHECKING:

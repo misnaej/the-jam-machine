@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 
 from miditoolkit import MidiFile
 
-from jammy.embedding import bar_processing, section_building, time_processing
+from jammy.embedding import bar_processing, time_processing, track_setup
 from jammy.midi_codec import get_text
 from jammy.utils import get_miditok
 
@@ -83,7 +83,7 @@ class MIDIEncoder:
         midi_events = bar_processing.add_density_to_bar(midi_events)
 
         # Section building
-        sections = section_building.make_sections(
+        sections = track_setup.make_sections(
             midi_events,
             midi.instruments,
             familized=self.familized,
@@ -91,7 +91,7 @@ class MIDIEncoder:
         sections = bar_processing.add_density_to_sections(sections)
 
         # Convert to text
-        piece = section_building.sections_to_piece(sections)
+        piece = track_setup.sections_to_piece(sections)
         return events_to_text(piece)
 
 

@@ -106,7 +106,7 @@ def add_density_to_sections(
     """Add density to each section as the mode of bar density.
 
     Each section must contain at least one Instrument event and one
-    Bar-Density event (as produced by ``section_building.make_sections``
+    Bar-Density event (as produced by ``track_setup.make_sections``
     and ``add_density_to_bar``).
 
     Args:
