@@ -87,6 +87,89 @@ def _define_prompt(state: list[dict[str, Any]], genesis: GenerateMidiText) -> st
     return genesis.get_piece_text()
 
 
+def _find_track_index(
+    state: list[dict[str, Any]],
+    label: int,
+    piece_by_track: list[dict[str, Any]],
+) -> int:
+    """Find the index of an existing track in state by label.
+
+    Args:
+        state: Current track state list.
+        label: Track label to find.
+        piece_by_track: Piece data (empty means no existing tracks).
+
+    Returns:
+        Index of the matching track, or -1 if not found or no existing tracks.
+    """
+    if not piece_by_track:
+        return -1
+    for index, track in enumerate(state):
+        if track["label"] == label:
+            return index
+    return -1
+
+
+def _resolve_instrument_family(instrument: str) -> str:
+    """Map an instrument display name to its family number.
+
+    Args:
+        instrument: Instrument name (e.g. "Drums", "Synth Bass 1").
+
+    Returns:
+        Family number string (e.g. "DRUMS", "4").
+    """
+    return next(
+        (inst for inst in INSTRUMENT_TRANSFER_CLASSES if inst["transfer_to"] == instrument),
+        {"family_number": "DRUMS"},
+    )["family_number"]
+
+
+def _build_output(
+    genesis: GenerateMidiText,
+    inst_index: int,
+    instrument: str,
+    state: list[dict[str, Any]],
+    track: dict[str, Any],
+    regenerate: bool,
+) -> GeneratorResult:
+    """Build the output after generation: MIDI files, audio, piano roll.
+
+    Args:
+        genesis: The generator instance with generated state.
+        inst_index: Index of the instrument track (-1 for last).
+        instrument: Instrument display name.
+        state: Current track state list (will be appended to).
+        track: Track metadata dict.
+        regenerate: Whether this was a regeneration.
+
+    Returns:
+        GeneratorResult with all outputs.
+    """
+    generated_text = genesis.get_piece_text()
+    decoder.get_midi(generated_text, "mixed.mid")
+    mixed_inst_midi, mixed_audio = get_music("mixed.mid")
+
+    inst_text = genesis.get_track_text(inst_index)
+    decoder.get_midi(inst_text, f"{instrument}.mid")
+    _, inst_audio = get_music(f"{instrument}.mid")
+
+    piano_roll = plot_piano_roll(mixed_inst_midi)
+    track["text"] = inst_text
+    state.append(track)
+
+    return GeneratorResult(
+        inst_text=inst_text,
+        inst_audio=(SAMPLE_RATE, inst_audio),
+        piano_roll=piano_roll,
+        state=state,
+        mixed_audio=(SAMPLE_RATE, mixed_audio),
+        regenerate=regenerate,
+        piece_by_track=genesis.piece.piece_by_track,
+        output_file="./mixed.mid",
+    )
+
+
 def _generator(
     label: int,
     regenerate: bool,
@@ -116,65 +199,25 @@ def _generator(
     """
     genesis = GenerateMidiText(model, tokenizer, piece_by_track)
     state = list(state)  # work on a copy to avoid mutating Gradio's state
-    track = {
-        "label": label,
-        "instrument": instrument,
-        "temperature": temp,
-        "density": density,
-    }
-    inst = next(
-        (inst for inst in INSTRUMENT_TRANSFER_CLASSES if inst["transfer_to"] == instrument),
-        {"family_number": "DRUMS"},
-    )["family_number"]
+    track = {"label": label, "instrument": instrument, "temperature": temp, "density": density}
+    inst = _resolve_instrument_family(instrument)
+    inst_index = _find_track_index(state, label, piece_by_track)
 
-    inst_index = -1  # default to last generated
-    if piece_by_track != []:
-        for index, instrum in enumerate(state):
-            if instrum["label"] == track["label"]:
-                inst_index = index  # changing if exists
-
-    # Generate
     if not add_bars:
-        # Regenerate
         if regenerate:
             state.pop(inst_index)
             genesis.delete_track(inst_index)
-            genesis.get_piece_text()  # refresh state
-            inst_index = -1  # reset to last generated
+            genesis.get_piece_text()
+            inst_index = -1
 
-        # NEW TRACK
         input_prompt = _define_prompt(state, genesis)
         track_config = TrackConfig(instrument=inst, density=density, temperature=temp)
         genesis.generate_one_new_track(track_config, input_prompt=input_prompt)
-
-        regenerate = True  # set generate to true
+        regenerate = True
     else:
-        # NEW BARS
-        genesis.generate_n_more_bars(add_bar_count)  # for all instruments
+        genesis.generate_n_more_bars(add_bar_count)
 
-    # save the mix midi and get the mix audio
-    generated_text = genesis.get_piece_text()
-    decoder.get_midi(generated_text, "mixed.mid")
-    mixed_inst_midi, mixed_audio = get_music("mixed.mid")
-    # get the instrument text MIDI
-    inst_text = genesis.get_track_text(inst_index)
-    # save the instrument midi and get the instrument audio
-    decoder.get_midi(inst_text, f"{instrument}.mid")
-    _, inst_audio = get_music(f"{instrument}.mid")
-    # generate the piano roll
-    piano_roll = plot_piano_roll(mixed_inst_midi)
-    track["text"] = inst_text
-    state.append(track)
-    return GeneratorResult(
-        inst_text=inst_text,
-        inst_audio=(SAMPLE_RATE, inst_audio),
-        piano_roll=piano_roll,
-        state=state,
-        mixed_audio=(SAMPLE_RATE, mixed_audio),
-        regenerate=regenerate,
-        piece_by_track=genesis.piece.piece_by_track,
-        output_file="./mixed.mid",
-    )
+    return _build_output(genesis, inst_index, instrument, state, track, regenerate)
 
 
 def _generated_text_from_state(state: list[dict[str, Any]]) -> str:
