@@ -149,17 +149,17 @@ Open the URL shown in your terminal (usually http://localhost:7860).
 ### Python API
 
 ```python
-from jammy.preprocessing.load import LoadModel
+from jammy.load import load_model_and_tokenizer
 from jammy.generating.config import GenerationConfig, TrackConfig
 from jammy.generating.generate import GenerateMidiText
 from jammy.embedding.decoder import TextDecoder
 from jammy.utils import get_miditok
 
 # Load model
-model, tokenizer = LoadModel(
+model, tokenizer = load_model_and_tokenizer(
     "JammyMachina/elec-gmusic-familized-model-13-12__17-35-53",
-    from_huggingface=True
-).load_model_and_tokenizer()
+    from_huggingface=True,
+)
 
 # Generate
 tracks = [
