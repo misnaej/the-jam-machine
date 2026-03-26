@@ -16,11 +16,17 @@ from __future__ import annotations
 from jammy.logging_config import setup_logging
 from jammy.preprocessing.track_stats_for_encoding import stats_on_track
 
+DEFAULT_OUTPUT_DIR = "output/examples/track_stats"
 
-def main() -> None:
-    """Run track statistics on The Strokes - Reptilia."""
+
+def main(output_dir: str = DEFAULT_OUTPUT_DIR) -> None:
+    """Run track statistics on The Strokes - Reptilia.
+
+    Args:
+        output_dir: Directory for output plots.
+    """
     setup_logging(log_to_file=False)
-    stats_on_track(midi_filename="the_strokes-reptilia")
+    stats_on_track(midi_filename="the_strokes-reptilia", output_dir=output_dir)
 
 
 if __name__ == "__main__":

@@ -7,9 +7,9 @@ understanding track structure before encoding.
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 
 import matplotlib.pyplot as plt
-import numpy as np
 from miditoolkit import MidiFile
 
 logger = logging.getLogger(__name__)
@@ -64,12 +64,14 @@ def _compute_instrument_stats(
 def stats_on_track(
     midi_filename: str = "the_strokes-reptilia",
     verbose: bool = True,
+    output_dir: str | None = None,
 ) -> dict[str, int | float | list[int] | list[float]]:
     """Analyze track statistics for MIDI encoding.
 
     Args:
         midi_filename: Name of the MIDI file (without .mid extension) in ./midi/.
         verbose: If True, logs detailed statistics for each instrument.
+        output_dir: If set, save plots to this directory instead of displaying.
 
     Returns:
         A dictionary containing track statistics.
@@ -79,8 +81,9 @@ def stats_on_track(
 
     logger.info("Instruments: %d", len(midi.instruments))
 
-    beat_count = midi.max_tick / midi.ticks_per_beat
-    inst_stats = _compute_instrument_stats(midi.instruments, midi.ticks_per_beat, midi.max_tick)
+    ticks_per_beat = midi.ticks_per_beat
+    beat_count = midi.max_tick / ticks_per_beat
+    inst_stats = _compute_instrument_stats(midi.instruments, ticks_per_beat, midi.max_tick)
 
     if verbose:
         for i, name in enumerate(inst_stats["names"]):
@@ -108,19 +111,35 @@ def stats_on_track(
         indices = [i for i, n in enumerate(inst_stats["names"]) if n == unique_name]
         if len(indices) > 1:
             logger.info("%s is split across tracks %s", unique_name, indices)
-            all_starts = []
-            all_track_ids = []
-            for track_idx, inst_idx in enumerate(indices):
-                for note in midi.instruments[inst_idx].notes:
-                    all_starts.append(note.start)
-                    all_track_ids.append(track_idx)
 
-            order = np.argsort(all_starts)
-            plt.figure()
-            plt.plot(all_starts, all_track_ids, "o")
-            plt.plot(np.array(all_starts)[order], np.array(all_track_ids)[order], "-")
-            plt.title(f"Split instrument: {unique_name}")
-            plt.show()
+            fig, ax = plt.subplots(figsize=(12, 3))
+            for track_idx, inst_idx in enumerate(indices):
+                starts = [n.start / ticks_per_beat for n in midi.instruments[inst_idx].notes]
+                ax.scatter(
+                    starts,
+                    [track_idx] * len(starts),
+                    s=8,
+                    alpha=0.6,
+                    label=f"Track {inst_idx} ({len(starts)} notes)",
+                )
+
+            ax.set_title(f'Split instrument: "{unique_name}" across {len(indices)} tracks')
+            ax.set_xlabel("Beat position")
+            ax.set_ylabel("Track")
+            ax.set_yticks(range(len(indices)))
+            ax.set_yticklabels([f"Track {i}" for i in indices])
+            ax.legend(loc="upper right", fontsize=8)
+            fig.tight_layout()
+
+            if output_dir:
+                Path(output_dir).mkdir(parents=True, exist_ok=True)
+                safe_name = unique_name.replace(" ", "_").lower()
+                fig_path = Path(output_dir) / f"split_{safe_name}.png"
+                fig.savefig(fig_path, bbox_inches="tight")
+                logger.info("Saved plot: %s", fig_path)
+                plt.close(fig)
+            else:
+                plt.show()
 
     return stats
 
