@@ -27,3 +27,11 @@ pipenv run python examples/generate.py
 ```
 
 Output: `output/examples/generation/`
+
+### Track Statistics
+
+Analyzes a MIDI file (The Strokes - Reptilia) and prints per-instrument statistics: note counts, coverage, start/end times.
+
+```bash
+pipenv run python examples/track_stats.py
+```

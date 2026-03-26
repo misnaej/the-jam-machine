@@ -77,7 +77,7 @@ def stats_on_track(
     path_midi = f"./midi/{midi_filename}.mid"
     midi = MidiFile(path_midi)
 
-    logger.info("Instruments: %d, Tracks: %d", len(midi.instruments), len(midi.tracks))
+    logger.info("Instruments: %d", len(midi.instruments))
 
     beat_count = midi.max_tick / midi.ticks_per_beat
     inst_stats = _compute_instrument_stats(midi.instruments, midi.ticks_per_beat, midi.max_tick)
@@ -94,7 +94,6 @@ def stats_on_track(
             )
 
     stats = {
-        "track_count": len(midi.tracks),
         "instrument_count": len(midi.instruments),
         "beat_count": beat_count,
         "note_counts": inst_stats["note_counts"],
