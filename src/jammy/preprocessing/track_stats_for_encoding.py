@@ -1,181 +1,152 @@
+"""Track statistics for MIDI encoding analysis.
+
+Loads a MIDI file and computes per-instrument statistics useful for
+understanding track structure before encoding.
+"""
+
 from __future__ import annotations
 
-# classic python
-import matplotlib.pyplot as plt
-import mido
-import note_seq
-import numpy as np
-import pretty_midi
+import logging
+from pathlib import Path
+from typing import TYPE_CHECKING
 
-# midi stuff
+import matplotlib.pyplot as plt
 from miditoolkit import MidiFile
 
-# path
-midi_filename = "the_strokes-reptilia"
-path_midi = f"./midi/{midi_filename}.mid"
+if TYPE_CHECKING:
+    from miditoolkit import Instrument
 
-# MidiTok
-# # Our parameters
-# pitch_range = range(21, 109)
-# beat_res = {(0, 4): 8, (4, 12): 4}
-# nb_velocities = 32
-# additional_tokens = {
-#     "Chord": True,
-#     "Rest": True,
-#     "Tempo": True,
-#     "Program": False,
-#     "TimeSignature": False,
-#     "rest_range": (2, 8),  # (half, 8 beats)
-#     "nb_tempos": 32,  # nb of tempo bins
-#     "tempo_range": (40, 250),
-# }  # (min, max)
+logger = logging.getLogger(__name__)
 
-# # Creates the tokenizer and loads a MIDI
-# tokenizer = REMI(pitch_range, beat_res, nb_velocities, additional_tokens, mask=True)
-# midi = MidiFile(path_midi)
 
-# # Converts MIDI to tokens, and back to a MIDI
-# tokens = tokenizer.midi_to_tokens(midi)
-# converted_back_midi = tokenizer.tokens_to_midi(tokens, get_midi_programs(midi))
+def _compute_instrument_stats(
+    instruments: list[Instrument],
+    ticks_per_beat: int,
+    max_tick: int,
+) -> dict[str, list[str | int | float]]:
+    """Compute per-instrument note statistics.
 
-# # Converts just a selected track
-# tokenizer.current_midi_metadata = {
-#     "time_division": midi.ticks_per_beat,
-#     "tempo_changes": midi.tempo_changes,
-# }
-# piano_tokens = tokenizer.track_to_tokens(midi.instruments[0])
+    Args:
+        instruments: List of miditoolkit Instrument objects.
+        ticks_per_beat: MIDI ticks per beat.
+        max_tick: Maximum tick in the file.
 
-# # And convert it back (the last arg stands for (program number, is drum))
-# converted_back_track, tempo_changes = tokenizer.tokens_to_track(
-#     piano_tokens, midi.ticks_per_beat, (0, False)
-# )
+    Returns:
+        Dict with lists of note counts, coverage, start/end times per instrument.
+    """
+    result: dict[str, list] = {
+        "note_counts": [],
+        "coverage": [],
+        "coverage_true": [],
+        "min_starts": [],
+        "max_ends": [],
+        "names": [],
+    }
+
+    for inst in instruments:
+        result["names"].append(inst.name)
+        result["note_counts"].append(len(inst.notes))
+
+        total_duration = sum(n.end - n.start for n in inst.notes)
+        result["coverage"].append(100 * (total_duration / max_tick) if max_tick else 0)
+
+        unique_ticks = set()
+        for note in inst.notes:
+            unique_ticks.update(range(note.start, note.end))
+        result["coverage_true"].append(100 * (len(unique_ticks) / max_tick) if max_tick else 0)
+
+        if inst.notes:
+            result["min_starts"].append(inst.notes[0].start / ticks_per_beat)
+            result["max_ends"].append(inst.notes[-1].end / ticks_per_beat)
+        else:
+            result["min_starts"].append(0)
+            result["max_ends"].append(0)
+
+    return result
 
 
 def stats_on_track(
     midi_filename: str = "the_strokes-reptilia",
     verbose: bool = True,
+    output_dir: str | None = None,
 ) -> dict[str, int | float | list[int] | list[float]]:
     """Analyze track statistics for MIDI encoding.
 
-    This function loads a MIDI file and computes various statistics about its
-    instruments and notes, useful for understanding track structure before encoding.
-
     Args:
         midi_filename: Name of the MIDI file (without .mid extension) in ./midi/.
-        verbose: If True, prints detailed statistics for each instrument.
+        verbose: If True, logs detailed statistics for each instrument.
+        output_dir: If set, save plots to this directory instead of displaying.
 
     Returns:
-        A dictionary containing track statistics including:
-            - track_count_in_mido: Number of tracks in the MIDI file
-            - instrument_count_in_miditooldkit: Number of instruments
-            - beat_count: Total number of beats
-            - note_counts_all_instrument: Note counts per instrument
-            - note_coverage_all_instrument: Coverage percentage per instrument
-            - note_coverage_true_all_instrument: True coverage (no overlap) per instrument
-            - min_start_all_instruments: First note start time per instrument
-            - max_end_all_instruments: Last note end time per instrument
+        A dictionary with keys: instrument_count, beat_count, note_counts,
+        coverage, coverage_true, min_starts, max_ends.
     """
     path_midi = f"./midi/{midi_filename}.mid"
+    midi = MidiFile(path_midi)
 
-    miditoolk_data = MidiFile(path_midi)
-    midi_mido = mido.MidiFile(path_midi)
-    # Load with other libraries for potential future use
-    _ = pretty_midi.PrettyMIDI(path_midi)
-    _ = note_seq.midi_file_to_note_sequence(path_midi)
+    logger.info("Instruments: %d", len(midi.instruments))
 
-    print("-----------------------------")  # noqa: T201
-    print(  # noqa: T201
-        f"miditooldkit instruments: {len(midi_mido.instruments)}",
-    )
-    print(  # noqa: T201
-        f"mido tracks: {len(midi_mido.tracks)}",
-    )
-    print("-----------------------------")  # noqa: T201
-    # midi_mido.tracks
-    # print(midi_mido.tracks)
-    # print(midi.instruments)
+    ticks_per_beat = midi.ticks_per_beat
+    beat_count = midi.max_tick / ticks_per_beat
+    inst_stats = _compute_instrument_stats(midi.instruments, ticks_per_beat, midi.max_tick)
 
-    beat_count = miditoolk_data.max_tick / miditoolk_data.ticks_per_beat
-    min_start_all_instruments = []
-    max_end_all_instruments = []
-    note_coverage_all_instrument = []
-    note_coverage_true_all_instrument = []
-    note_counts_all_instrument = []
-    instrument_names = []
-    for idx, instruments in enumerate(miditoolk_data.instruments):
-        instrument_names.append(instruments.name)
-
-        note_coverage_instrument = 0
-        note_coverage_instrument_idx = []
-        for i, note in enumerate(instruments.notes):
-            if i == 0:
-                min_start_all_instruments.append(note.start / miditoolk_data.ticks_per_beat)
-
-            note_coverage_instrument += note.end - note.start
-            note_coverage_instrument_idx.append(list(range(note.start, note.end)))
-
-        max_end_all_instruments.append(note.end / miditoolk_data.ticks_per_beat)
-
-        note_coverage_all_instrument.append(
-            100 * (note_coverage_instrument / miditoolk_data.max_tick),
-        )
-        unique_idx_list = []
-        for idx_list in note_coverage_instrument_idx:
-            [unique_idx_list.append(idx) for idx in idx_list]
-        unique_idx_list = len(np.unique(unique_idx_list))
-
-        note_coverage_true_all_instrument.append(100 * (unique_idx_list / miditoolk_data.max_tick))
-        note_counts_all_instrument.append(len(instruments.notes))
-
-        if verbose:
-            print(instruments.name)  # noqa: T201
-            print(  # noqa: T201
-                f"There are {note_counts_all_instrument[idx]} notes from {instruments.name}",
+    if verbose:
+        for i, name in enumerate(inst_stats["names"]):
+            logger.info(
+                "%s: %d notes, %.0f%% coverage, starts at %.1f beats, ends at %.1f beats",
+                name,
+                inst_stats["note_counts"][i],
+                inst_stats["coverage_true"][i],
+                inst_stats["min_starts"][i],
+                inst_stats["max_ends"][i],
             )
-            coverage = note_coverage_true_all_instrument[idx]
-            print(f"{instruments.name} covers {coverage:.0f} % of the track")  # noqa: T201
-            print(  # noqa: T201
-                f"{instruments.name}",
-                f"First note at: {min_start_all_instruments[idx]:.1f} beats;",
-                f"Fast note at: {max_end_all_instruments[idx]:.1f} beats",
-            )
-
-            print("-----------------------------")  # noqa: T201
 
     stats = {
-        "track_count_in_mido": len(miditoolk_data.tracks),
-        "instrument_count_in_miditooldkit": len(miditoolk_data.instruments),
+        "instrument_count": len(midi.instruments),
         "beat_count": beat_count,
-        "note_counts_all_instrument": note_counts_all_instrument,
-        "note_coverage_all_instrument": note_coverage_all_instrument,
-        "note_coverage_true_all_instrument": note_coverage_true_all_instrument,
-        "min_start_all_instruments": min_start_all_instruments,
-        "max_end_all_instruments": max_end_all_instruments,
+        "note_counts": inst_stats["note_counts"],
+        "coverage": inst_stats["coverage"],
+        "coverage_true": inst_stats["coverage_true"],
+        "min_starts": inst_stats["min_starts"],
+        "max_ends": inst_stats["max_ends"],
     }
-    print(stats)  # noqa: T201
 
-    for ui in np.unique(instrument_names):
-        all_notes_starts = []
-        all_notes_instrument = []
-        where_unique_inst = [idx for idx, ins in enumerate(instrument_names) if ins == ui]
-        if len(where_unique_inst) > 1:
-            print(f"{ui} is split in instrument {where_unique_inst}")  # noqa: T201
+    # Plot split instruments (same name across multiple tracks)
+    for unique_name in set(inst_stats["names"]):
+        indices = [i for i, n in enumerate(inst_stats["names"]) if n == unique_name]
+        if len(indices) > 1:
+            logger.info("%s is split across tracks %s", unique_name, indices)
 
-            for i, t in enumerate(where_unique_inst):
-                for notes in miditoolk_data.instruments[t].notes:
-                    all_notes_starts.append(notes.start)
-                    all_notes_instrument.append(i)
-            all_notes_starts = np.array(all_notes_starts)
-            all_notes_instrument = np.array(all_notes_instrument)
-            right_order = np.argsort(all_notes_starts)
+            fig, ax = plt.subplots(figsize=(12, 3))
+            for track_idx, inst_idx in enumerate(indices):
+                starts = [n.start / ticks_per_beat for n in midi.instruments[inst_idx].notes]
+                ax.scatter(
+                    starts,
+                    [track_idx] * len(starts),
+                    s=8,
+                    alpha=0.6,
+                    label=f"Track {inst_idx} ({len(starts)} notes)",
+                )
 
-            all_notes_starts_reordered = [all_notes_starts[id] for id in right_order]
-            all_notes_instrument_reordered = [all_notes_instrument[id] for id in right_order]
+            ax.set_title(f'Split instrument: "{unique_name}" across {len(indices)} tracks')
+            ax.set_xlabel("Beat position")
+            ax.set_ylabel("Track")
+            ax.set_yticks(range(len(indices)))
+            ax.set_yticklabels([f"Track {i}" for i in indices])
+            ax.legend(loc="upper right", fontsize=8)
+            fig.tight_layout()
 
-            _fig, _ax = plt.subplots()
-            plt.plot(all_notes_starts, all_notes_instrument, "o")
-            plt.plot(all_notes_starts_reordered, all_notes_instrument_reordered, "-")
-            plt.show()
+            if output_dir:
+                Path(output_dir).mkdir(parents=True, exist_ok=True)
+                safe_name = unique_name.replace(" ", "_").lower()
+                fig_path = Path(output_dir) / f"split_{safe_name}.png"
+                fig.savefig(fig_path, bbox_inches="tight")
+                logger.info("Saved plot: %s", fig_path)
+                plt.close(fig)
+            else:
+                plt.show()
+                plt.close(fig)
+
     return stats
 
 

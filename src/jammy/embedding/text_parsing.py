@@ -14,12 +14,41 @@ from jammy.tokens import BAR_START, INST, NOTE_ON, TIME_DELTA
 logger = logging.getLogger(__name__)
 
 
-def text_to_events(text: str, verbose: bool = False) -> list[Event]:
+def _is_beyond_quantization(
+    event_type: str,
+    event_value: str | None,
+    cumul_time_delta: int,
+    max_cumul_time_delta: int,
+) -> tuple[bool, int]:
+    """Check if an event exceeds the quantization limit for the current bar.
+
+    Args:
+        event_type: The token type (e.g. TIME_DELTA, NOTE_ON).
+        event_value: The token value (e.g. "4").
+        cumul_time_delta: Accumulated time delta in the current bar.
+        max_cumul_time_delta: Maximum allowed cumulative time delta.
+
+    Returns:
+        Tuple of (beyond_quantization, updated_cumul_time_delta).
+    """
+    if event_type == TIME_DELTA and event_value is not None:
+        delta = int(event_value)
+        cumul_time_delta += delta
+        if cumul_time_delta > max_cumul_time_delta:
+            cumul_time_delta -= delta
+            return True, cumul_time_delta
+
+    if event_type == NOTE_ON and cumul_time_delta >= max_cumul_time_delta:
+        return True, cumul_time_delta
+
+    return False, cumul_time_delta
+
+
+def text_to_events(text: str) -> list[Event]:
     """Convert text tokens to a list of MidiTok events.
 
     Args:
         text: Text token string to parse.
-        verbose: Whether to log detailed quantization information.
 
     Returns:
         List of MidiTok Event objects.
@@ -32,58 +61,45 @@ def text_to_events(text: str, verbose: bool = False) -> list[Event]:
 
     for word in text.split(" "):
         _event = word.split("=")
-        value = _event[1] if len(_event) > 1 else None
-        beyond_quantization = False  # needs to be reset for each event
+        raw_value = _event[1] if len(_event) > 1 else None
+        value = raw_value
 
         if _event[0] == INST:
-            bar_value = 0  # reset bar count for new instrument
-            # get the instrument for passing in get_event when time_delta
-            # for proper quantization
+            bar_value = 0
             instrument = get_event(_event[0], value).value
-
-            # how much delta can be added before over quantization
             max_cumul_time_delta = get_beat_resolution(instrument) * 4
 
         if _event[0] == BAR_START:
             bar_value += 1
             value = bar_value
-            # resetting cumul_time_delta
             cumul_time_delta = 0
 
-        # ----- hack to prevent over quantization -----
-        # NOT IDEAL - the model should not output these events
-        if _event[0] == TIME_DELTA:
-            cumul_time_delta += int(_event[1])
-            if cumul_time_delta > max_cumul_time_delta:
-                beyond_quantization = True
-                cumul_time_delta -= int(_event[1])
+        beyond, cumul_time_delta = _is_beyond_quantization(
+            _event[0],
+            raw_value,
+            cumul_time_delta,
+            max_cumul_time_delta,
+        )
 
-        if _event[0] == NOTE_ON and cumul_time_delta >= max_cumul_time_delta:
-            beyond_quantization = True
-
-        if beyond_quantization and verbose:
+        if beyond:
             logger.debug(
                 "instrument %s - bar %s - skipping %s because of over quantization",
                 instrument,
                 bar_value,
                 _event[0],
             )
-        # ---------------------------------------------
+            continue
 
-        # getting event
         event = get_event(_event[0], value, instrument)
-        if event and not beyond_quantization:
+        if event:
             if event.type == "Bar-End":
-                if verbose:
-                    logger.debug(
-                        "instrument %s - bar %s - Cumulated TIME_DELTA = %s",
-                        instrument,
-                        bar_value,
-                        cumul_time_delta,
-                    )
+                logger.debug(
+                    "instrument %s - bar %s - Cumulated TIME_DELTA = %s",
+                    instrument,
+                    bar_value,
+                    cumul_time_delta,
+                )
                 cumul_time_delta = 0
-
-            # appending event
             events.append(event)
 
     return events
@@ -121,14 +137,12 @@ def piece_to_inst_events(piece_events: list[Event]) -> list[dict[str, Any]]:
     inst_events: list[dict[str, Any]] = []
     current_track = -1  # so does not start before Track-Start is encountered
     for event in piece_events:
-        # creates a new entry in the dictionary when "Track-Start" event is encountered
         if event.type == "Track-Start":
             current_track = event.value
             if len(inst_events) == event.value:
                 inst_events.append({})
                 inst_events[current_track]["channel"] = current_track
                 inst_events[current_track]["events"] = []
-        # append event to the track
         if current_track != -1:
             inst_events[current_track]["events"].append(event)
 
