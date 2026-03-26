@@ -104,7 +104,9 @@ def check_tokenized_data(
         tokenized_dataset: Tokenized dataset with 'input_ids'.
         plot_path: Path to save distribution plot, or None to skip.
     """
-    assert "input_ids" in list(tokenized_dataset[0]), list(tokenized_dataset[0])  # noqa: S101
+    if "input_ids" not in tokenized_dataset[0]:
+        msg = f"Expected 'input_ids' in tokenized data, got: {list(tokenized_dataset[0])}"
+        raise ValueError(msg)
     for i, data in enumerate(dataset["text"][:100:20]):
         logger.info("----")
         logger.info(data)
@@ -142,9 +144,9 @@ def get_history(trainer: Trainer) -> dict[str, np.ndarray]:
     train_history = []
     valid_history = []
     for h in history:
-        if len(h.items()) == 4:
+        if "loss" in h and "eval_loss" not in h:
             train_history.append([h["epoch"], h["step"], h["loss"], h["learning_rate"]])
-        elif len(h.items()) == 6:
+        elif "eval_loss" in h:
             valid_history.append([h["epoch"], h["step"], h["eval_loss"]])
 
     return {

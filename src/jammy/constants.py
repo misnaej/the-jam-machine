@@ -22,7 +22,7 @@ INSTRUMENT_CLASSES = [
 ]
 # fmt: on
 
-# Instrument mapping for decodiing our midi sequence into midi instruments of our choice
+# Instrument mapping for decoding our midi sequence into midi instruments of our choice
 INSTRUMENT_TRANSFER_CLASSES = [
     {
         "name": "Piano",
@@ -142,8 +142,8 @@ def get_instrument_class(program_number: int) -> dict | None:
 
 # NOTE: Both quantization values are currently identical (4).
 # The distinction is preserved in case they need to diverge in the future.
-DRUMS_BEAT_QUANTIZATION = 4  # 8th notes per beat
-NONE_DRUMS_BEAT_QUANTIZATION = 4  # 4th notes per beat
+DRUMS_BEAT_QUANTIZATION = 4  # quantization steps per beat
+NONE_DRUMS_BEAT_QUANTIZATION = 4  # quantization steps per beat
 BEATS_PER_BAR = 4  # 4/4 time
 
 # HuggingFace model — the familized GPT-2 model trained on electronic music

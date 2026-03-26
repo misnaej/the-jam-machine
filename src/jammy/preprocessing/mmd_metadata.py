@@ -217,9 +217,12 @@ class MetadataExtractor:
         if four_to_the_floor:
             self.stats = self.stats[self.stats["four_to_the_floor"] == True]  # noqa: E712
         if single_version:
-            self.stats.sort_values("number_of_notes_per_second", ascending=False).groupby(
-                ["title", "artist"],
-            ).first()
+            self.stats = (
+                self.stats.sort_values("number_of_notes_per_second", ascending=False)
+                .groupby(["title", "artist"])
+                .first()
+                .reset_index()
+            )
 
 
 if __name__ == "__main__":

@@ -325,10 +325,7 @@ def number_of_notes_per_second(pm: PrettyMIDI) -> float | None:
         The note density, or None if no instruments exist.
     """
     if pm.instruments:
-        return (
-            len([note for instrument in pm.instruments for note in instrument.notes])
-            / pm.get_end_time()
-        )
+        return sum(len(inst.notes) for inst in pm.instruments) / pm.get_end_time()
     return None
 
 
@@ -401,7 +398,7 @@ def n_tempo_changes(pm: PrettyMIDI) -> int:
     Returns:
         The number of tempo changes.
     """
-    return len(pm.get_tempo_changes())
+    return len(pm.get_tempo_changes()[0])
 
 
 def average_tempo(pm: PrettyMIDI) -> int | None:
@@ -487,7 +484,7 @@ def four_to_the_floor(pm: PrettyMIDI) -> bool | None:
     if pm.time_signature_changes:
         time_signatures = [f"{ts.numerator}/{ts.denominator}" for ts in pm.time_signature_changes]
         # check if time_signatures contains exclusively '4/4'
-        return all(ts == "4/4" for ts in time_signatures) and len(time_signatures) == 1
+        return all(ts == "4/4" for ts in time_signatures)
     return None
 
 
@@ -513,7 +510,7 @@ def lyrics_number_of_words(pm: PrettyMIDI) -> int | None:
         The number of lyric words, or None if no lyrics exist.
     """
     if pm.lyrics:
-        return len([lyric.text for lyric in pm.lyrics])
+        return len(pm.lyrics)
     return None
 
 

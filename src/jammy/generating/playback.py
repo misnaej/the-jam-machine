@@ -1,3 +1,5 @@
+"""Audio playback and MIDI synthesis via FluidSynth."""
+
 from __future__ import annotations
 
 import logging
