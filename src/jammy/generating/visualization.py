@@ -8,6 +8,8 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
+from jammy.constants import BEATS_PER_BAR
+
 if TYPE_CHECKING:
     import pretty_midi
 
@@ -24,8 +26,6 @@ _INSTRUMENT_COLORS: dict[str, str] = {
     "Synth Bass 1": "orange",
 }
 _DEFAULT_COLOR = "green"
-
-_BEATS_PER_BAR = 4
 _SEC_PER_BEAT = 0.5
 
 
@@ -85,7 +85,7 @@ def _plot_instrument_subplot(
     plt.xlim(min(bars_time), max(bars_time))
     plt.ylim(max([note_pitch.min() - 5, 0]), note_pitch.max() + 5)
     plt.xticks(
-        xticks + 0.5 * _BEATS_PER_BAR * _SEC_PER_BEAT,
+        xticks + 0.5 * BEATS_PER_BAR * _SEC_PER_BEAT,
         labels=xticks.argsort() + 1,
         visible=False,
     )
@@ -113,7 +113,7 @@ def plot_piano_roll(inst_midi: pretty_midi.PrettyMIDI) -> plt.Figure:
     piano_roll_fig.tight_layout()
     piano_roll_fig.patch.set_alpha(0)
     next_beat = max(inst_midi.get_beats()) + np.diff(inst_midi.get_beats())[0]
-    bars_time = np.append(inst_midi.get_beats(), (next_beat))[::_BEATS_PER_BAR].astype(int)
+    bars_time = np.append(inst_midi.get_beats(), (next_beat))[::BEATS_PER_BAR].astype(int)
 
     for inst_count, inst in enumerate(inst_midi.instruments, start=1):
         _plot_instrument_subplot(inst, inst_count, len(inst_midi.instruments), bars_time)

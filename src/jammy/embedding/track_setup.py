@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 
 from miditok import Event
 
-from jammy.embedding.familizer import Familizer
+from jammy.constants import get_instrument_class
 
 if TYPE_CHECKING:
     from miditoolkit import Instrument
@@ -29,10 +29,9 @@ def define_instrument(midi_tok_instrument: Instrument, familized: bool = False) 
         midi_tok_instrument.program if not midi_tok_instrument.is_drum else "Drums"
     )
     if familized and not midi_tok_instrument.is_drum:
-        familizer = Familizer()
-        family_number = familizer.get_family_number(int(instrument))
-        if family_number is not None:
-            instrument = family_number
+        cls = get_instrument_class(int(instrument))
+        if cls is not None:
+            instrument = cls["family_number"]
 
     return instrument
 
