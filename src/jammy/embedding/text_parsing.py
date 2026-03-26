@@ -44,12 +44,11 @@ def _is_beyond_quantization(
     return False, cumul_time_delta
 
 
-def text_to_events(text: str, verbose: bool = False) -> list[Event]:
+def text_to_events(text: str) -> list[Event]:
     """Convert text tokens to a list of MidiTok events.
 
     Args:
         text: Text token string to parse.
-        verbose: Whether to log detailed quantization information.
 
     Returns:
         List of MidiTok Event objects.
@@ -62,7 +61,8 @@ def text_to_events(text: str, verbose: bool = False) -> list[Event]:
 
     for word in text.split(" "):
         _event = word.split("=")
-        value = _event[1] if len(_event) > 1 else None
+        raw_value = _event[1] if len(_event) > 1 else None
+        value = raw_value
 
         if _event[0] == INST:
             bar_value = 0
@@ -76,12 +76,12 @@ def text_to_events(text: str, verbose: bool = False) -> list[Event]:
 
         beyond, cumul_time_delta = _is_beyond_quantization(
             _event[0],
-            _event[1] if len(_event) > 1 else None,
+            raw_value,
             cumul_time_delta,
             max_cumul_time_delta,
         )
 
-        if beyond and verbose:
+        if beyond:
             logger.debug(
                 "instrument %s - bar %s - skipping %s because of over quantization",
                 instrument,
@@ -93,13 +93,12 @@ def text_to_events(text: str, verbose: bool = False) -> list[Event]:
         event = get_event(_event[0], value, instrument)
         if event:
             if event.type == "Bar-End":
-                if verbose:
-                    logger.debug(
-                        "instrument %s - bar %s - Cumulated TIME_DELTA = %s",
-                        instrument,
-                        bar_value,
-                        cumul_time_delta,
-                    )
+                logger.debug(
+                    "instrument %s - bar %s - Cumulated TIME_DELTA = %s",
+                    instrument,
+                    bar_value,
+                    cumul_time_delta,
+                )
                 cumul_time_delta = 0
             events.append(event)
 
