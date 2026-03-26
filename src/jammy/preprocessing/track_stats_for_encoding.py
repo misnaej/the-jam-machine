@@ -8,15 +8,19 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 from miditoolkit import MidiFile
+
+if TYPE_CHECKING:
+    from miditoolkit import Instrument
 
 logger = logging.getLogger(__name__)
 
 
 def _compute_instrument_stats(
-    instruments: list[object],
+    instruments: list[Instrument],
     ticks_per_beat: int,
     max_tick: int,
 ) -> dict[str, list[str | int | float]]:

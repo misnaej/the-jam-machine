@@ -139,8 +139,8 @@ def _build_output(
         genesis: The generator instance with generated state.
         inst_index: Index of the instrument track (-1 for last).
         instrument: Instrument display name.
-        state: Current track state list (will be appended to).
-        track: Track metadata dict.
+        state: Current track state list (not mutated).
+        track: Track metadata dict (not mutated).
         regenerate: Whether this was a regeneration.
 
     Returns:
@@ -155,14 +155,14 @@ def _build_output(
     _, inst_audio = get_music(f"{instrument}.mid")
 
     piano_roll = plot_piano_roll(mixed_inst_midi)
-    track["text"] = inst_text
-    state.append(track)
+    updated_track = {**track, "text": inst_text}
+    updated_state = [*state, updated_track]
 
     return GeneratorResult(
         inst_text=inst_text,
         inst_audio=(SAMPLE_RATE, inst_audio),
         piano_roll=piano_roll,
-        state=state,
+        state=updated_state,
         mixed_audio=(SAMPLE_RATE, mixed_audio),
         regenerate=regenerate,
         piece_by_track=genesis.piece.piece_by_track,
