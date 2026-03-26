@@ -123,6 +123,21 @@ INSTRUMENT_TRANSFER_CLASSES = [
 ]
 
 
+def get_instrument_class(program_number: int) -> dict | None:
+    """Look up the instrument class for a MIDI program number.
+
+    Args:
+        program_number: MIDI program number (0-127).
+
+    Returns:
+        The matching instrument class dict, or None if not found.
+    """
+    for cls in INSTRUMENT_CLASSES:
+        if program_number in cls["program_range"]:
+            return cls
+    return None
+
+
 # Encoding and decoding constants
 
 # NOTE: Both quantization values are currently identical (4).

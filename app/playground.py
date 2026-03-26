@@ -19,8 +19,8 @@ from jammy.generating.config import TrackConfig
 from jammy.generating.generate import GenerateMidiText
 from jammy.generating.playback import get_music
 from jammy.generating.visualization import plot_piano_roll
+from jammy.load import load_model_and_tokenizer
 from jammy.logging_config import setup_logging
-from jammy.preprocessing.load import LoadModel
 from jammy.tokens import PIECE_START
 from jammy.utils import get_miditok
 
@@ -34,11 +34,11 @@ sys.modules["pylab"] = pylab
 N_BAR_GENERATED = 8
 SAMPLE_RATE = 44100
 
-model, tokenizer = LoadModel(
+model, tokenizer = load_model_and_tokenizer(
     MODEL_REPO,
     from_huggingface=True,
     revision=MODEL_REVISION,
-).load_model_and_tokenizer()
+)
 
 miditok = get_miditok()
 decoder = TextDecoder(miditok)

@@ -12,7 +12,7 @@ from pathlib import Path
 
 from joblib import Parallel, delayed
 
-from jammy.constants import INSTRUMENT_CLASSES, INSTRUMENT_TRANSFER_CLASSES
+from jammy.constants import INSTRUMENT_CLASSES, INSTRUMENT_TRANSFER_CLASSES, get_instrument_class
 from jammy.file_utils import FileCompressor, get_files, timeit
 from jammy.tokens import DRUMS, INST
 
@@ -52,10 +52,8 @@ class Familizer:
         Returns:
             Family number (0-15) or None if not found.
         """
-        for instrument_class in INSTRUMENT_CLASSES:
-            if program_number in instrument_class["program_range"]:
-                return instrument_class["family_number"]
-        return None
+        cls = get_instrument_class(program_number)
+        return cls["family_number"] if cls else None
 
     def reverse_family(self, arbitrary: bool) -> None:
         """Create mapping from family numbers to program numbers.

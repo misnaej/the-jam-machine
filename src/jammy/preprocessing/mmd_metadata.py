@@ -21,7 +21,7 @@ class MetadataExtractor:
     """Extract metadata from the MMD dataset and add to statistics file.
 
     Attributes:
-        stats_path: Path to the statistics file from MidiStats.
+        stats_path: Path to the statistics CSV (from ``midi_stats.get_stats()``).
         title_artist_path: Path to the title_artist jsonl MMD file.
         genre_path: Path to the genre jsonl MMD file.
     """
