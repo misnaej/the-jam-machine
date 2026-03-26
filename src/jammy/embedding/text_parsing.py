@@ -31,7 +31,7 @@ def _is_beyond_quantization(
     Returns:
         Tuple of (beyond_quantization, updated_cumul_time_delta).
     """
-    if event_type == TIME_DELTA:
+    if event_type == TIME_DELTA and event_value is not None:
         delta = int(event_value)
         cumul_time_delta += delta
         if cumul_time_delta > max_cumul_time_delta:

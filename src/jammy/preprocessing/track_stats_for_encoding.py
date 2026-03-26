@@ -16,10 +16,10 @@ logger = logging.getLogger(__name__)
 
 
 def _compute_instrument_stats(
-    instruments: list,
+    instruments: list[object],
     ticks_per_beat: int,
     max_tick: int,
-) -> dict[str, list]:
+) -> dict[str, list[str | int | float]]:
     """Compute per-instrument note statistics.
 
     Args:
@@ -74,7 +74,8 @@ def stats_on_track(
         output_dir: If set, save plots to this directory instead of displaying.
 
     Returns:
-        A dictionary containing track statistics.
+        A dictionary with keys: instrument_count, beat_count, note_counts,
+        coverage, coverage_true, min_starts, max_ends.
     """
     path_midi = f"./midi/{midi_filename}.mid"
     midi = MidiFile(path_midi)
@@ -140,6 +141,7 @@ def stats_on_track(
                 plt.close(fig)
             else:
                 plt.show()
+                plt.close(fig)
 
     return stats
 
