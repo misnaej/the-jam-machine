@@ -213,3 +213,94 @@ def plot_layer_flow(
     if output_path:
         fig.savefig(output_path, bbox_inches="tight", dpi=150)
     return fig
+
+
+def plot_early_vs_late_attention(
+    model: GPT2LMHeadModel,
+    tokenizer: PreTrainedTokenizerFast,
+    sequence: str | None = None,
+    target_position: int = -1,
+    output_path: Path | None = None,
+) -> plt.Figure:
+    """Compare attention patterns between the first and last layer.
+
+    Shows two bar charts side by side: where the target token attends
+    in layer 0 (early, typically diffuse/local) vs the last layer
+    (late, typically focused on structural tokens). Adds a text summary
+    describing the key difference.
+
+    Args:
+        model: GPT-2 model loaded with ``attn_implementation='eager'``.
+        tokenizer: The tokenizer.
+        sequence: Input token sequence. If None, uses a default example.
+        target_position: Which token to analyze (-1 = last token).
+        output_path: If set, save the figure to this path.
+
+    Returns:
+        Matplotlib Figure.
+    """
+    if sequence is None:
+        sequence = (
+            "PIECE_START TRACK_START INST=DRUMS DENSITY=2"
+            " BAR_START NOTE_ON=36 TIME_DELTA=2 NOTE_OFF=36"
+        )
+
+    attentions, token_list = _get_attention(model, tokenizer, sequence)
+    n_layers = len(attentions)
+    seq_len = len(token_list)
+
+    if target_position < 0:
+        target_position = seq_len + target_position
+
+    from jammy.analysis import TOKEN_COLORS, categorize_token  # noqa: PLC0415
+
+    colors = [TOKEN_COLORS[categorize_token(t)] for t in token_list]
+    target_name = token_list[target_position]
+
+    early_attn = attentions[0][0].mean(dim=0).detach().numpy()[target_position]
+    late_attn = attentions[n_layers - 1][0].mean(dim=0).detach().numpy()[target_position]
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 4), sharey=True)
+
+    y = range(seq_len)
+    ax1.barh(y, early_attn, color=colors, height=0.7)
+    ax1.set_yticks(y)
+    ax1.set_yticklabels(token_list, fontsize=8)
+    ax1.invert_yaxis()
+    ax1.set_title("Layer 0 (Early)", fontsize=11, fontweight="bold")
+    ax1.set_xlabel("Attention weight")
+
+    top_early = token_list[early_attn.argmax()]
+    ax1.text(
+        0.02,
+        -0.12,
+        f"Most attended: {top_early} ({early_attn.max():.0%})",
+        transform=ax1.transAxes,
+        fontsize=9,
+        style="italic",
+    )
+
+    ax2.barh(y, late_attn, color=colors, height=0.7)
+    ax2.set_title(f"Layer {n_layers - 1} (Late)", fontsize=11, fontweight="bold")
+    ax2.set_xlabel("Attention weight")
+
+    top_late = token_list[late_attn.argmax()]
+    ax2.text(
+        0.02,
+        -0.12,
+        f"Most attended: {top_late} ({late_attn.max():.0%})",
+        transform=ax2.transAxes,
+        fontsize=9,
+        style="italic",
+    )
+
+    fig.suptitle(
+        f'Attention to "{target_name}": Early vs Late Layer',
+        fontsize=13,
+        y=1.02,
+    )
+    fig.tight_layout()
+
+    if output_path:
+        fig.savefig(output_path, bbox_inches="tight", dpi=150)
+    return fig

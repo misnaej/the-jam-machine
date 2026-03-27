@@ -160,3 +160,106 @@ def plot_head_specialization(
     if output_path:
         fig.savefig(output_path, bbox_inches="tight", dpi=150)
     return fig
+
+
+def plot_head_comparison(
+    head_roles: dict[str, list[list[float]]],
+    output_path: Path | None = None,
+) -> plt.Figure:
+    """Compare the two most differently-specialized heads.
+
+    Finds the pair of heads with the most divergent attention profiles
+    and plots them side by side as bar charts. Adds a text summary
+    explaining what each head focuses on.
+
+    Args:
+        head_roles: Output from analyze_head_roles().
+        output_path: If set, save the figure to this path.
+
+    Returns:
+        Matplotlib Figure.
+    """
+    import numpy as np  # noqa: PLC0415
+
+    weights = head_roles["weights"]
+    categories = head_roles["categories"]
+    n_layers = head_roles["n_layers"]
+    n_heads = head_roles["n_heads"]
+
+    # Flatten all heads into a list of (label, weight_vector) pairs
+    heads: list[tuple[str, list[float]]] = []
+    for layer_idx in range(n_layers):
+        for head_idx in range(n_heads):
+            label = f"Layer {layer_idx}, Head {head_idx}"
+            heads.append((label, weights[layer_idx][head_idx]))
+
+    # Find the pair with maximum cosine distance
+    max_dist = -1.0
+    best_pair = (0, 1)
+    for i in range(len(heads)):
+        for j in range(i + 1, len(heads)):
+            vi = np.array(heads[i][1])
+            vj = np.array(heads[j][1])
+            norm_i = np.linalg.norm(vi)
+            norm_j = np.linalg.norm(vj)
+            if norm_i > 0 and norm_j > 0:
+                cos_sim = np.dot(vi, vj) / (norm_i * norm_j)
+                dist = 1 - cos_sim
+                if dist > max_dist:
+                    max_dist = dist
+                    best_pair = (i, j)
+
+    head_a_label, head_a_weights = heads[best_pair[0]]
+    head_b_label, head_b_weights = heads[best_pair[1]]
+
+    # Describe what each head focuses on
+    cat_labels = [c.capitalize() for c in categories]
+
+    def _describe(w: list[float]) -> str:
+        top_idx = int(np.argmax(w))
+        top_pct = w[top_idx] * 100
+        return f"Focuses on {categories[top_idx]} tokens ({top_pct:.0f}%)"
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4), sharey=True)
+
+    from jammy.analysis import TOKEN_COLORS  # noqa: PLC0415
+
+    colors = [TOKEN_COLORS[c] for c in categories]
+
+    ax1.barh(range(len(categories)), head_a_weights, color=colors, height=0.6)
+    ax1.set_yticks(range(len(categories)))
+    ax1.set_yticklabels(cat_labels, fontsize=10)
+    ax1.invert_yaxis()
+    ax1.set_title(head_a_label, fontsize=11, fontweight="bold")
+    ax1.set_xlabel("Attention proportion")
+    ax1.text(
+        0.02,
+        -0.15,
+        _describe(head_a_weights),
+        transform=ax1.transAxes,
+        fontsize=9,
+        style="italic",
+    )
+
+    ax2.barh(range(len(categories)), head_b_weights, color=colors, height=0.6)
+    ax2.set_title(head_b_label, fontsize=11, fontweight="bold")
+    ax2.set_xlabel("Attention proportion")
+    ax2.text(
+        0.02,
+        -0.15,
+        _describe(head_b_weights),
+        transform=ax2.transAxes,
+        fontsize=9,
+        style="italic",
+    )
+
+    fig.suptitle(
+        "Most Differently Specialized Heads",
+        fontsize=13,
+        y=1.02,
+    )
+    fig.tight_layout()
+
+    if output_path:
+        fig.savefig(output_path, bbox_inches="tight", dpi=150)
+    return fig
