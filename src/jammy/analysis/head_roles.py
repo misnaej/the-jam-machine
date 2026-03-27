@@ -140,7 +140,7 @@ def plot_head_specialization(
             labels.append(f"L{layer_idx}H{head_idx}")
 
     fig, ax = plt.subplots(figsize=(8, max(6, n_layers * n_heads * 0.4)))
-    im = ax.imshow(matrix, cmap="YlOrRd", aspect="auto", vmin=0)
+    im = ax.imshow(matrix, cmap="Blues", aspect="auto", vmin=0)
 
     ax.set_xticks(range(len(categories)))
     ax.set_xticklabels([c.capitalize() for c in categories], fontsize=9, rotation=45, ha="right")
