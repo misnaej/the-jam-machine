@@ -41,6 +41,7 @@ The model's vocabulary has ~300 tokens covering 128 MIDI pitches, 16 instrument 
 ## Documentation
 
 - **[Encoding & Decoding Guide](encoding-decoding)** — How MIDI files become text tokens and back. The full pipeline, token format, quantization trade-offs, and a worked example using The Strokes - Reptilia.
+- **[Embedding Explorer](exploring_the_embedding.html)** — Visualizations of the model's learned token embeddings, attention patterns, and next-token predictions. Compares trained vs untrained model.
 
 ---
 

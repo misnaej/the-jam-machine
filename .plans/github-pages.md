@@ -65,20 +65,20 @@ Skip the less useful ones (density heatmap, pitch distribution, quantization imp
 
 ### PR 3: Notebook cleanup + Embedding explorer page
 
-Fix the `exploring_the_embedding.ipynb` notebook and render it as an HTML page.
+Render the notebook as an HTML page using its existing outputs. Full re-execution is blocked by a dependency conflict (`datasets==2.6.1` incompatible with current `pyarrow`).
 
-**This is separate because:**
-- Needs `bertviz` and `ipykernel` moved to optional deps
-- Notebook has broken cells and hardcoded paths
-- Requires model download to execute
-- High risk of blocking if combined with the site setup
-
-**Steps:**
+**Done:**
 1. Move `bertviz`, `ipykernel` to `[project.optional-dependencies] notebooks`
 2. Rename `exploring_the _embedding.ipynb` → `exploring_the_embedding.ipynb`
-3. Fix hardcoded paths → HuggingFace Hub
-4. Fix or remove broken cells ("NOT WORKING", "WORK IN PROGRESS")
-5. Render to HTML: `jupyter nbconvert --to html`
+3. Render to HTML with `nbconvert` (existing outputs preserved)
+4. Link from landing page
+
+**Known issues (deferred to after HuggingFace deployment):**
+- Hardcoded local paths in cell 12 — need HuggingFace Hub loading
+- `datasets==2.6.1` incompatible with current `pyarrow` — blocks re-execution
+- Broken "Untrained Model" attention cell (cell 17-18)
+- "WORK IN PROGRESS" past key values section (cell 41-42)
+- Figure saves to CWD instead of output directory
 6. Commit rendered HTML to `docs/`
 
 ---
