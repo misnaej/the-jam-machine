@@ -13,12 +13,16 @@ import plotly.graph_objects as go
 import torch
 from plotly.subplots import make_subplots
 
-from jammy.analysis import TOKEN_COLORS, categorize_token
+from jammy.analysis import (
+    DEFAULT_SEQUENCE_MEDIUM,
+    DEFAULT_SEQUENCE_SHORT,
+    PLOTLY_JS,
+    TOKEN_COLORS,
+    categorize_token,
+)
 
 if TYPE_CHECKING:
     from transformers import GPT2LMHeadModel, PreTrainedTokenizerFast
-
-_PLOTLY_JS = False  # all charts rely on CDN loaded in page header
 
 
 def plot_top_predictions(
@@ -42,10 +46,7 @@ def plot_top_predictions(
         HTML string containing the interactive plotly chart.
     """
     if sequence is None:
-        sequence = (
-            "PIECE_START TRACK_START INST=DRUMS DENSITY=2"
-            " BAR_START NOTE_ON=36 TIME_DELTA=2 NOTE_OFF=36"
-        )
+        sequence = DEFAULT_SEQUENCE_MEDIUM
 
     tokens = sequence.split(" ")
     inputs = tokenizer.encode(sequence, return_tensors="pt")
@@ -94,7 +95,7 @@ def plot_top_predictions(
     for i in range(1, n_positions + 1):
         fig.update_xaxes(range=[0, 1], row=i, col=1)
 
-    return fig.to_html(full_html=False, include_plotlyjs=_PLOTLY_JS)
+    return fig.to_html(full_html=False, include_plotlyjs=PLOTLY_JS)
 
 
 def plot_prediction_comparison(
@@ -120,7 +121,7 @@ def plot_prediction_comparison(
         HTML string containing the interactive plotly chart.
     """
     if sequence is None:
-        sequence = "PIECE_START TRACK_START INST=DRUMS DENSITY=2 BAR_START"
+        sequence = DEFAULT_SEQUENCE_SHORT
 
     tokens = sequence.split(" ")
     inputs = tokenizer.encode(sequence, return_tensors="pt")
@@ -174,4 +175,4 @@ def plot_prediction_comparison(
         for col in range(1, 3):
             fig.update_xaxes(range=[0, 1], row=row, col=col)
 
-    return fig.to_html(full_html=False, include_plotlyjs=_PLOTLY_JS)
+    return fig.to_html(full_html=False, include_plotlyjs=PLOTLY_JS)

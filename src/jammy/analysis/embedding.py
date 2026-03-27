@@ -12,13 +12,11 @@ from typing import TYPE_CHECKING
 import plotly.graph_objects as go
 from sklearn.manifold import TSNE
 
-from jammy.analysis import TOKEN_CATEGORY_ORDER, TOKEN_COLORS, categorize_token
+from jammy.analysis import PLOTLY_JS, TOKEN_CATEGORY_ORDER, TOKEN_COLORS, categorize_token
 
 if TYPE_CHECKING:
     import numpy as np
     from transformers import GPT2LMHeadModel, PreTrainedTokenizerFast
-
-_PLOTLY_JS = False  # all charts rely on CDN loaded in page header
 
 
 def _get_embedding(model: GPT2LMHeadModel) -> np.ndarray:
@@ -190,14 +188,14 @@ def plot_embedding_heatmap_comparison(
         "Trained Model",
         zmin=zmin,
         zmax=zmax,
-    ).to_html(full_html=False, include_plotlyjs=_PLOTLY_JS)
+    ).to_html(full_html=False, include_plotlyjs=PLOTLY_JS)
     untrained_html = _embedding_heatmap_plotly(
         untrained_model,
         tokenizer,
         "Untrained Model (Random Weights)",
         zmin=zmin,
         zmax=zmax,
-    ).to_html(full_html=False, include_plotlyjs=_PLOTLY_JS)
+    ).to_html(full_html=False, include_plotlyjs=PLOTLY_JS)
     return trained_html, untrained_html
 
 
@@ -288,11 +286,11 @@ def plot_tsne(
         tokenizer,
         "Trained Model",
         random_state,
-    ).to_html(full_html=False, include_plotlyjs=_PLOTLY_JS)
+    ).to_html(full_html=False, include_plotlyjs=PLOTLY_JS)
     untrained_html = _tsne_plotly(
         untrained_model,
         tokenizer,
         "Untrained Model (Random Weights)",
         random_state,
-    ).to_html(full_html=False, include_plotlyjs=_PLOTLY_JS)
+    ).to_html(full_html=False, include_plotlyjs=PLOTLY_JS)
     return trained_html, untrained_html

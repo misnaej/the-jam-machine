@@ -14,18 +14,10 @@ import plotly.graph_objects as go
 import torch
 from plotly.subplots import make_subplots
 
-from jammy.analysis import TOKEN_COLORS, categorize_token
+from jammy.analysis import DEFAULT_SEQUENCE_LONG, PLOTLY_JS, TOKEN_COLORS, categorize_token
 
 if TYPE_CHECKING:
     from transformers import GPT2LMHeadModel, PreTrainedTokenizerFast
-
-_PLOTLY_JS = False  # all charts rely on CDN loaded in page header
-
-_DEFAULT_SEQUENCE = (
-    "PIECE_START TRACK_START INST=DRUMS DENSITY=2"
-    " BAR_START NOTE_ON=36 TIME_DELTA=2 NOTE_OFF=36"
-    " NOTE_ON=42 TIME_DELTA=4 NOTE_OFF=42 BAR_END"
-)
 
 
 def _get_attention(
@@ -85,7 +77,7 @@ def plot_attention_comparison(
         HTML string containing the interactive plotly chart.
     """
     if sequence is None:
-        sequence = _DEFAULT_SEQUENCE
+        sequence = DEFAULT_SEQUENCE_LONG
 
     attentions, token_list = _get_attention(model, tokenizer, sequence)
     n_layers = len(attentions)
@@ -120,7 +112,7 @@ def plot_attention_comparison(
         height=500,
         template="plotly_white",
     )
-    return fig.to_html(full_html=False, include_plotlyjs=_PLOTLY_JS)
+    return fig.to_html(full_html=False, include_plotlyjs=PLOTLY_JS)
 
 
 def plot_layer_flow(
@@ -144,7 +136,7 @@ def plot_layer_flow(
         HTML string containing the interactive plotly chart.
     """
     if sequence is None:
-        sequence = _DEFAULT_SEQUENCE
+        sequence = DEFAULT_SEQUENCE_LONG
 
     attentions, token_list = _get_attention(model, tokenizer, sequence)
     n_layers = len(attentions)
@@ -177,7 +169,7 @@ def plot_layer_flow(
         template="plotly_white",
         xaxis={"side": "bottom"},
     )
-    return fig.to_html(full_html=False, include_plotlyjs=_PLOTLY_JS)
+    return fig.to_html(full_html=False, include_plotlyjs=PLOTLY_JS)
 
 
 def plot_early_vs_late_attention(
@@ -201,7 +193,7 @@ def plot_early_vs_late_attention(
         HTML string containing the interactive plotly chart.
     """
     if sequence is None:
-        sequence = _DEFAULT_SEQUENCE
+        sequence = DEFAULT_SEQUENCE_LONG
 
     attentions, token_list = _get_attention(model, tokenizer, sequence)
     n_layers = len(attentions)
@@ -249,4 +241,4 @@ def plot_early_vs_late_attention(
         height=450,
         template="plotly_white",
     )
-    return fig.to_html(full_html=False, include_plotlyjs=_PLOTLY_JS)
+    return fig.to_html(full_html=False, include_plotlyjs=PLOTLY_JS)

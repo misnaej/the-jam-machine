@@ -7,26 +7,33 @@ on harmony (NOTE tokens), others on structure (BAR/TRACK tokens).
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypedDict
 
 import numpy as np
 import plotly.graph_objects as go
 import torch
 from plotly.subplots import make_subplots
 
-from jammy.analysis import TOKEN_CATEGORY_ORDER, TOKEN_COLORS, categorize_token
+from jammy.analysis import PLOTLY_JS, TOKEN_CATEGORY_ORDER, TOKEN_COLORS, categorize_token
 
 if TYPE_CHECKING:
     from transformers import GPT2LMHeadModel, PreTrainedTokenizerFast
 
-_PLOTLY_JS = False  # all charts rely on CDN loaded in page header
+
+class HeadRoles(TypedDict):
+    """Result of head role analysis."""
+
+    weights: list[list[list[float]]]
+    categories: list[str]
+    n_layers: int
+    n_heads: int
 
 
 def analyze_head_roles(
     model: GPT2LMHeadModel,
     tokenizer: PreTrainedTokenizerFast,
     sequences: list[str],
-) -> dict[str, list[list[float]]]:
+) -> HeadRoles:
     """Compute average attention per token category for each head.
 
     For each attention head, measures how much attention it pays to each
@@ -39,11 +46,8 @@ def analyze_head_roles(
         sequences: List of token sequences to analyze.
 
     Returns:
-        Dict with keys:
-        - "weights": list of shape (n_layers, n_heads, n_categories)
-        - "categories": list of category names
-        - "n_layers": number of layers
-        - "n_heads": number of heads per layer
+        HeadRoles dict with keys: weights (n_layers x n_heads x n_categories),
+        categories, n_layers, n_heads.
     """
     category_names = TOKEN_CATEGORY_ORDER
     n_categories = len(category_names)
@@ -105,7 +109,7 @@ def analyze_head_roles(
 
 
 def plot_head_comparison(
-    head_roles: dict[str, list[list[float]]],
+    head_roles: HeadRoles,
 ) -> str:
     """Compare the two most differently-specialized heads.
 
@@ -186,4 +190,4 @@ def plot_head_comparison(
         height=350,
         template="plotly_white",
     )
-    return fig.to_html(full_html=False, include_plotlyjs=_PLOTLY_JS)
+    return fig.to_html(full_html=False, include_plotlyjs=PLOTLY_JS)

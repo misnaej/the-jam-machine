@@ -2,13 +2,35 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+import pytest
+from transformers import GPT2LMHeadModel, PreTrainedTokenizerFast
 
 from jammy.analysis import categorize_token
-from jammy.analysis.embedding import _get_embedding, _get_token_list, _sort_by_category
+from jammy.analysis.activation import plot_prediction_comparison, plot_top_predictions
+from jammy.analysis.attention import (
+    plot_attention_comparison,
+    plot_early_vs_late_attention,
+    plot_layer_flow,
+)
+from jammy.analysis.embedding import (
+    _get_embedding,
+    _get_token_list,
+    _sort_by_category,
+    plot_embedding_heatmap_comparison,
+    plot_tsne,
+)
+from jammy.analysis.head_roles import analyze_head_roles, plot_head_comparison
+from jammy.constants import MODEL_REPO, MODEL_REVISION
 
-if TYPE_CHECKING:
-    from transformers import GPT2LMHeadModel, PreTrainedTokenizerFast
+
+@pytest.fixture(scope="module")
+def eager_model() -> GPT2LMHeadModel:
+    """Load model with eager attention for attention weight extraction."""
+    return GPT2LMHeadModel.from_pretrained(
+        MODEL_REPO,
+        revision=MODEL_REVISION,
+        attn_implementation="eager",
+    )
 
 
 class TestCategorizeToken:
@@ -81,3 +103,92 @@ class TestGetTokenList:
         """Test that token list matches vocab size."""
         tokens = _get_token_list(tokenizer)
         assert len(tokens) == tokenizer.vocab_size
+
+
+class TestPlotSmoke:
+    """Smoke tests verifying all plot functions return valid HTML."""
+
+    def test_plot_tsne(
+        self,
+        model: GPT2LMHeadModel,
+        tokenizer: PreTrainedTokenizerFast,
+    ) -> None:
+        """Test that plot_tsne returns two HTML strings."""
+        trained_html, untrained_html = plot_tsne(model, model, tokenizer)
+        assert "<div" in trained_html
+        assert "<div" in untrained_html
+
+    def test_plot_embedding_heatmap_comparison(
+        self,
+        model: GPT2LMHeadModel,
+        tokenizer: PreTrainedTokenizerFast,
+    ) -> None:
+        """Test that embedding heatmap comparison returns two HTML strings."""
+        trained_html, untrained_html = plot_embedding_heatmap_comparison(
+            model,
+            model,
+            tokenizer,
+        )
+        assert "<div" in trained_html
+        assert "<div" in untrained_html
+
+    def test_plot_top_predictions(
+        self,
+        model: GPT2LMHeadModel,
+        tokenizer: PreTrainedTokenizerFast,
+    ) -> None:
+        """Test that top predictions returns HTML."""
+        html = plot_top_predictions(model, tokenizer)
+        assert "<div" in html
+
+    def test_plot_prediction_comparison(
+        self,
+        model: GPT2LMHeadModel,
+        tokenizer: PreTrainedTokenizerFast,
+    ) -> None:
+        """Test that prediction comparison returns HTML."""
+        html = plot_prediction_comparison(model, model, tokenizer)
+        assert "<div" in html
+
+    def test_plot_attention_comparison(
+        self,
+        eager_model: GPT2LMHeadModel,
+        tokenizer: PreTrainedTokenizerFast,
+    ) -> None:
+        """Test that attention comparison returns HTML."""
+        html = plot_attention_comparison(eager_model, tokenizer)
+        assert "<div" in html
+
+    def test_plot_early_vs_late_attention(
+        self,
+        eager_model: GPT2LMHeadModel,
+        tokenizer: PreTrainedTokenizerFast,
+    ) -> None:
+        """Test that early vs late attention returns HTML."""
+        html = plot_early_vs_late_attention(eager_model, tokenizer)
+        assert "<div" in html
+
+    def test_plot_layer_flow(
+        self,
+        eager_model: GPT2LMHeadModel,
+        tokenizer: PreTrainedTokenizerFast,
+    ) -> None:
+        """Test that layer flow returns HTML."""
+        html = plot_layer_flow(eager_model, tokenizer)
+        assert "<div" in html
+
+    def test_analyze_and_plot_head_comparison(
+        self,
+        eager_model: GPT2LMHeadModel,
+        tokenizer: PreTrainedTokenizerFast,
+    ) -> None:
+        """Test that head analysis and comparison returns HTML."""
+        roles = analyze_head_roles(
+            eager_model,
+            tokenizer,
+            ["PIECE_START TRACK_START INST=DRUMS DENSITY=2"],
+        )
+        assert roles["n_layers"] == 6
+        assert roles["n_heads"] == 8
+        html = plot_head_comparison(roles)
+        assert "<div" in html
