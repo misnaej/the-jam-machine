@@ -171,11 +171,11 @@ The decoder handles edge cases like bars with no notes (empty density=0 bars) an
 
 ## Piano Roll: Decoded Reptilia
 
-Here's the piano roll of The Strokes - Reptilia after a full encode → decode roundtrip:
+Here's the piano roll of the first 32 bars of The Strokes - Reptilia (from the original MIDI):
 
-![Piano Roll](assets/piano_roll.png)
+![Piano Roll](assets/piano_roll_snippet.png)
 
-The musical structure is preserved — you can see the distinct instrument tracks, the verse/chorus structure, and the rhythmic patterns. The timing has been quantized to the 16th-note grid, and instruments have been mapped to families, but the song is recognizable.
+You can see the arrangement structure: drums and bass enter around bar 8, the 2nd guitar plays sustained chords, and the 1st guitar has a rhythmic riff pattern. This is the kind of musical structure the model learns to reproduce.
 
 ### Split instruments
 
