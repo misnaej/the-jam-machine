@@ -9,22 +9,21 @@ Usage:
 
 from __future__ import annotations
 
-import base64
 import logging
-from io import BytesIO
 from pathlib import Path
 
-import matplotlib.pyplot as plt
 from transformers import GPT2Config, GPT2LMHeadModel, PreTrainedTokenizerFast
 
-from jammy.analysis.activation import plot_prediction_comparison, plot_top_predictions
+from jammy.analysis.activation import (
+    plot_prediction_comparison,
+    plot_top_predictions,
+)
 from jammy.analysis.attention import (
     plot_attention_comparison,
     plot_early_vs_late_attention,
     plot_layer_flow,
 )
 from jammy.analysis.embedding import (
-    plot_embedding_comparison,
     plot_embedding_heatmap_comparison,
     plot_tsne,
 )
@@ -53,22 +52,7 @@ SAMPLE_SEQUENCES = [
     " NOTE_ON=36 TIME_DELTA=2 NOTE_OFF=36 BAR_END",
 ]
 
-
-def _fig_to_base64(fig: plt.Figure) -> str:
-    """Convert a matplotlib figure to a base64-encoded PNG string."""
-    buf = BytesIO()
-    fig.savefig(buf, format="png", bbox_inches="tight", dpi=150)
-    buf.seek(0)
-    plt.close(fig)
-    return base64.b64encode(buf.read()).decode("utf-8")
-
-
-def _img_tag(b64: str, alt: str) -> str:
-    """Create an HTML img tag from a base64 string."""
-    return (
-        f'<img src="data:image/png;base64,{b64}" alt="{alt}"'
-        f' style="max-width:100%; margin: 20px 0;">'
-    )
+PLOTLY_CDN = '<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>'
 
 
 def main() -> None:
@@ -81,7 +65,10 @@ def main() -> None:
         revision=MODEL_REVISION,
         attn_implementation="eager",
     )
-    tokenizer = PreTrainedTokenizerFast.from_pretrained(MODEL_REPO, revision=MODEL_REVISION)
+    tokenizer = PreTrainedTokenizerFast.from_pretrained(
+        MODEL_REPO,
+        revision=MODEL_REVISION,
+    )
 
     logger.info("Creating untrained model...")
     untrained = GPT2LMHeadModel(
@@ -92,54 +79,50 @@ def main() -> None:
             n_head=8,
             n_layer=6,
             n_positions=2048,
-        )
+        ),
     )
 
-    sections = []
+    sections: list[tuple[str, str, str | list[str]]] = []
 
-    # --- Embedding ---
+    # --- Embedding TSNE ---
     logger.info("Generating TSNE...")
+    trained_tsne, untrained_tsne = plot_tsne(model, untrained, tokenizer)
     sections.append(
         (
             "Token Embedding Space (TSNE)",
             """
-        <p>Each dot is a token from the model's vocabulary (301 tokens total).
-        Position is determined by TSNE dimensionality reduction from 512 dimensions to 2.
-        Tokens that the model considers similar are placed close together.</p>
-        <p><strong>What to look for:</strong> Instruments (blue) cluster tightly — the model
-        learned they appear in similar contexts. Time deltas (red) form their own group.
-        Notes (black) spread across the space — nearby pitches are somewhat close, but the
-        model distinguishes high from low notes.</p>
+        <p>Each dot is a token from the model's vocabulary (301 tokens).
+        Position is determined by TSNE dimensionality reduction from
+        512 dimensions to 2. Tokens the model considers similar are
+        placed close together.
+        <strong>Hover over any point to see the token name.</strong></p>
+        <p><strong>What to look for:</strong> The trained model clusters
+        instruments (blue) tightly, time deltas (red) in their own group,
+        and notes (black) spread across the space. The untrained model
+        is random noise.</p>
     """,
-            _fig_to_base64(plot_tsne(model, tokenizer)),
-        )
+            [trained_tsne, untrained_tsne],
+        ),
     )
 
-    logger.info("Generating TSNE comparison...")
-    sections.append(
-        (
-            "Trained vs Untrained Embedding",
-            """
-        <p>Left: trained model. Right: untrained model (random weights).
-        The trained model organizes tokens into meaningful clusters.
-        The untrained model is random noise — no structure at all.</p>
-    """,
-            _fig_to_base64(plot_embedding_comparison(model, untrained, tokenizer)),
-        )
-    )
-
+    # --- Embedding Heatmap ---
     logger.info("Generating embedding heatmap comparison...")
+    trained_hm, untrained_hm = plot_embedding_heatmap_comparison(
+        model,
+        untrained,
+        tokenizer,
+    )
     sections.append(
         (
             "Embedding Matrix: Trained vs Untrained",
             """
-        <p>The raw embedding matrix — each row is a token, each column is one of 512
-        embedding dimensions. Tokens are grouped by category (structure, instrument,
-        density, notes, time, special). The trained model shows visible patterns within
-        categories. The untrained model is uniform noise.</p>
+        <p>Each column is a token (grouped by category), each row is
+        one of 512 embedding dimensions. The trained model shows visible
+        patterns within categories. The untrained model is uniform noise.
+        Hover to see individual token values.</p>
     """,
-            _fig_to_base64(plot_embedding_heatmap_comparison(model, untrained, tokenizer)),
-        )
+            [trained_hm, untrained_hm],
+        ),
     )
 
     # --- Predictions ---
@@ -148,15 +131,15 @@ def main() -> None:
         (
             "Next Token Predictions",
             """
-        <p>For each token in a drum sequence, what does the model predict comes next?
-        Bars show the top 10 most likely tokens and their probabilities.</p>
-        <p><strong>What to look for:</strong> After PIECE_START, the model predicts TRACK_START
-        with near certainty. After INST=DRUMS, it predicts DENSITY tokens. After BAR_START,
-        it predicts drum notes (NOTE_ON=42, 36, 35). The model has learned the grammar
-        of MIDI text.</p>
+        <p>For each token in a drum sequence, what does the model predict
+        comes next? Bars show the top 10 most likely tokens.</p>
+        <p><strong>What to look for:</strong> After PIECE_START, the model
+        predicts TRACK_START with near certainty. After INST=DRUMS, it
+        predicts DENSITY tokens. After BAR_START, it predicts drum notes.
+        The model has learned the grammar of MIDI text.</p>
     """,
-            _fig_to_base64(plot_top_predictions(model, tokenizer)),
-        )
+            plot_top_predictions(model, tokenizer),
+        ),
     )
 
     logger.info("Generating prediction comparison...")
@@ -164,12 +147,12 @@ def main() -> None:
         (
             "Predictions: Trained vs Untrained",
             """
-        <p>Same sequence, two models. The trained model makes sharp, confident predictions.
-        The untrained model spreads probability nearly uniformly — it has no idea what
-        should come next.</p>
+        <p>Same sequence, two models. The trained model makes sharp,
+        confident predictions. The untrained model spreads probability
+        nearly uniformly.</p>
     """,
-            _fig_to_base64(plot_prediction_comparison(model, untrained, tokenizer)),
-        )
+            plot_prediction_comparison(model, untrained, tokenizer),
+        ),
     )
 
     # --- Attention ---
@@ -178,15 +161,15 @@ def main() -> None:
         (
             "Attention Patterns: Early vs Late Layer",
             """
-        <p>Each cell shows how much one token attends to another (darker = more attention).
-        Left: Layer 0 (first layer). Right: Layer 5 (last layer).</p>
-        <p><strong>What to look for:</strong> Layer 0 shows a strong diagonal (each token
-        attends to itself and nearby tokens). Layer 5 shows vertical dark columns on
-        structural tokens (DENSITY, INST) — later tokens look back at these "anchor" tokens
-        regardless of distance. This is how the model maintains awareness of context.</p>
+        <p>Each cell shows how much one token attends to another
+        (darker = more attention). Hover for exact weights.</p>
+        <p><strong>What to look for:</strong> Layer 0 shows a strong
+        diagonal (self-attention). The last layer shows vertical columns
+        on structural tokens (DENSITY, INST) — the model looks back at
+        these anchors regardless of distance.</p>
     """,
-            _fig_to_base64(plot_attention_comparison(model, tokenizer)),
-        )
+            plot_attention_comparison(model, tokenizer),
+        ),
     )
 
     logger.info("Generating early vs late attention...")
@@ -194,14 +177,14 @@ def main() -> None:
         (
             "Attention Flow: Early vs Late",
             """
-        <p>Where does the last token (BAR_END) look for information? Bar charts show
-        attention weights on each source token.</p>
-        <p><strong>What to look for:</strong> Early layer spreads attention somewhat evenly.
-        Late layer concentrates heavily on specific tokens — the model has learned which
-        tokens carry the most useful information for predicting what comes next.</p>
+        <p>Where does the last token (BAR_END) look for information?</p>
+        <p><strong>What to look for:</strong> Early layer spreads
+        attention evenly. Late layer concentrates on specific tokens —
+        the model has learned which tokens carry the most useful
+        information for predicting what comes next.</p>
     """,
-            _fig_to_base64(plot_early_vs_late_attention(model, tokenizer)),
-        )
+            plot_early_vs_late_attention(model, tokenizer),
+        ),
     )
 
     logger.info("Generating layer flow...")
@@ -209,14 +192,15 @@ def main() -> None:
         (
             "Information Flow Across Layers",
             """
-        <p>How attention to the last token builds up through all 6 layers. Each row is a layer,
-        columns are source tokens, darker = stronger attention weight.</p>
-        <p><strong>What to look for:</strong> Attention shifts as you go deeper. Early layers
-        may attend to nearby tokens. Middle layers might discover TIME_DELTA patterns.
-        The final layer focuses on the tokens most relevant for the next prediction.</p>
+        <p>How attention from the last token builds up through all
+        6 layers. Each row is a layer, columns are source tokens,
+        darker = stronger attention. Hover for exact weights.</p>
+        <p><strong>What to look for:</strong> Attention shifts as you
+        go deeper. The final layer focuses on the tokens most relevant
+        for the next prediction.</p>
     """,
-            _fig_to_base64(plot_layer_flow(model, tokenizer)),
-        )
+            plot_layer_flow(model, tokenizer),
+        ),
     )
 
     # --- Head Roles ---
@@ -228,37 +212,40 @@ def main() -> None:
         (
             "Head Specialization",
             """
-        <p>Each of the model's 48 attention heads (6 layers x 8 heads) can specialize in
-        tracking different aspects of the music. Here we show the two heads with the most
-        different attention profiles — one might focus almost entirely on structure tokens,
-        while another distributes attention across instruments and density.</p>
-        <p><strong>What to look for:</strong> The bar lengths show what proportion of
-        attention each head pays to each token category. This specialization emerges
-        from training — it's not designed in. Different heads learn complementary roles.</p>
+        <p>Each of the model's 48 attention heads (6 layers x 8 heads)
+        can specialize in tracking different aspects of music. Here we
+        show the two heads with the most different attention profiles.</p>
+        <p><strong>What to look for:</strong> Bar lengths show what
+        proportion of attention each head pays to each token category.
+        This specialization emerges from training — different heads
+        learn complementary roles.</p>
     """,
-            _fig_to_base64(plot_head_comparison(roles)),
-        )
+            plot_head_comparison(roles),
+        ),
     )
 
     # --- Build HTML ---
     logger.info("Building HTML...")
     html_sections = []
-    for title, description, img_b64 in sections:
+    for title, description, content in sections:
+        charts = "\n".join(content) if isinstance(content, list) else content
         html_sections.append(f"""
         <section>
             <h2>{title}</h2>
             {description}
-            {_img_tag(img_b64, title)}
+            {charts}
         </section>
         <hr>
         """)
 
+    analysis_url = "https://github.com/misnaej/the-jam-machine/tree/main/src/jammy/analysis"
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Embedding Explorer — The Jam Machine</title>
+    <title>Embedding Explorer</title>
+    {PLOTLY_CDN}
     <style>
         body {{
             font-family: -apple-system, BlinkMacSystemFont,
@@ -269,26 +256,37 @@ def main() -> None:
             line-height: 1.6;
             color: #333;
         }}
-        h1 {{ color: #1a1a2e; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; }}
+        h1 {{
+            color: #1a1a2e;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+        }}
         h2 {{ color: #16213e; margin-top: 40px; }}
         p {{ font-size: 15px; }}
-        img {{ border: 1px solid #eee; border-radius: 4px; }}
-        hr {{ border: none; border-top: 1px solid #e0e0e0; margin: 40px 0; }}
-        .intro {{ background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 30px; }}
+        hr {{
+            border: none;
+            border-top: 1px solid #e0e0e0;
+            margin: 40px 0;
+        }}
+        .intro {{
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }}
         a {{ color: #2196F3; }}
+        .js-plotly-plot {{ margin: 10px 0; }}
     </style>
 </head>
 <body>
     <h1>Exploring the Embedding and Attention</h1>
     <div class="intro">
-        <p>This page explores how The Jam Machine's GPT-2 model internally represents
-        MIDI music tokens. Through visualizations of the embedding space, attention patterns,
-        and head specialization, we can see what the model has learned about musical structure.</p>
-        <p>All visualizations are generated from the trained model
-        (<code>{MODEL_REPO}</code>) using the
-        <a href="https://github.com/misnaej/the-jam-machine/tree/main/src/jammy/analysis"
->jammy.analysis</a> module.</p>
-        <p><a href=".">← Back to home</a></p>
+        <p>This page explores how The Jam Machine's GPT-2 model
+        internally represents MIDI music tokens. All charts are
+        interactive — hover for details, zoom, and pan.</p>
+        <p>Generated from <code>{MODEL_REPO}</code> using the
+        <a href="{analysis_url}">jammy.analysis</a> module.</p>
+        <p><a href=".">Back to home</a></p>
     </div>
 
     {"".join(html_sections)}

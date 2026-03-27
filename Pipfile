@@ -5,6 +5,7 @@ name = "pypi"
 
 [packages]
 the-jam-machine = {extras = ["ci"], file = ".", editable = true}
+plotly = "*"
 
 [dev-packages]
 

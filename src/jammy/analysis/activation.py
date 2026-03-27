@@ -9,18 +9,16 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import matplotlib
-import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 import torch
+from plotly.subplots import make_subplots
 
 from jammy.analysis import TOKEN_COLORS, categorize_token
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from transformers import GPT2LMHeadModel, PreTrainedTokenizerFast
 
-matplotlib.use("Agg")
+_PLOTLY_JS = False  # all charts rely on CDN loaded in page header
 
 
 def plot_top_predictions(
@@ -28,24 +26,20 @@ def plot_top_predictions(
     tokenizer: PreTrainedTokenizerFast,
     sequence: str | None = None,
     top_k: int = 10,
-    output_path: Path | None = None,
-) -> plt.Figure:
+) -> str:
     """Plot the top-K predicted next tokens at each position in a sequence.
 
     For each token in the input, shows a horizontal bar chart of the most
-    likely next tokens and their probabilities. This reveals what the model
-    has learned about musical structure — e.g., after INST=DRUMS it predicts
-    DENSITY tokens, after BAR_START it predicts NOTE_ON or TIME_DELTA.
+    likely next tokens and their probabilities.
 
     Args:
         model: GPT-2 model.
         tokenizer: The tokenizer.
         sequence: Input token sequence. If None, uses a default example.
         top_k: Number of top predictions to show per position.
-        output_path: If set, save the figure to this path.
 
     Returns:
-        Matplotlib Figure.
+        HTML string containing the interactive plotly chart.
     """
     if sequence is None:
         sequence = (
@@ -59,37 +53,48 @@ def plot_top_predictions(
     with torch.no_grad():
         outputs = model(inputs)
 
-    logits = outputs["logits"]
-    probs = torch.nn.functional.softmax(logits[0], dim=-1)
-
+    probs = torch.nn.functional.softmax(outputs["logits"][0], dim=-1)
     n_positions = len(tokens)
-    fig, axes = plt.subplots(n_positions, 1, figsize=(8, 2.2 * n_positions))
-    if n_positions == 1:
-        axes = [axes]
 
-    for pos, (ax, token) in enumerate(zip(axes, tokens, strict=True)):
+    fig = make_subplots(
+        rows=n_positions,
+        cols=1,
+        subplot_titles=[f'After: "{t}"' for t in tokens],
+        vertical_spacing=0.03,
+    )
+
+    for pos, _token in enumerate(tokens):
         position_probs = probs[pos].detach().numpy()
         top_indices = position_probs.argsort()[-top_k:][::-1]
         top_tokens = [tokenizer.decode(idx) for idx in top_indices]
-        top_probs = [position_probs[idx] for idx in top_indices]
+        top_probs = [float(position_probs[idx]) for idx in top_indices]
         colors = [TOKEN_COLORS[categorize_token(t)] for t in top_tokens]
 
-        y_pos = range(top_k)
-        ax.barh(y_pos, top_probs, color=colors, height=0.7)
-        ax.set_yticks(y_pos)
-        ax.set_yticklabels(top_tokens, fontsize=8)
-        ax.invert_yaxis()
-        ax.set_xlim(0, min(1.0, max(top_probs) * 1.3))
-        ax.set_title(f'After: "{token}"', fontsize=9, loc="left", fontweight="bold")
-        ax.spines["top"].set_visible(False)
-        ax.spines["right"].set_visible(False)
+        # Reverse for plotly (bottom-to-top)
+        fig.add_trace(
+            go.Bar(
+                x=top_probs[::-1],
+                y=top_tokens[::-1],
+                orientation="h",
+                marker_color=colors[::-1],
+                showlegend=False,
+                hovertemplate="%{y}: %{x:.1%}<extra></extra>",
+            ),
+            row=pos + 1,
+            col=1,
+        )
 
-    fig.suptitle("Top-K Next Token Predictions", fontsize=13, y=1.01)
-    fig.tight_layout()
+    fig.update_layout(
+        title="Top-K Next Token Predictions",
+        height=200 * n_positions,
+        width=950,
+        template="plotly_white",
+        margin={"l": 120},
+    )
+    for i in range(1, n_positions + 1):
+        fig.update_xaxes(range=[0, 1], row=i, col=1)
 
-    if output_path:
-        fig.savefig(output_path, bbox_inches="tight", dpi=150)
-    return fig
+    return fig.to_html(full_html=False, include_plotlyjs=_PLOTLY_JS)
 
 
 def plot_prediction_comparison(
@@ -98,8 +103,7 @@ def plot_prediction_comparison(
     tokenizer: PreTrainedTokenizerFast,
     sequence: str | None = None,
     top_k: int = 8,
-    output_path: Path | None = None,
-) -> plt.Figure:
+) -> str:
     """Side-by-side prediction comparison: trained vs untrained model.
 
     Shows how training makes predictions sharp and musically coherent,
@@ -111,10 +115,9 @@ def plot_prediction_comparison(
         tokenizer: The tokenizer.
         sequence: Input token sequence. If None, uses a default example.
         top_k: Number of top predictions to show per position.
-        output_path: If set, save the figure to this path.
 
     Returns:
-        Matplotlib Figure.
+        HTML string containing the interactive plotly chart.
     """
     if sequence is None:
         sequence = "PIECE_START TRACK_START INST=DRUMS DENSITY=2 BAR_START"
@@ -123,46 +126,52 @@ def plot_prediction_comparison(
     inputs = tokenizer.encode(sequence, return_tensors="pt")
     n_positions = len(tokens)
 
-    fig, axes = plt.subplots(n_positions, 2, figsize=(14, 2.2 * n_positions))
-    if n_positions == 1:
-        axes = axes.reshape(1, 2)
+    fig = make_subplots(
+        rows=n_positions,
+        cols=2,
+        subplot_titles=[item for t in tokens for item in (f'Trained: "{t}"', f'Untrained: "{t}"')],
+        horizontal_spacing=0.15,
+        vertical_spacing=0.05,
+    )
 
-    for col, (model_obj, title) in enumerate(
-        [
-            (trained_model, "Trained"),
-            (untrained_model, "Untrained"),
-        ],
+    for col, model_obj in enumerate(
+        [trained_model, untrained_model],
+        start=1,
     ):
         with torch.no_grad():
             outputs = model_obj(inputs)
 
         probs = torch.nn.functional.softmax(outputs["logits"][0], dim=-1)
 
-        for pos, token in enumerate(tokens):
-            ax = axes[pos, col]
+        for pos in range(n_positions):
             position_probs = probs[pos].detach().numpy()
             top_indices = position_probs.argsort()[-top_k:][::-1]
             top_tokens = [tokenizer.decode(idx) for idx in top_indices]
-            top_probs = [position_probs[idx] for idx in top_indices]
+            top_probs = [float(position_probs[idx]) for idx in top_indices]
             colors = [TOKEN_COLORS[categorize_token(t)] for t in top_tokens]
 
-            y_pos = range(top_k)
-            ax.barh(y_pos, top_probs, color=colors, height=0.7)
-            ax.set_yticks(y_pos)
-            ax.set_yticklabels(top_tokens, fontsize=7)
-            ax.invert_yaxis()
-            ax.set_xlim(0, min(1.0, max(top_probs) * 1.3))
-            ax.spines["top"].set_visible(False)
-            ax.spines["right"].set_visible(False)
+            fig.add_trace(
+                go.Bar(
+                    x=top_probs[::-1],
+                    y=top_tokens[::-1],
+                    orientation="h",
+                    marker_color=colors[::-1],
+                    showlegend=False,
+                    hovertemplate="%{y}: %{x:.1%}<extra></extra>",
+                ),
+                row=pos + 1,
+                col=col,
+            )
 
-            if col == 0:
-                ax.set_ylabel(f'"{token}"', fontsize=8, fontweight="bold")
-            if pos == 0:
-                ax.set_title(title, fontsize=11, fontweight="bold")
+    fig.update_layout(
+        title="Next Token Predictions: Trained vs Untrained",
+        height=200 * n_positions,
+        width=950,
+        template="plotly_white",
+        margin={"l": 120},
+    )
+    for row in range(1, n_positions + 1):
+        for col in range(1, 3):
+            fig.update_xaxes(range=[0, 1], row=row, col=col)
 
-    fig.suptitle("Next Token Predictions: Trained vs Untrained", fontsize=13, y=1.01)
-    fig.tight_layout()
-
-    if output_path:
-        fig.savefig(output_path, bbox_inches="tight", dpi=150)
-    return fig
+    return fig.to_html(full_html=False, include_plotlyjs=_PLOTLY_JS)

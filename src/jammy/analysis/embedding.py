@@ -9,19 +9,16 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import matplotlib
-import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 from sklearn.manifold import TSNE
 
 from jammy.analysis import TOKEN_CATEGORY_ORDER, TOKEN_COLORS, categorize_token
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     import numpy as np
     from transformers import GPT2LMHeadModel, PreTrainedTokenizerFast
 
-matplotlib.use("Agg")
+_PLOTLY_JS = False  # all charts rely on CDN loaded in page header
 
 
 def _get_embedding(model: GPT2LMHeadModel) -> np.ndarray:
@@ -67,65 +64,99 @@ def _sort_by_category(
     return indices, sorted_tokens, categories
 
 
-def plot_embedding_heatmap(
+def _embedding_heatmap_plotly(
     model: GPT2LMHeadModel,
     tokenizer: PreTrainedTokenizerFast,
-    output_path: Path | None = None,
-) -> plt.Figure:
-    """Plot the embedding matrix as a heatmap, grouped by token category.
+    title: str,
+    zmin: float | None = None,
+    zmax: float | None = None,
+) -> go.Figure:
+    """Create a plotly heatmap of the embedding matrix.
 
-    Tokens are sorted by category (structure, instruments, density, notes,
-    time, special) so patterns within each group are visible.
+    Tokens are sorted by category and displayed on the x-axis,
+    embedding dimensions on the y-axis.
 
     Args:
         model: GPT-2 model.
         tokenizer: The tokenizer.
-        output_path: If set, save the figure to this path.
+        title: Plot title.
+        zmin: Minimum value for the color scale.
+        zmax: Maximum value for the color scale.
 
     Returns:
-        Matplotlib Figure.
+        Plotly Figure.
     """
     embedding = _get_embedding(model)
     tokens = _get_token_list(tokenizer)
-    indices, _sorted_tokens, categories = _sort_by_category(tokens)
+    indices, sorted_tokens, categories = _sort_by_category(tokens)
 
-    sorted_embedding = embedding[indices]
+    sorted_embedding = embedding[indices].T  # dims x tokens
 
-    fig, ax = plt.subplots(figsize=(14, 10))
-    im = ax.imshow(sorted_embedding, aspect="auto", cmap="inferno")
-
-    # Add category color bar on the left
-    for i, cat in enumerate(categories):
-        ax.plot(-2, i, "s", color=TOKEN_COLORS[cat], markersize=3)
-
-    # Add category labels
+    # Build category boundary shapes and annotations
     cat_positions: dict[str, list[int]] = {}
     for i, cat in enumerate(categories):
         cat_positions.setdefault(cat, []).append(i)
+
+    shapes = []
+    annotations = []
     for cat, positions in cat_positions.items():
         mid = positions[len(positions) // 2]
-        ax.text(
-            -8,
-            mid,
-            cat.capitalize(),
-            fontsize=9,
-            color=TOKEN_COLORS[cat],
-            ha="right",
-            va="center",
-            fontweight="bold",
+        annotations.append(
+            {
+                "x": mid,
+                "y": -0.08,
+                "xref": "x",
+                "yref": "paper",
+                "text": f"<b>{cat.capitalize()}</b>",
+                "showarrow": False,
+                "font": {"size": 11, "color": TOKEN_COLORS[cat]},
+                "textangle": -45,
+                "xanchor": "left",
+                "yanchor": "top",
+            },
+        )
+        # Thick horizontal bar at the bottom spanning the category
+        shapes.append(
+            {
+                "type": "line",
+                "x0": positions[0] - 0.5,
+                "x1": positions[-1] + 0.5,
+                "y0": -0.01,
+                "y1": -0.01,
+                "yref": "paper",
+                "line": {
+                    "color": TOKEN_COLORS[cat],
+                    "width": 4,
+                },
+            },
         )
 
-    for spine in ax.spines.values():
-        spine.set_visible(False)
-    ax.set_xlabel("Embedding dimension", fontsize=11)
-    ax.set_ylabel("Token (grouped by category)", fontsize=11)
-    ax.set_yticks([])
-    ax.set_title("Token Embedding Matrix", fontsize=13)
-    fig.colorbar(im, ax=ax, shrink=0.7, pad=0.02)
-    fig.subplots_adjust(left=0.15)
-
-    if output_path:
-        fig.savefig(output_path, bbox_inches="tight", dpi=150)
+    fig = go.Figure(
+        data=go.Heatmap(
+            z=sorted_embedding.tolist(),
+            x=sorted_tokens,
+            colorscale="Blues",
+            zmin=zmin,
+            zmax=zmax,
+            showscale=True,
+            colorbar={"title": "Value", "thickness": 15},
+            hovertemplate="Token: %{x}<br>Dim: %{y}<br>Value: %{z:.3f}<extra></extra>",
+        ),
+    )
+    fig.update_layout(
+        title={"text": title, "font": {"size": 14}},
+        xaxis={
+            "showticklabels": False,
+            "title": "",
+        },
+        yaxis={"title": "Embedding dimension"},
+        width=950,
+        height=500,
+        template="plotly_white",
+        margin={"b": 120, "t": 50},
+        shapes=shapes,
+        annotations=annotations,
+    )
     return fig
 
 
@@ -133,179 +164,135 @@ def plot_embedding_heatmap_comparison(
     trained_model: GPT2LMHeadModel,
     untrained_model: GPT2LMHeadModel,
     tokenizer: PreTrainedTokenizerFast,
-    output_path: Path | None = None,
-) -> plt.Figure:
-    """Side-by-side embedding heatmaps: trained vs untrained.
+) -> tuple[str, str]:
+    """Separate embedding heatmaps for trained vs untrained models.
 
-    The trained model shows structured patterns — tokens in the same
-    category have similar embedding vectors. The untrained model shows
-    random noise with no visible structure.
+    Each figure shows the transposed embedding matrix (dimensions x tokens)
+    so they can be stacked vertically with tokens aligned.
 
     Args:
         trained_model: Trained GPT-2 model.
         untrained_model: Untrained GPT-2 model (random weights).
         tokenizer: The tokenizer.
-        output_path: If set, save the figure to this path.
 
     Returns:
-        Matplotlib Figure with 2 subplots.
+        Tuple of (trained_html, untrained_html).
     """
-    tokens = _get_token_list(tokenizer)
-    indices, _sorted_tokens, categories = _sort_by_category(tokens)
+    # Compute shared z-axis limits for visual comparison
+    trained_emb = _get_embedding(trained_model)
+    untrained_emb = _get_embedding(untrained_model)
+    zmin = min(float(trained_emb.min()), float(untrained_emb.min()))
+    zmax = max(float(trained_emb.max()), float(untrained_emb.max()))
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 10))
-
-    for ax, model_obj, title in [
-        (ax1, trained_model, "Trained Model"),
-        (ax2, untrained_model, "Untrained Model (Random Weights)"),
-    ]:
-        embedding = _get_embedding(model_obj)
-        sorted_embedding = embedding[indices]
-
-        ax.imshow(sorted_embedding, aspect="auto", cmap="inferno")
-
-        # Category labels
-        cat_positions: dict[str, list[int]] = {}
-        for i, cat in enumerate(categories):
-            cat_positions.setdefault(cat, []).append(i)
-        for cat, positions in cat_positions.items():
-            mid = positions[len(positions) // 2]
-            ax.text(
-                -6,
-                mid,
-                cat.capitalize(),
-                fontsize=8,
-                color=TOKEN_COLORS[cat],
-                ha="right",
-                va="center",
-                fontweight="bold",
-            )
-
-        for spine in ax.spines.values():
-            spine.set_visible(False)
-        ax.set_yticks([])
-        ax.set_xlabel("Embedding dimension", fontsize=10)
-        ax.set_title(title, fontsize=12, fontweight="bold")
-
-    fig.suptitle("Token Embedding Matrix: Trained vs Untrained", fontsize=14)
-    fig.tight_layout()
-    fig.subplots_adjust(left=0.1)
-
-    if output_path:
-        fig.savefig(output_path, bbox_inches="tight", dpi=150)
-    return fig
+    trained_html = _embedding_heatmap_plotly(
+        trained_model,
+        tokenizer,
+        "Trained Model",
+        zmin=zmin,
+        zmax=zmax,
+    ).to_html(full_html=False, include_plotlyjs=_PLOTLY_JS)
+    untrained_html = _embedding_heatmap_plotly(
+        untrained_model,
+        tokenizer,
+        "Untrained Model (Random Weights)",
+        zmin=zmin,
+        zmax=zmax,
+    ).to_html(full_html=False, include_plotlyjs=_PLOTLY_JS)
+    return trained_html, untrained_html
 
 
-def plot_tsne(
+def _tsne_plotly(
     model: GPT2LMHeadModel,
     tokenizer: PreTrainedTokenizerFast,
-    output_path: Path | None = None,
+    title: str,
     random_state: int = 42,
-) -> plt.Figure:
-    """Plot TSNE dimensionality reduction of the embedding space.
+) -> go.Figure:
+    """Create an interactive plotly TSNE scatter plot.
 
-    Reduces 512-dimensional embeddings to 2D. Similar tokens cluster together:
-    notes form one region, instruments another, time steps another.
+    Each point shows the token text on hover.
 
     Args:
         model: GPT-2 model.
         tokenizer: The tokenizer.
-        output_path: If set, save the figure to this path.
+        title: Plot title.
         random_state: Random seed for reproducibility.
 
     Returns:
-        Matplotlib Figure.
+        Plotly Figure.
     """
     embedding = _get_embedding(model)
     tokens = _get_token_list(tokenizer)
 
     perplexity = min(30, len(embedding) - 1)
-    tsne = TSNE(n_components=2, random_state=random_state, perplexity=perplexity)
+    tsne = TSNE(
+        n_components=2,
+        random_state=random_state,
+        perplexity=perplexity,
+    )
     coords = tsne.fit_transform(embedding)
 
-    fig, ax = plt.subplots(figsize=(10, 10))
-
-    # Plot by category in consistent order for clean legend
+    fig = go.Figure()
     for cat in TOKEN_CATEGORY_ORDER:
         mask = [i for i, t in enumerate(tokens) if categorize_token(t) == cat]
         if mask:
-            ax.scatter(
-                coords[mask, 0],
-                coords[mask, 1],
-                s=20,
-                color=TOKEN_COLORS[cat],
-                label=cat.capitalize(),
-                alpha=0.7,
+            fig.add_trace(
+                go.Scatter(
+                    x=coords[mask, 0].tolist(),
+                    y=coords[mask, 1].tolist(),
+                    mode="markers",
+                    name=cat.capitalize(),
+                    text=[tokens[i] for i in mask],
+                    hovertemplate="%{text}<extra></extra>",
+                    marker={
+                        "size": 7,
+                        "color": TOKEN_COLORS[cat],
+                        "opacity": 0.7,
+                    },
+                ),
             )
 
-    ax.legend(fontsize=10, loc="upper right", framealpha=0.9)
-    ax.set_xlabel("TSNE 1", fontsize=11)
-    ax.set_ylabel("TSNE 2", fontsize=11)
-    ax.set_title("Token Embedding Space (TSNE)", fontsize=13)
-    fig.tight_layout()
-
-    if output_path:
-        fig.savefig(output_path, bbox_inches="tight", dpi=150)
+    fig.update_layout(
+        title=title,
+        xaxis_title="TSNE 1",
+        yaxis_title="TSNE 2",
+        width=950,
+        height=600,
+        template="plotly_white",
+        legend={"font": {"size": 11}},
+    )
     return fig
 
 
-def plot_embedding_comparison(
+def plot_tsne(
     trained_model: GPT2LMHeadModel,
     untrained_model: GPT2LMHeadModel,
     tokenizer: PreTrainedTokenizerFast,
-    output_path: Path | None = None,
     random_state: int = 42,
-) -> plt.Figure:
-    """Side-by-side TSNE comparison of trained vs untrained embeddings.
+) -> tuple[str, str]:
+    """Interactive TSNE plots: trained vs untrained embeddings.
 
-    Shows how training organizes the embedding space — trained model clusters
-    similar tokens together, untrained model is random noise.
+    Returns two separate plotly HTML strings that can be stacked vertically.
+    Hover over any point to see the token name.
 
     Args:
         trained_model: Trained GPT-2 model.
         untrained_model: Untrained GPT-2 model (random weights).
         tokenizer: The tokenizer.
-        output_path: If set, save the figure to this path.
         random_state: Random seed for reproducibility.
 
     Returns:
-        Matplotlib Figure with 2 subplots.
+        Tuple of (trained_html, untrained_html).
     """
-    tokens = _get_token_list(tokenizer)
-    perplexity = min(30, len(tokens) - 1)
-
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(18, 8))
-
-    for ax, model_obj, title in [
-        (ax1, trained_model, "Trained Model"),
-        (ax2, untrained_model, "Untrained Model (Random Weights)"),
-    ]:
-        embedding = _get_embedding(model_obj)
-        tsne = TSNE(n_components=2, random_state=random_state, perplexity=perplexity)
-        coords = tsne.fit_transform(embedding)
-
-        plotted: set[str] = set()
-        for i, token in enumerate(tokens):
-            cat = categorize_token(token)
-            label = cat.capitalize() if cat not in plotted else None
-            plotted.add(cat)
-            ax.scatter(
-                coords[i, 0],
-                coords[i, 1],
-                s=20,
-                color=TOKEN_COLORS[cat],
-                label=label,
-                alpha=0.7,
-            )
-
-        ax.legend(fontsize=9, loc="upper right")
-        ax.set_title(title, fontsize=12)
-        ax.set_xlabel("TSNE 1")
-        ax.set_ylabel("TSNE 2")
-
-    fig.suptitle("Embedding Space: Trained vs Untrained", fontsize=14, y=1.02)
-    fig.tight_layout()
-
-    if output_path:
-        fig.savefig(output_path, bbox_inches="tight", dpi=150)
-    return fig
+    trained_html = _tsne_plotly(
+        trained_model,
+        tokenizer,
+        "Trained Model",
+        random_state,
+    ).to_html(full_html=False, include_plotlyjs=_PLOTLY_JS)
+    untrained_html = _tsne_plotly(
+        untrained_model,
+        tokenizer,
+        "Untrained Model (Random Weights)",
+        random_state,
+    ).to_html(full_html=False, include_plotlyjs=_PLOTLY_JS)
+    return trained_html, untrained_html
