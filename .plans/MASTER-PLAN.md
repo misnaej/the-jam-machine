@@ -225,6 +225,15 @@ Build a GitHub Pages site with: landing page (what is The Jam Machine), encoding
 
 ---
 
+### Phase 12b: Analysis Module + Notebook Refactor
+**Effort:** ~8-10 hours (5 PRs) | **Risk:** Medium | **Impact:** Education, visualization, testability
+
+Extract notebook visualizations into `jammy.analysis` module: embedding plots (TSNE, heatmap), activation predictions (top-K bar charts), attention heatmaps (layer-by-layer flow), and head specialization analysis. Rebuild notebook as thin orchestrator. All functions testable, reusable, improved.
+
+**Details:** [Analysis Module](./analysis-module.md)
+
+---
+
 ### Phase 13: Add Unit Tests
 **Effort:** ~6 hours (3 PRs) | **Risk:** Low | **Impact:** Reliability
 
