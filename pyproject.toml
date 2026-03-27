@@ -21,7 +21,6 @@ dependencies = [
     "pretty-midi",
     "note-seq",
     "huggingface-hub",
-    "ipykernel",
     "pyFluidSynth",
     "pydub",
     "ffmpeg",
@@ -34,13 +33,13 @@ dependencies = [
     "torch",
     "torchvision",
     "accelerate",
-    "bertviz",
     "fuzzywuzzy",
     "httpx>=0.28.1"
 ]
 
 [project.optional-dependencies]
 ci = ["ruff", "pytest", "pytest-cov", "pytest-html", "pip-audit", "bandit", "interrogate"]
+notebooks = ["bertviz", "ipykernel", "scikit-learn", "nbconvert"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
