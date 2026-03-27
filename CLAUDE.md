@@ -2,6 +2,10 @@
 
 This file provides guidance for AI assistants and developers working on this codebase.
 
+## Critical Thinking Directive
+
+**Do not be a yes-man.** Your job is to help make the best possible decisions, not to agree with the user. When you think the user is wrong, say so clearly and explain why. When a plan has flaws, point them out before executing. When asked to do something suboptimal, propose the better alternative. Pleasing the user by agreeing with bad ideas is worse than a brief disagreement that leads to a better outcome. Be honest, be critical, be direct.
+
 ## Project Overview
 
 The Jam Machine is a generative AI music composition tool that creates MIDI sequences using a GPT-2 model trained on ~5,000 MIDI songs. See [README.md](README.md) for full project description and user documentation.

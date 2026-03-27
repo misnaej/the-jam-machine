@@ -266,6 +266,7 @@ See [CLAUDE.md](CLAUDE.md) for full development guidelines.
 
 ## Resources
 
+- **[Documentation](https://misnaej.github.io/the-jam-machine/)** — Encoding guide, pipeline walkthrough, examples
 - **[Live Demo](https://huggingface.co/spaces/JammyMachina/the-jam-machine-app)**
 - **[Presentation](https://pitch.com/public/417162a8-88b0-4472-a651-c66bb89428be)**
 - **[Model on HuggingFace](https://huggingface.co/JammyMachina/elec-gmusic-familized-model-13-12__17-35-53)**
