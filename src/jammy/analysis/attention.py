@@ -91,6 +91,7 @@ def plot_attention_heatmap(
         sequence = (
             "PIECE_START TRACK_START INST=DRUMS DENSITY=2"
             " BAR_START NOTE_ON=36 TIME_DELTA=2 NOTE_OFF=36"
+            " NOTE_ON=42 TIME_DELTA=4 NOTE_OFF=42 BAR_END"
         )
 
     attentions, token_list = _get_attention(model, tokenizer, sequence)
@@ -168,7 +169,8 @@ def plot_attention_comparison(
     Args:
         model: GPT-2 model loaded with ``attn_implementation='eager'``.
         tokenizer: The tokenizer.
-        sequence: Input token sequence. If None, uses a default example.
+        sequence: Input token sequence. If None, uses a 12-token example
+            covering structure, instrument, density, notes, and timing.
         output_path: If set, save the figure to this path.
 
     Returns:
@@ -178,6 +180,7 @@ def plot_attention_comparison(
         sequence = (
             "PIECE_START TRACK_START INST=DRUMS DENSITY=2"
             " BAR_START NOTE_ON=36 TIME_DELTA=2 NOTE_OFF=36"
+            " NOTE_ON=42 TIME_DELTA=4 NOTE_OFF=42 BAR_END"
         )
 
     attentions, token_list = _get_attention(model, tokenizer, sequence)
@@ -242,6 +245,7 @@ def plot_layer_flow(
         sequence = (
             "PIECE_START TRACK_START INST=DRUMS DENSITY=2"
             " BAR_START NOTE_ON=36 TIME_DELTA=2 NOTE_OFF=36"
+            " NOTE_ON=42 TIME_DELTA=4 NOTE_OFF=42 BAR_END"
         )
 
     attentions, token_list = _get_attention(model, tokenizer, sequence)
@@ -308,6 +312,7 @@ def plot_early_vs_late_attention(
         sequence = (
             "PIECE_START TRACK_START INST=DRUMS DENSITY=2"
             " BAR_START NOTE_ON=36 TIME_DELTA=2 NOTE_OFF=36"
+            " NOTE_ON=42 TIME_DELTA=4 NOTE_OFF=42 BAR_END"
         )
 
     attentions, token_list = _get_attention(model, tokenizer, sequence)
