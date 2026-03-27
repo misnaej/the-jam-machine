@@ -149,6 +149,71 @@ def plot_attention_heatmap(
     return fig
 
 
+def plot_attention_comparison(
+    model: GPT2LMHeadModel,
+    tokenizer: PreTrainedTokenizerFast,
+    sequence: str | None = None,
+    output_path: Path | None = None,
+) -> plt.Figure:
+    """Side-by-side attention heatmaps: first layer vs last layer.
+
+    Shows how attention patterns sharpen across depth. Early layers
+    tend to have diffuse, local attention. Late layers develop sharper
+    patterns — attending strongly to structural tokens like INST and
+    BAR_START regardless of position.
+
+    Cell (i, j) = how much token i attends to token j.
+    Bright = strong attention. Diagonal = self-attention.
+
+    Args:
+        model: GPT-2 model loaded with ``attn_implementation='eager'``.
+        tokenizer: The tokenizer.
+        sequence: Input token sequence. If None, uses a default example.
+        output_path: If set, save the figure to this path.
+
+    Returns:
+        Matplotlib Figure.
+    """
+    if sequence is None:
+        sequence = (
+            "PIECE_START TRACK_START INST=DRUMS DENSITY=2"
+            " BAR_START NOTE_ON=36 TIME_DELTA=2 NOTE_OFF=36"
+        )
+
+    attentions, token_list = _get_attention(model, tokenizer, sequence)
+    n_layers = len(attentions)
+
+    early_attn = attentions[0][0].mean(dim=0).detach().numpy()
+    late_attn = attentions[n_layers - 1][0].mean(dim=0).detach().numpy()
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+
+    for ax, attn, title in [
+        (ax1, early_attn, "Layer 0 (Early)"),
+        (ax2, late_attn, f"Layer {n_layers - 1} (Late)"),
+    ]:
+        im = ax.imshow(attn, cmap="Blues", vmin=0, vmax=max(early_attn.max(), late_attn.max()))
+        ax.set_xticks(range(len(token_list)))
+        ax.set_xticklabels(token_list, rotation=45, ha="right", fontsize=8)
+        ax.set_yticks(range(len(token_list)))
+        ax.set_yticklabels(token_list, fontsize=8)
+        ax.set_title(title, fontsize=11, fontweight="bold")
+        ax.set_xlabel("Attends to →")
+        ax.set_ylabel("← Token")
+
+    fig.suptitle(
+        "Attention Patterns: Early vs Late Layer",
+        fontsize=13,
+        y=1.02,
+    )
+    fig.colorbar(im, ax=[ax1, ax2], shrink=0.7, label="Attention weight", pad=0.02)
+    fig.subplots_adjust(wspace=0.3)
+
+    if output_path:
+        fig.savefig(output_path, bbox_inches="tight", dpi=150)
+    return fig
+
+
 def plot_layer_flow(
     model: GPT2LMHeadModel,
     tokenizer: PreTrainedTokenizerFast,
