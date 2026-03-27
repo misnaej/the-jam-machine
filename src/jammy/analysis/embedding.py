@@ -122,12 +122,88 @@ def plot_embedding_heatmap(
             fontweight="bold",
         )
 
+    for spine in ax.spines.values():
+        spine.set_visible(False)
     ax.set_xlabel("Embedding dimension", fontsize=11)
     ax.set_ylabel("Token (grouped by category)", fontsize=11)
     ax.set_yticks([])
     ax.set_title("Token Embedding Matrix", fontsize=13)
     fig.colorbar(im, ax=ax, shrink=0.7, pad=0.02)
     fig.subplots_adjust(left=0.15)
+
+    if output_path:
+        fig.savefig(output_path, bbox_inches="tight", dpi=150)
+    return fig
+
+
+def plot_embedding_heatmap_comparison(
+    trained_model: GPT2LMHeadModel,
+    untrained_model: GPT2LMHeadModel,
+    tokenizer: PreTrainedTokenizerFast,
+    output_path: Path | None = None,
+) -> plt.Figure:
+    """Side-by-side embedding heatmaps: trained vs untrained.
+
+    The trained model shows structured patterns — tokens in the same
+    category have similar embedding vectors. The untrained model shows
+    random noise with no visible structure.
+
+    Args:
+        trained_model: Trained GPT-2 model.
+        untrained_model: Untrained GPT-2 model (random weights).
+        tokenizer: The tokenizer.
+        output_path: If set, save the figure to this path.
+
+    Returns:
+        Matplotlib Figure with 2 subplots.
+    """
+    tokens = _get_token_list(tokenizer)
+    indices, _sorted_tokens, categories = _sort_by_category(tokens)
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 10))
+
+    for ax, model_obj, title in [
+        (ax1, trained_model, "Trained Model"),
+        (ax2, untrained_model, "Untrained Model (Random Weights)"),
+    ]:
+        embedding = _get_embedding(model_obj)
+        sorted_embedding = embedding[indices]
+
+        ax.imshow(sorted_embedding, aspect="auto", cmap="inferno")
+
+        # Category boundaries
+        prev_cat = categories[0]
+        for i, cat in enumerate(categories):
+            if cat != prev_cat:
+                ax.axhline(i - 0.5, color="white", linewidth=0.8, alpha=0.7)
+                prev_cat = cat
+
+        # Category labels
+        cat_positions: dict[str, list[int]] = {}
+        for i, cat in enumerate(categories):
+            cat_positions.setdefault(cat, []).append(i)
+        for cat, positions in cat_positions.items():
+            mid = positions[len(positions) // 2]
+            ax.text(
+                -6,
+                mid,
+                cat.capitalize(),
+                fontsize=8,
+                color=TOKEN_COLORS[cat],
+                ha="right",
+                va="center",
+                fontweight="bold",
+            )
+
+        for spine in ax.spines.values():
+            spine.set_visible(False)
+        ax.set_yticks([])
+        ax.set_xlabel("Embedding dimension", fontsize=10)
+        ax.set_title(title, fontsize=12, fontweight="bold")
+
+    fig.suptitle("Token Embedding Matrix: Trained vs Untrained", fontsize=14)
+    fig.tight_layout()
+    fig.subplots_adjust(left=0.1)
 
     if output_path:
         fig.savefig(output_path, bbox_inches="tight", dpi=150)

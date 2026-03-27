@@ -189,13 +189,18 @@ def plot_attention_comparison(
     early_attn = attentions[0][0].mean(dim=0).detach().numpy()
     late_attn = attentions[n_layers - 1][0].mean(dim=0).detach().numpy()
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+    fig = plt.figure(figsize=(16, 6))
+    gs = fig.add_gridspec(1, 3, width_ratios=[1, 1, 0.05], wspace=0.35)
+    ax1 = fig.add_subplot(gs[0, 0])
+    ax2 = fig.add_subplot(gs[0, 1])
+    cax = fig.add_subplot(gs[0, 2])
 
+    vmax = max(early_attn.max(), late_attn.max())
     for ax, attn, title in [
         (ax1, early_attn, "Layer 0 (Early)"),
         (ax2, late_attn, f"Layer {n_layers - 1} (Late)"),
     ]:
-        im = ax.imshow(attn, cmap="Blues", vmin=0, vmax=max(early_attn.max(), late_attn.max()))
+        im = ax.imshow(attn, cmap="Blues", vmin=0, vmax=vmax)
         ax.set_xticks(range(len(token_list)))
         ax.set_xticklabels(token_list, rotation=45, ha="right", fontsize=8)
         ax.set_yticks(range(len(token_list)))
@@ -204,13 +209,8 @@ def plot_attention_comparison(
         ax.set_xlabel("Attends to →")
         ax.set_ylabel("← Token")
 
-    fig.suptitle(
-        "Attention Patterns: Early vs Late Layer",
-        fontsize=13,
-        y=1.02,
-    )
-    fig.colorbar(im, ax=[ax1, ax2], shrink=0.7, label="Attention weight", pad=0.02)
-    fig.subplots_adjust(wspace=0.3)
+    fig.colorbar(im, cax=cax, label="Attention weight")
+    fig.suptitle("Attention Patterns: Early vs Late Layer", fontsize=13)
 
     if output_path:
         fig.savefig(output_path, bbox_inches="tight", dpi=150)
