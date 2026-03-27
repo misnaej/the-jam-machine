@@ -77,5 +77,5 @@ def extract_new_bar(prompt_plus_bar: str) -> str:
     Returns:
         The new bar with BAR_START prefix.
     """
-    stripped = strip_track_ends(prompt_plus_bar.split(f"{BAR_START} ")[-1])
+    stripped = strip_track_ends(prompt_plus_bar.rsplit(f"{BAR_START} ", maxsplit=1)[-1])
     return f"{BAR_START} " + stripped

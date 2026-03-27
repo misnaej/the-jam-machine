@@ -38,8 +38,12 @@ def simplify_events_for_comparison(generated_event: str, encoded_event: str) -> 
     Returns:
         Tuple of simplified event names (without note values).
     """
-    generated_word = generated_event.split("=")[0] if "NOTE" in generated_event else generated_event
-    encoded_word = encoded_event.split("=")[0] if "NOTE" in encoded_event else encoded_event
+    generated_word = (
+        generated_event.split("=", maxsplit=1)[0] if "NOTE" in generated_event else generated_event
+    )
+    encoded_word = (
+        encoded_event.split("=", maxsplit=1)[0] if "NOTE" in encoded_event else encoded_event
+    )
 
     return generated_word, encoded_word
 
