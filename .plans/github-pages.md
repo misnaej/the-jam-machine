@@ -79,7 +79,6 @@ Render the notebook as an HTML page using its existing outputs. Full re-executio
 - Broken "Untrained Model" attention cell (cell 17-18)
 - "WORK IN PROGRESS" past key values section (cell 41-42)
 - Figure saves to CWD instead of output directory
-6. Commit rendered HTML to `docs/`
 
 ---
 
