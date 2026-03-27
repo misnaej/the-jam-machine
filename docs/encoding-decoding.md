@@ -116,22 +116,22 @@ BAR_START
   TIME_DELTA=2        ← wait half a beat
   NOTE_ON=35          ← kick drum (GM note 35)
   NOTE_OFF=35         ← release kick
-  NOTE_ON=40          ← hi-hat (GM note 40)
-  NOTE_OFF=40         ← release hi-hat
-  NOTE_ON=40          ← hi-hat again
+  NOTE_ON=40          ← electric snare (GM note 40)
+  NOTE_OFF=40         ← release snare
+  NOTE_ON=40          ← snare again
   NOTE_OFF=40
   TIME_DELTA=4        ← wait one full beat
   NOTE_ON=35          ← kick drum
   TIME_DELTA=2        ← wait half a beat
   NOTE_OFF=35
   TIME_DELTA=2        ← wait half a beat
-  NOTE_ON=40          ← hi-hat
+  NOTE_ON=40          ← snare
   TIME_DELTA=2
   NOTE_OFF=40
 BAR_END
 ```
 
-Reading this like a timeline: the bar starts with a half-beat rest, then a kick+hi-hat hit, another hi-hat, a full beat rest, another kick, and a hi-hat — a classic rock drum pattern.
+Reading this like a timeline: the bar starts with a half-beat rest, then a kick+snare hit, another snare, a full beat rest, another kick, and a snare — a classic rock drum pattern.
 
 ---
 
@@ -184,6 +184,10 @@ Some MIDI files have a single instrument split across multiple tracks (common wi
 ![Split 1st Guitar](assets/split_1st_guitar.png)
 
 Track 0 carries the main part (726 notes spanning the full song), while Track 1 has just 5 notes in a short section — likely a brief harmony or overdub.
+
+The 2nd Guitar shows a similar pattern — a main track with 3498 notes and a secondary track with 166 notes appearing in two sections:
+
+![Split 2nd Guitar](assets/split_2nd_guitar.png)
 
 ---
 
