@@ -126,8 +126,8 @@ def plot_embedding_heatmap(
     ax.set_ylabel("Token (grouped by category)", fontsize=11)
     ax.set_yticks([])
     ax.set_title("Token Embedding Matrix", fontsize=13)
-    fig.colorbar(im, ax=ax, shrink=0.8)
-    fig.tight_layout()
+    fig.colorbar(im, ax=ax, shrink=0.7, pad=0.02)
+    fig.subplots_adjust(left=0.15)
 
     if output_path:
         fig.savefig(output_path, bbox_inches="tight", dpi=150)
@@ -163,22 +163,20 @@ def plot_tsne(
 
     fig, ax = plt.subplots(figsize=(10, 10))
 
-    # Plot each category separately for legend
-    plotted_categories: set[str] = set()
-    for i, token in enumerate(tokens):
-        cat = categorize_token(token)
-        label = cat.capitalize() if cat not in plotted_categories else None
-        plotted_categories.add(cat)
-        ax.scatter(
-            coords[i, 0],
-            coords[i, 1],
-            s=20,
-            color=TOKEN_COLORS[cat],
-            label=label,
-            alpha=0.7,
-        )
+    # Plot by category in consistent order for clean legend
+    for cat in TOKEN_CATEGORY_ORDER:
+        mask = [i for i, t in enumerate(tokens) if categorize_token(t) == cat]
+        if mask:
+            ax.scatter(
+                coords[mask, 0],
+                coords[mask, 1],
+                s=20,
+                color=TOKEN_COLORS[cat],
+                label=cat.capitalize(),
+                alpha=0.7,
+            )
 
-    ax.legend(fontsize=10, loc="upper right")
+    ax.legend(fontsize=10, loc="upper right", framealpha=0.9)
     ax.set_xlabel("TSNE 1", fontsize=11)
     ax.set_ylabel("TSNE 2", fontsize=11)
     ax.set_title("Token Embedding Space (TSNE)", fontsize=13)

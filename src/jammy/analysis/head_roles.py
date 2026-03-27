@@ -232,33 +232,34 @@ def plot_head_comparison(
     ax1.invert_yaxis()
     ax1.set_title(head_a_label, fontsize=11, fontweight="bold")
     ax1.set_xlabel("Attention proportion")
-    ax1.text(
-        0.02,
-        -0.15,
+    ax1.annotate(
         _describe(head_a_weights),
-        transform=ax1.transAxes,
+        xy=(0.5, 0),
+        xycoords="axes fraction",
+        xytext=(0, -25),
+        textcoords="offset points",
         fontsize=9,
         style="italic",
+        ha="center",
     )
 
     ax2.barh(range(len(categories)), head_b_weights, color=colors, height=0.6)
     ax2.set_title(head_b_label, fontsize=11, fontweight="bold")
     ax2.set_xlabel("Attention proportion")
-    ax2.text(
-        0.02,
-        -0.15,
+    ax2.annotate(
         _describe(head_b_weights),
-        transform=ax2.transAxes,
+        xy=(0.5, 0),
+        xycoords="axes fraction",
+        xytext=(0, -25),
+        textcoords="offset points",
         fontsize=9,
         style="italic",
+        ha="center",
     )
 
-    fig.suptitle(
-        "Most Differently Specialized Heads",
-        fontsize=13,
-        y=1.02,
-    )
+    fig.suptitle("Most Differently Specialized Heads", fontsize=13)
     fig.tight_layout()
+    fig.subplots_adjust(bottom=0.15)
 
     if output_path:
         fig.savefig(output_path, bbox_inches="tight", dpi=150)

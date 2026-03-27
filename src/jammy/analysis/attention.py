@@ -330,7 +330,7 @@ def plot_early_vs_late_attention(
     early_attn = attentions[0][0].mean(dim=0).detach().numpy()[target_position]
     late_attn = attentions[n_layers - 1][0].mean(dim=0).detach().numpy()[target_position]
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 4), sharey=True)
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5), sharey=True)
 
     y = range(seq_len)
     ax1.barh(y, early_attn, color=colors, height=0.7)
@@ -341,13 +341,15 @@ def plot_early_vs_late_attention(
     ax1.set_xlabel("Attention weight")
 
     top_early = token_list[early_attn.argmax()]
-    ax1.text(
-        0.02,
-        -0.12,
+    ax1.annotate(
         f"Most attended: {top_early} ({early_attn.max():.0%})",
-        transform=ax1.transAxes,
+        xy=(0.5, 0),
+        xycoords="axes fraction",
+        xytext=(0, -25),
+        textcoords="offset points",
         fontsize=9,
         style="italic",
+        ha="center",
     )
 
     ax2.barh(y, late_attn, color=colors, height=0.7)
@@ -355,21 +357,23 @@ def plot_early_vs_late_attention(
     ax2.set_xlabel("Attention weight")
 
     top_late = token_list[late_attn.argmax()]
-    ax2.text(
-        0.02,
-        -0.12,
+    ax2.annotate(
         f"Most attended: {top_late} ({late_attn.max():.0%})",
-        transform=ax2.transAxes,
+        xy=(0.5, 0),
+        xycoords="axes fraction",
+        xytext=(0, -25),
+        textcoords="offset points",
         fontsize=9,
         style="italic",
+        ha="center",
     )
 
     fig.suptitle(
         f'Attention to "{target_name}": Early vs Late Layer',
         fontsize=13,
-        y=1.02,
     )
     fig.tight_layout()
+    fig.subplots_adjust(bottom=0.12)
 
     if output_path:
         fig.savefig(output_path, bbox_inches="tight", dpi=150)
