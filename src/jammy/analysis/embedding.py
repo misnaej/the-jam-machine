@@ -98,13 +98,6 @@ def plot_embedding_heatmap(
     for i, cat in enumerate(categories):
         ax.plot(-2, i, "s", color=TOKEN_COLORS[cat], markersize=3)
 
-    # Add category boundaries
-    prev_cat = categories[0]
-    for i, cat in enumerate(categories):
-        if cat != prev_cat:
-            ax.axhline(i - 0.5, color="white", linewidth=0.8, alpha=0.7)
-            prev_cat = cat
-
     # Add category labels
     cat_positions: dict[str, list[int]] = {}
     for i, cat in enumerate(categories):
@@ -170,13 +163,6 @@ def plot_embedding_heatmap_comparison(
         sorted_embedding = embedding[indices]
 
         ax.imshow(sorted_embedding, aspect="auto", cmap="inferno")
-
-        # Category boundaries
-        prev_cat = categories[0]
-        for i, cat in enumerate(categories):
-            if cat != prev_cat:
-                ax.axhline(i - 0.5, color="white", linewidth=0.8, alpha=0.7)
-                prev_cat = cat
 
         # Category labels
         cat_positions: dict[str, list[int]] = {}
