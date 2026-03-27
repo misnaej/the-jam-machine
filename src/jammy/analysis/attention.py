@@ -29,8 +29,14 @@ def _get_attention(
 ) -> tuple[tuple, list[str]]:
     """Run a forward pass and extract attention weights.
 
+    The model must be loaded with ``attn_implementation='eager'`` because
+    PyTorch's SDPA (Scaled Dot-Product Attention) fuses the attention
+    computation into a single kernel that doesn't expose intermediate
+    attention weights. Eager mode computes attention step-by-step, making
+    the weights accessible.
+
     Args:
-        model: GPT-2 model (must have output_attentions=True).
+        model: GPT-2 model loaded with ``attn_implementation='eager'``.
         tokenizer: The tokenizer.
         sequence: Input token sequence as a string.
 
@@ -38,12 +44,22 @@ def _get_attention(
         Tuple of (attention_tuple, token_list).
         attention_tuple has shape (n_layers,) where each element is
         (batch, n_heads, seq_len, seq_len).
+
+    Raises:
+        RuntimeError: If the model doesn't return attention weights.
     """
     inputs = tokenizer.encode(sequence, return_tensors="pt")
     token_list = [tokenizer.decode(t) for t in inputs[0]]
 
     with torch.no_grad():
         outputs = model(inputs, output_attentions=True)
+
+    if outputs.attentions is None or outputs.attentions[0] is None:
+        msg = (
+            "Model did not return attention weights. "
+            "Load with: GPT2LMHeadModel.from_pretrained(..., attn_implementation='eager')"
+        )
+        raise RuntimeError(msg)
 
     return outputs.attentions, token_list
 
