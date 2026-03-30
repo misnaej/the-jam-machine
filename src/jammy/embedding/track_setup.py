@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from miditoolkit import Instrument
 
 
-def define_instrument(midi_tok_instrument: Instrument, familized: bool = False) -> int | str:
+def define_instrument(midi_tok_instrument: Instrument, *, familized: bool = False) -> int | str:
     """Define the instrument token from the MIDI token instrument.
 
     Args:
@@ -71,6 +71,7 @@ def make_sections(
     midi_events: list[list[Event]],
     instruments: list[Instrument],
     n_bar: int = 8,
+    *,
     familized: bool = False,
 ) -> list[list[list[Event]]]:
     """Make sections of n_bar bars for each instrument.

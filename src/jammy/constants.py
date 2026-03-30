@@ -1,3 +1,5 @@
+"""MIDI instrument families, quantization constants, and model configuration."""
+
 from __future__ import annotations
 
 # fmt: off

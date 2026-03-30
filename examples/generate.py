@@ -71,7 +71,10 @@ def generate_and_save(
     # Decode to MIDI
     midi_path = str(base_path.with_suffix(".mid"))
     decode_tokenizer = get_miditok()
-    TextDecoder(decode_tokenizer, USE_FAMILIZED_MODEL).get_midi(generated_piece, filename=midi_path)
+    TextDecoder(decode_tokenizer, familized=USE_FAMILIZED_MODEL).get_midi(
+        generated_piece,
+        filename=midi_path,
+    )
 
     # Generate piano roll visualization
     inst_midi, _ = get_music(midi_path)

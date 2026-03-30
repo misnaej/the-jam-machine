@@ -84,7 +84,7 @@ class GenerateMidiText:
         self.config.n_bars = n_bars
         self.prompts.n_bars = n_bars
 
-    def set_force_sequence_length(self, force_sequence_length: bool = True) -> None:
+    def set_force_sequence_length(self, *, force_sequence_length: bool = True) -> None:
         """Set whether to force exact sequence length.
 
         Args:
@@ -141,6 +141,7 @@ class GenerateMidiText:
         self,
         track: TrackConfig,
         input_prompt: str = f"{PIECE_START} ",
+        *,
         add_track_header: bool = True,
         verbose: bool = True,
         expected_length: int | None = None,

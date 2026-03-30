@@ -42,6 +42,7 @@ class PromptHandler:
         self,
         piece: PieceBuilder,
         track_idx: int,
+        *,
         verbose: bool = True,
     ) -> str:
         """Build a prompt for generating the next bar of a track.

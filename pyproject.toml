@@ -55,26 +55,16 @@ src = ["src", "test"]
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = [
-    "D100",    # missing module docstring
-    "D104",    # missing package docstring
     "ISC001",  # implicit string concat — conflicts with ruff formatter
-    "PLR2004", # magic value comparison — expected with token strings/numbers
-    "FBT001",  # boolean positional arg — too strict for Gradio callbacks
-    "FBT002",  # boolean default arg — same
-    "TD002",   # TODO missing author
-    "TD003",   # TODO missing issue link
-    "FIX002",  # TODO found — intentional
-    "INP001",  # implicit namespace package — app/ and examples/ are not packages
-    "PD002",   # pandas inplace — preprocessing scripts
-    "ICN001",  # unconventional import alias
-    "PLR0913", # too many args — structural
-    "PLR0911", # too many returns — inherent to dispatch functions
-    "PLR0915", # too many statements — structural
-    "C901",    # too complex — structural
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"test/**/*.py" = ["S101"]  # assert statements are expected in tests
+"test/**/*.py" = ["S101", "PLR2004"]
+"app/**/*.py" = ["TD002", "TD003", "FIX002", "INP001", "PLR0913"]
+"examples/**/*.py" = ["INP001"]
+"src/jammy/preprocessing/**/*.py" = ["PD002"]
+"src/jammy/midi_codec.py" = ["PLR0911"]
+"src/jammy/analysis/head_roles.py" = ["C901"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"

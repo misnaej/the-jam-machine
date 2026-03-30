@@ -50,7 +50,7 @@ class GenerationEngine:
         self.generate_until = TRACK_END
         logger.info("Attention length set to %d -> 'model.config.n_positions'", self.max_length)
 
-    def tokenize(self, prompt: str, verbose: bool = True) -> torch.Tensor:
+    def tokenize(self, prompt: str, *, verbose: bool = True) -> torch.Tensor:
         """Tokenize an input prompt.
 
         Args:
@@ -68,6 +68,7 @@ class GenerationEngine:
         self,
         input_ids: torch.Tensor,
         temperature: float,
+        *,
         verbose: bool = True,
     ) -> torch.Tensor:
         """Generate a sequence of token IDs from input IDs.
@@ -94,7 +95,7 @@ class GenerationEngine:
 
         return generated_ids
 
-    def decode(self, token_ids: torch.Tensor, verbose: bool = True) -> str:
+    def decode(self, token_ids: torch.Tensor, *, verbose: bool = True) -> str:
         """Convert token IDs back to text.
 
         Args:
@@ -113,6 +114,7 @@ class GenerationEngine:
         self,
         prompt: str,
         temperature: float,
+        *,
         verbose: bool = True,
     ) -> str:
         """Full generation pipeline: tokenize -> generate -> decode.

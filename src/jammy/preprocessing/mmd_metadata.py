@@ -227,6 +227,7 @@ class MetadataExtractor:
     def filter_midis(
         self,
         n_instruments: int = 12,
+        *,
         four_to_the_floor: bool = True,
         single_version: bool = True,
     ) -> None:

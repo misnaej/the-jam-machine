@@ -33,6 +33,7 @@ def check_for_duplicated_events(event_list: list[Event]) -> None:
 def add_missing_timeshifts_in_bar(
     inst_events: list[dict[str, Any]],
     beat_per_bar: int = 4,
+    *,
     verbose: bool = False,
 ) -> list[dict[str, Any]]:
     """Add missing time shifts in bar to ensure each bar has 4 beats.

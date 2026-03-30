@@ -1,3 +1,5 @@
+"""Tokenizer training and dataset preparation utilities."""
+
 from __future__ import annotations
 
 import logging
@@ -63,6 +65,7 @@ def batch_tokenization(
 def train_tokenizer(
     model_path: str,
     train_data: Dataset,
+    *,
     verbose: bool = True,
 ) -> PreTrainedTokenizerFast:
     """Train a word-level tokenizer on the training data.

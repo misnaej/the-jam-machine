@@ -37,7 +37,10 @@ def test_decode_midi_text(miditok: MIDILike, fixtures_dir: Path, tmp_path: Path)
     generated_piece = json.loads(fixture_file.read_text())["generated_midi"]
 
     output_midi = tmp_path / "decoded_test.mid"
-    TextDecoder(miditok, USE_FAMILIZED_MODEL).get_midi(generated_piece, filename=str(output_midi))
+    TextDecoder(miditok, familized=USE_FAMILIZED_MODEL).get_midi(
+        generated_piece,
+        filename=str(output_midi),
+    )
 
     assert output_midi.exists()
 

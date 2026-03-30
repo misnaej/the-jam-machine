@@ -11,6 +11,7 @@ from pathlib import Path
 def setup_logging(
     output_dir: str | Path | None = None,
     level: int = logging.INFO,
+    *,
     log_to_console: bool = True,
     log_to_file: bool = True,
 ) -> Path | None:

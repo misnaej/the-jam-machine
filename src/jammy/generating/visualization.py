@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import matplotlib
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -13,7 +13,7 @@ from jammy.constants import BEATS_PER_BAR
 if TYPE_CHECKING:
     import pretty_midi
 
-matplotlib.use("Agg")  # for server
+mpl.use("Agg")  # for server
 
 _RC_PARAMS = {
     "xtick.major.size": 0,
@@ -111,7 +111,7 @@ def plot_piano_roll(inst_midi: pretty_midi.PrettyMIDI) -> plt.Figure:
     Returns:
         Matplotlib figure containing the piano roll.
     """
-    with matplotlib.rc_context(_RC_PARAMS):
+    with mpl.rc_context(_RC_PARAMS):
         return _plot_piano_roll_impl(inst_midi)
 
 

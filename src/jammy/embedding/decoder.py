@@ -33,7 +33,7 @@ class TextDecoder:
         ... )
     """
 
-    def __init__(self, tokenizer: MIDILike, familized: bool = True) -> None:
+    def __init__(self, tokenizer: MIDILike, *, familized: bool = True) -> None:
         """Initialize the TextDecoder.
 
         Args:

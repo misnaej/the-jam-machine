@@ -30,7 +30,7 @@ class Familizer:
         reference_programs: Mapping from family numbers to program numbers.
     """
 
-    def __init__(self, n_jobs: int = -1, arbitrary: bool = False) -> None:
+    def __init__(self, n_jobs: int = -1, *, arbitrary: bool = False) -> None:
         """Initialize the Familizer.
 
         Args:
@@ -38,7 +38,7 @@ class Familizer:
             arbitrary: Whether to use transfer classes for arbitrary instruments.
         """
         self.n_jobs = n_jobs
-        self.reverse_family(arbitrary)
+        self.reverse_family(arbitrary=arbitrary)
 
     def get_family_number(self, program_number: int) -> int | None:
         """Get the instrument family number for a MIDI program number.
@@ -52,7 +52,7 @@ class Familizer:
         cls = get_instrument_class(program_number)
         return cls["family_number"] if cls else None
 
-    def reverse_family(self, arbitrary: bool) -> None:
+    def reverse_family(self, *, arbitrary: bool) -> None:
         """Create mapping from family numbers to program numbers.
 
         This is used to reverse the family number tokens back to
