@@ -97,7 +97,7 @@ class Familizer:
             operation: Either 'family' or 'program'.
 
         Returns:
-            Converted token like 'INST=10'.
+            Converted token, or the original token if operation is unknown.
         """
         inst_number = int(token.split("=")[1])
         if operation == "family":
