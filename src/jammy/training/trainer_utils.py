@@ -65,15 +65,12 @@ def batch_tokenization(
 def train_tokenizer(
     model_path: str,
     train_data: Dataset,
-    *,
-    verbose: bool = True,
 ) -> PreTrainedTokenizerFast:
     """Train a word-level tokenizer on the training data.
 
     Args:
         model_path: Path to save the tokenizer.
         train_data: Training dataset with 'text' column.
-        verbose: Whether to print vocabulary.
 
     Returns:
         The trained tokenizer.
@@ -89,10 +86,8 @@ def train_tokenizer(
     tokenizer = PreTrainedTokenizerFast(tokenizer_file=str(tokenizer_path))
     tokenizer.add_special_tokens({"pad_token": "[PAD]"})
     logger.info("Vocabulary size: %d", tokenizer.vocab_size)
-    if verbose:
-        logger.info("Vocabulary:")
-        for voc in sorted(tokenizer.vocab.items()):
-            logger.debug(voc)
+    for voc in sorted(tokenizer.vocab.items()):
+        logger.debug(voc)
 
     return tokenizer
 

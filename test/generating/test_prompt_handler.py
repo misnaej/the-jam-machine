@@ -49,7 +49,7 @@ class TestBuildNextBarPrompt:
         piece_two_tracks: PieceBuilder,
     ) -> None:
         """Test that prompt starts with PIECE_START."""
-        prompt = handler.build_next_bar_prompt(piece_two_tracks, 0, verbose=False)
+        prompt = handler.build_next_bar_prompt(piece_two_tracks, 0)
         assert prompt.startswith(f"{PIECE_START} ")
 
     def test_build_next_bar_prompt_ends_with_bar_start(
@@ -58,7 +58,7 @@ class TestBuildNextBarPrompt:
         piece_two_tracks: PieceBuilder,
     ) -> None:
         """Test that prompt ends with BAR_START to trigger generation."""
-        prompt = handler.build_next_bar_prompt(piece_two_tracks, 0, verbose=False)
+        prompt = handler.build_next_bar_prompt(piece_two_tracks, 0)
         assert prompt.rstrip().endswith(f"{BAR_START}")
 
     def test_build_next_bar_prompt_includes_track_notes(
@@ -67,7 +67,7 @@ class TestBuildNextBarPrompt:
         piece_two_tracks: PieceBuilder,
     ) -> None:
         """Test that prompt contains content from the target track."""
-        prompt = handler.build_next_bar_prompt(piece_two_tracks, 0, verbose=False)
+        prompt = handler.build_next_bar_prompt(piece_two_tracks, 0)
         assert "NOTE_ON=36" in prompt or "NOTE_ON=38" in prompt or "NOTE_ON=42" in prompt
 
     def test_build_next_bar_prompt_adds_side_track_when_longer(self) -> None:
@@ -97,17 +97,17 @@ class TestBuildNextBarPrompt:
 
         # Generate prompt for bass (track 1) — drums is shorter, so
         # when generating for drums (track 0), bass context should be included
-        prompt = handler.build_next_bar_prompt(pb, 0, verbose=False)
+        prompt = handler.build_next_bar_prompt(pb, 0)
         # The side track (bass) has TRACK_END in the pre-prompt
         assert f"{TRACK_END}" in prompt
 
-    def test_build_next_bar_prompt_verbose(
+    def test_build_next_bar_prompt_logs_debug(
         self,
         handler: PromptHandler,
         piece_two_tracks: PieceBuilder,
     ) -> None:
-        """Test that verbose=True doesn't crash (covers logging branches)."""
-        prompt = handler.build_next_bar_prompt(piece_two_tracks, 0, verbose=True)
+        """Test that prompt generation works (debug logging covered implicitly)."""
+        prompt = handler.build_next_bar_prompt(piece_two_tracks, 0)
         assert prompt.startswith(f"{PIECE_START} ")
 
 

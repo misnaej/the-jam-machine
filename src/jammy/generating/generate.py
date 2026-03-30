@@ -143,7 +143,6 @@ class GenerateMidiText:
         input_prompt: str = f"{PIECE_START} ",
         *,
         add_track_header: bool = True,
-        verbose: bool = True,
         expected_length: int | None = None,
     ) -> str:
         """Generate until end token is reached.
@@ -152,7 +151,6 @@ class GenerateMidiText:
             track: Track configuration (instrument, density, temperature).
             input_prompt: Starting prompt.
             add_track_header: Whether to add TRACK_START/INST/DENSITY to prompt.
-            verbose: Whether to log status.
             expected_length: Expected number of bars.
 
         Returns:
@@ -165,19 +163,18 @@ class GenerateMidiText:
             input_prompt = f"{input_prompt}{TRACK_START} {INST}={track.instrument} "
             input_prompt = f"{input_prompt}{DENSITY}={track.density} "
 
-        if verbose:
-            logger.info(
-                "Generating %s - Density %s - temperature %s",
-                track.instrument,
-                track.density,
-                track.temperature,
-            )
+        logger.debug(
+            "Generating %s - Density %s - temperature %s",
+            track.instrument,
+            track.density,
+            track.temperature,
+        )
 
         bar_count_checks = False
         failed = 0
 
         while not bar_count_checks:
-            full_piece = self.engine.generate(input_prompt, track.temperature, verbose=verbose)
+            full_piece = self.engine.generate(input_prompt, track.temperature)
             generated = get_new_content(full_piece, input_prompt)
             bar_count_checks, bar_count = bar_count_check(generated, expected_length)
 
@@ -259,7 +256,6 @@ class GenerateMidiText:
             input_prompt=processed_prompt,
             add_track_header=False,
             expected_length=1,
-            verbose=False,
         )
         added_bar = extract_new_bar(prompt_plus_bar)
         self.piece.add_bars_to_track(track_index, added_bar)

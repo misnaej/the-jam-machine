@@ -42,8 +42,6 @@ class PromptHandler:
         self,
         piece: PieceBuilder,
         track_idx: int,
-        *,
-        verbose: bool = True,
     ) -> str:
         """Build a prompt for generating the next bar of a track.
 
@@ -56,7 +54,6 @@ class PromptHandler:
         Args:
             piece: The PieceBuilder containing current piece state.
             track_idx: Index of the track to generate for.
-            verbose: Whether to log status messages.
 
         Returns:
             The constructed prompt for generation.
@@ -73,12 +70,11 @@ class PromptHandler:
                 len_diff = len(other_bars) - len(track_bars)
 
                 if len_diff > 0:
-                    if verbose:
-                        logger.info(
-                            "Adding bars - %d selected from SIDE track: %d for prompt",
-                            len(track_bars[-self.n_bars :]),
-                            i,
-                        )
+                    logger.debug(
+                        "Adding bars - %d selected from SIDE track: %d for prompt",
+                        len(track_bars[-self.n_bars :]),
+                        i,
+                    )
                     # If other track is longer, this one should catch up
                     pre_prompt += other_bars[0]
                     pre_prompt += "".join(track_bars[-self.n_bars :])
@@ -86,12 +82,11 @@ class PromptHandler:
 
         # Build main prompt from track to extend
         processed_prompt = track_bars[0]  # Track initialization
-        if verbose:
-            logger.info(
-                "Adding bars - %d selected from MAIN track: %d for prompt",
-                len(track_bars[-(self.n_bars - 1) :]),
-                track_idx,
-            )
+        logger.debug(
+            "Adding bars - %d selected from MAIN track: %d for prompt",
+            len(track_bars[-(self.n_bars - 1) :]),
+            track_idx,
+        )
         processed_prompt += "".join(track_bars[-(self.n_bars - 1) :])
 
         processed_prompt += f"{BAR_START} "

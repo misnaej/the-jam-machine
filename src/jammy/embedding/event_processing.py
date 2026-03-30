@@ -33,8 +33,6 @@ def check_for_duplicated_events(event_list: list[Event]) -> None:
 def add_missing_timeshifts_in_bar(
     inst_events: list[dict[str, Any]],
     beat_per_bar: int = 4,
-    *,
-    verbose: bool = False,
 ) -> list[dict[str, Any]]:
     """Add missing time shifts in bar to ensure each bar has 4 beats.
 
@@ -44,7 +42,6 @@ def add_missing_timeshifts_in_bar(
     Args:
         inst_events: List of instrument event dictionaries.
         beat_per_bar: Number of beats per bar (default 4).
-        verbose: Whether to log detailed information.
 
     Returns:
         New list of instrument events with corrected time shifts.
@@ -69,7 +66,7 @@ def add_missing_timeshifts_in_bar(
                 new_inst_events[index]["events"].append(Event("Time-Shift", time_shift_to_add))
                 beat_count += int_dec_base_to_beat(time_shift_to_add)
 
-            if event.type == "Bar-End" and verbose:
+            if event.type == "Bar-End":
                 logger.debug(
                     "Instrument %s - %s - Bar %s - beat_count = %s",
                     index,

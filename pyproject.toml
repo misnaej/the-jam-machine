@@ -56,6 +56,7 @@ src = ["src", "test"]
 select = ["ALL"]
 ignore = [
     "ISC001",  # implicit string concat — conflicts with ruff formatter
+    "COM812",  # trailing comma — conflicts with ruff formatter (ruff warns about this)
 ]
 
 [tool.ruff.lint.per-file-ignores]

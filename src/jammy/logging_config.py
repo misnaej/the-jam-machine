@@ -39,9 +39,9 @@ def setup_logging(
     timestamp = datetime.now(tz=UTC).strftime("%Y%m%d_%H%M%S")
     log_file = log_dir / f"jam_machine_{timestamp}.log"
 
-    # Configure root logger
+    # Configure root logger — set to DEBUG so file handler captures everything
     root_logger = logging.getLogger()
-    root_logger.setLevel(level)
+    root_logger.setLevel(logging.DEBUG)
 
     # Clear existing handlers
     root_logger.handlers.clear()
@@ -52,17 +52,17 @@ def setup_logging(
         datefmt="%Y-%m-%d %H:%M:%S",
     )
 
-    # Console handler
+    # Console handler — shows INFO and above
     if log_to_console:
         console_handler = logging.StreamHandler(sys.stdout)
         console_handler.setLevel(level)
         console_handler.setFormatter(formatter)
         root_logger.addHandler(console_handler)
 
-    # File handler
+    # File handler — captures DEBUG and above
     if log_to_file:
         file_handler = logging.FileHandler(log_file, encoding="utf-8")
-        file_handler.setLevel(level)
+        file_handler.setLevel(logging.DEBUG)
         file_handler.setFormatter(formatter)
         root_logger.addHandler(file_handler)
 

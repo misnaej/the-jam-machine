@@ -67,15 +67,12 @@ def _compute_instrument_stats(
 
 def stats_on_track(
     midi_filename: str = "the_strokes-reptilia",
-    *,
-    verbose: bool = True,
     output_dir: str | None = None,
 ) -> dict[str, int | float | list[int] | list[float]]:
     """Analyze track statistics for MIDI encoding.
 
     Args:
         midi_filename: Name of the MIDI file (without .mid extension) in ./midi/.
-        verbose: If True, logs detailed statistics for each instrument.
         output_dir: If set, save plots to this directory instead of displaying.
 
     Returns:
@@ -91,9 +88,9 @@ def stats_on_track(
     beat_count = midi.max_tick / ticks_per_beat
     inst_stats = _compute_instrument_stats(midi.instruments, ticks_per_beat, midi.max_tick)
 
-    if verbose:
+    if logger.isEnabledFor(logging.DEBUG):
         for i, name in enumerate(inst_stats["names"]):
-            logger.info(
+            logger.debug(
                 "%s: %d notes, %.0f%% coverage, starts at %.1f beats, ends at %.1f beats",
                 name,
                 inst_stats["note_counts"][i],
