@@ -60,9 +60,9 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"test/**/*.py" = ["S101", "PLR2004"]
-"app/**/*.py" = ["INP001", "PLR0913"]
-"examples/**/*.py" = ["INP001"]
+"test/**/*.py" = ["S101", "PLR2004"]  # assert is expected in tests; magic values are test data
+"app/**/*.py" = ["INP001", "PLR0913"]  # app/ is not a package; Gradio callbacks have many args
+"examples/**/*.py" = ["INP001"]  # examples/ is not a package
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
