@@ -19,43 +19,45 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class TokenizeDataset:
-    """Tokenize datasets for training."""
+def tokenize_batch(
+    data: dict[str, Any],
+    tokenizer: PreTrainedTokenizerFast,
+) -> dict[str, Any]:
+    """Tokenize a batch of text data.
 
-    def __init__(self, tokenizer: PreTrainedTokenizerFast) -> None:
-        """Initialize the tokenizer wrapper.
+    Args:
+        data: Dictionary containing 'text' key with strings to tokenize.
+        tokenizer: The tokenizer to use for encoding text.
 
-        Args:
-            tokenizer: The tokenizer to use for encoding text.
-        """
-        self.tokenizer = tokenizer
+    Returns:
+        Dictionary with tokenized data.
+    """
+    return tokenizer(
+        data["text"],
+        truncation=True,
+        padding=True,
+        max_length=2048,
+    )
 
-    def tokenize(self, data: dict[str, Any]) -> dict[str, Any]:
-        """Tokenize a batch of text data.
 
-        Args:
-            data: Dictionary containing 'text' key with strings to tokenize.
+def batch_tokenization(
+    dataset: DatasetDict,
+    tokenizer: PreTrainedTokenizerFast,
+) -> DatasetDict:
+    """Tokenize an entire dataset.
 
-        Returns:
-            Dictionary with tokenized data.
-        """
-        return self.tokenizer(
-            data["text"],
-            truncation=True,
-            padding=True,
-            max_length=2048,
-        )
+    Args:
+        dataset: HuggingFace dataset to tokenize.
+        tokenizer: The tokenizer to use for encoding text.
 
-    def batch_tokenization(self, dataset: DatasetDict) -> DatasetDict:
-        """Tokenize an entire dataset.
-
-        Args:
-            dataset: HuggingFace dataset to tokenize.
-
-        Returns:
-            Tokenized dataset with 'text' column removed.
-        """
-        return dataset.map(self.tokenize, batched=True, remove_columns=["text"])
+    Returns:
+        Tokenized dataset with 'text' column removed.
+    """
+    return dataset.map(
+        lambda data: tokenize_batch(data, tokenizer),
+        batched=True,
+        remove_columns=["text"],
+    )
 
 
 def train_tokenizer(

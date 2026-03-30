@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import sys
+import tempfile
+from pathlib import Path
 from typing import Any, NamedTuple
 
 import gradio as gr
@@ -146,13 +148,17 @@ def _build_output(
     Returns:
         GeneratorResult with all outputs.
     """
+    tmp = Path(tempfile.gettempdir())
+
     generated_text = genesis.get_piece_text()
-    decoder.get_midi(generated_text, "mixed.mid")
-    mixed_inst_midi, mixed_audio = get_music("mixed.mid")
+    mixed_midi_path = str(tmp / "mixed.mid")
+    decoder.get_midi(generated_text, mixed_midi_path)
+    mixed_inst_midi, mixed_audio = get_music(mixed_midi_path)
 
     inst_text = genesis.get_track_text(inst_index)
-    decoder.get_midi(inst_text, f"{instrument}.mid")
-    _, inst_audio = get_music(f"{instrument}.mid")
+    inst_midi_path = str(tmp / f"{instrument}.mid")
+    decoder.get_midi(inst_text, inst_midi_path)
+    _, inst_audio = get_music(inst_midi_path)
 
     piano_roll = plot_piano_roll(mixed_inst_midi)
     updated_track = {**track, "text": inst_text}
@@ -166,7 +172,7 @@ def _build_output(
         mixed_audio=(SAMPLE_RATE, mixed_audio),
         regenerate=regenerate,
         piece_by_track=genesis.piece.piece_by_track,
-        output_file="./mixed.mid",
+        output_file=mixed_midi_path,
     )
 
 

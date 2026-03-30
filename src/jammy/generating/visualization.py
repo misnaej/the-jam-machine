@@ -13,12 +13,14 @@ from jammy.constants import BEATS_PER_BAR
 if TYPE_CHECKING:
     import pretty_midi
 
-# matplotlib settings
 matplotlib.use("Agg")  # for server
-matplotlib.rcParams["xtick.major.size"] = 0
-matplotlib.rcParams["ytick.major.size"] = 0
-matplotlib.rcParams["axes.facecolor"] = "none"
-matplotlib.rcParams["axes.edgecolor"] = "grey"
+
+_RC_PARAMS = {
+    "xtick.major.size": 0,
+    "ytick.major.size": 0,
+    "axes.facecolor": "none",
+    "axes.edgecolor": "grey",
+}
 
 
 _INSTRUMENT_COLORS: dict[str, str] = {
@@ -102,6 +104,19 @@ def _plot_instrument_subplot(
 
 def plot_piano_roll(inst_midi: pretty_midi.PrettyMIDI) -> plt.Figure:
     """Generate a piano roll visualization of the MIDI.
+
+    Args:
+        inst_midi: PrettyMIDI object to visualize.
+
+    Returns:
+        Matplotlib figure containing the piano roll.
+    """
+    with matplotlib.rc_context(_RC_PARAMS):
+        return _plot_piano_roll_impl(inst_midi)
+
+
+def _plot_piano_roll_impl(inst_midi: pretty_midi.PrettyMIDI) -> plt.Figure:
+    """Internal implementation of piano roll plotting.
 
     Args:
         inst_midi: PrettyMIDI object to visualize.

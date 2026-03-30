@@ -25,7 +25,7 @@ from transformers import (
 )
 
 from jammy.training.trainer_utils import (
-    TokenizeDataset,
+    batch_tokenization,
     get_history,
     plot_history,
     train_tokenizer,
@@ -81,7 +81,7 @@ def main() -> None:
         tokenizer = train_tokenizer(MODEL_PATH, data["train"])
 
     logger.info("Tokenizing dataset")
-    data_tokenized = TokenizeDataset(tokenizer).batch_tokenization(data)
+    data_tokenized = batch_tokenization(data, tokenizer)
 
     if TRAIN_FROM_CHECKPOINT:
         model = AutoModelForCausalLM.from_pretrained(

@@ -65,15 +65,12 @@ ignore = [
     "TD003",   # TODO missing issue link
     "FIX002",  # TODO found — intentional
     "INP001",  # implicit namespace package — app/ and examples/ are not packages
-    "ERA001",  # commented-out code — clean up in Phase 14
     "PD002",   # pandas inplace — preprocessing scripts
     "ICN001",  # unconventional import alias
-    "BLE001",  # blind except — narrow in Phase 14
-    "A001",    # shadowing builtin — fix in Phase 14
-    "PLR0913", # too many args — structural, Phase 14
+    "PLR0913", # too many args — structural
     "PLR0911", # too many returns — inherent to dispatch functions
-    "PLR0915", # too many statements — structural, Phase 14
-    "C901",    # too complex — structural, Phase 14
+    "PLR0915", # too many statements — structural
+    "C901",    # too complex — structural
 ]
 
 [tool.ruff.lint.per-file-ignores]
