@@ -11,20 +11,18 @@ This document is the **central reference** for all refactoring and improvement w
 
 ---
 
-## Current State
+## Current State (updated 2026-03-27)
 
 | Area | Status | Notes |
 |------|--------|-------|
-| `generate.py` refactor | ✅ Complete | Split into 4 focused classes |
-| Critical bugs | ✅ Fixed | Device tuple, ValueError, dead code |
-| Logging | ✅ Added | `logging_config.py` created |
-| Config dataclasses | ✅ Done | `TrackConfig` (frozen), `GenerationConfig` (mutable) |
-| Test coverage | ⚠️ 22 pass | 8 config + 10 track_builder + 4 existing |
-| Token constants | ✅ Done | `tokens.py` with 13 constants, ~130 hardcoded strings replaced |
-| TrackBuilder | ✅ Done | Converted to module functions, bugs fixed |
-| Type hints | ⚠️ Partial | New code has hints, old code doesn't |
-| Annotations style | ✅ Done | All files use `from __future__ import annotations` |
-| Package rename | ✅ Done | Renamed to `jammy`, absolute imports enforced |
+| Refactoring (Phases 1–10) | ✅ Complete | Package renamed, modules split, examples reorganized |
+| Pre-commit hooks (Phase 11) | ✅ Complete | Ruff, interrogate, bandit, pip-audit, badges |
+| GitHub Pages (Phase 12) | ✅ Complete | Landing page, encoding guide, embedding explorer |
+| Analysis module (Phase 12b) | ✅ Complete | Interactive plotly visualizations, smoke tests |
+| Unit tests (Phase 13) | ✅ Complete | 149 tests, 68% coverage |
+| Design audit (Phase 14) | ⚠️ Partial | WP1–5, WP8 done; WP6–7, WP9–10 remaining |
+| Claude Code setup | ✅ Complete | Skills, agents, hooks configured |
+| Code quality | ✅ All ruff rules | `select = ["ALL"]` with targeted ignores |
 
 ---
 
@@ -32,11 +30,12 @@ This document is the **central reference** for all refactoring and improvement w
 
 | # | Plan | Status | Purpose |
 |---|------|--------|---------|
-| 1 | [Test Plan](./test-plan.md) | 🔜 In progress | Unit tests (3 PRs) |
-| 2 | [Design Audit Findings](./design-audit-findings.md) | 🔜 Planned | 43 issues in 10 work packages |
-| 3 | [GitHub Pages](./github-pages.md) | 🔜 Planned | Documentation site |
-| 4 | [CI Badges](./ci-badges.md) | 🔜 Planned | CI workflow + badges |
-| 5 | [Genre Prediction Audit](./audit-genre-prediction.md) | 📋 Reference | Separate system (optional) |
+| 1 | [Test Plan](./test-plan.md) | ✅ Complete | Unit tests (3 PRs merged) |
+| 2 | [Design Audit Findings](./design-audit-findings.md) | ⚠️ In progress | WP1-5, WP8 done; WP6-7, WP9-10 remaining |
+| 3 | [GitHub Pages](./github-pages.md) | ✅ Complete | Documentation site live |
+| 4 | [Analysis Module](./analysis-module.md) | ✅ Complete | Interactive plotly visualizations |
+| 5 | [CI Badges](./ci-badges.md) | ⚠️ Partial | Hooks done, GitHub Actions not yet |
+| 6 | [Genre Prediction Audit](./audit-genre-prediction.md) | 📋 Reference | Separate system (optional) |
 
 ---
 
@@ -207,50 +206,56 @@ Organize `examples/` with two runnable scripts: encode/decode roundtrip (using R
 
 ---
 
-### Phase 11: Pre-commit Hook Enhancements
+### Phase 11: Pre-commit Hook Enhancements ✅
 **Effort:** ~1-2 hours | **Risk:** Low | **Impact:** Code quality, security
 
-Add docstring coverage (interrogate) and security audit (bandit) to the pre-commit hook. All hook output logged to `.githooks/logs/` so agents and users can diagnose failures.
+Added docstring coverage (interrogate), security audit (bandit), and pip-audit to the pre-commit hook. All output logged to `.githooks/logs/`. SVG badges generated automatically.
 
-**Details:** [CI Workflow, Badges & Security](./ci-badges.md) — Step 5 (hook updates)
+**Completed:** PR #16
 
 ---
 
-### Phase 12: GitHub Pages Documentation Site
+### Phase 12: GitHub Pages Documentation Site ✅
 **Effort:** ~4-6 hours | **Risk:** Low | **Impact:** Documentation, DX
 
-Build a GitHub Pages site with: landing page (what is The Jam Machine), encoding/decoding guide (pipeline walkthrough, quantization caveats, worked Reptilia example), and the embedding explorer notebook rendered as HTML. Also fix the notebook (hardcoded paths, broken cells, move deps to optional group).
+Built GitHub Pages site with Jekyll (Cayman theme): landing page, encoding/decoding guide with Reptilia walkthrough, and embedding explorer HTML page.
 
-**Details:** [GitHub Pages](./github-pages.md)
-
----
-
-### Phase 12b: Analysis Module + Notebook Refactor
-**Effort:** ~8-10 hours (5 PRs) | **Risk:** Medium | **Impact:** Education, visualization, testability
-
-Extract notebook visualizations into `jammy.analysis` module: embedding plots (TSNE, heatmap), activation predictions (top-K bar charts), attention heatmaps (layer-by-layer flow), and head specialization analysis. Rebuild notebook as thin orchestrator. All functions testable, reusable, improved.
-
-**Details:** [Analysis Module](./analysis-module.md)
+**Completed:** PRs #25, #26, #27
 
 ---
 
-### Phase 13: Add Unit Tests
+### Phase 12b: Analysis Module + Notebook Refactor ✅
+**Effort:** ~8-10 hours | **Risk:** Medium | **Impact:** Education, visualization, testability
+
+Extracted notebook visualizations into `jammy.analysis` module with 4 submodules (embedding, activation, attention, head_roles). All plots converted to interactive plotly charts. Build script generates self-contained HTML page for GitHub Pages. 18 tests (10 unit + 8 smoke).
+
+**Completed:** PR #29
+
+---
+
+### Phase 13: Add Unit Tests ✅
 **Effort:** ~6 hours (3 PRs) | **Risk:** Low | **Impact:** Reliability
 
-Add unit tests for all core modules. Currently 55% coverage, target 80%+. Three PRs: generating module (biggest gap), utilities, embedding + misc. Real tests first, mock only when >5s.
+Added unit tests across all core modules. 149 tests passing, 68% coverage (up from 22 tests, ~40%).
 
-**Details:** [Test Plan](./test-plan.md)
+**Completed:** PRs #17 (generating), #19 (utilities + embedding), #24 (remaining gaps)
 
 ---
 
-### Phase 14: Design Audit Fixes
+### Phase 14: Design Audit Fixes ⚠️ In Progress
 **Effort:** ~6-8 hours (multiple PRs) | **Risk:** Medium | **Impact:** Code quality, security, correctness
 
-Fix 43 findings from the full codebase design audit. Grouped into 10 work packages: security fixes (Critical), module-level side effects, error handling, complexity reduction, classes→functions, DRY violations, pythonic idioms, logic bugs, testability, and cleanup.
+Fix 43 findings from the full codebase design audit. Grouped into 10 work packages.
+
+**Completed:** PRs #20 (ruff all rules), #21 (WP1 security + WP2 side effects + WP3 error handling), #22 (WP5 classes→functions), #23 (WP4 complexity), #24 (WP8 logic bugs), #28 (dependency security)
+
+**Remaining:**
+- WP6: DRY violations (instrument lookup, repeated guards)
+- WP7: Pythonic idioms (string joins, list comprehensions)
+- WP9: Testability improvements (matplotlib global state, hardcoded filenames)
+- WP10: Cleanup (commented code, duplicated constants)
 
 **Details:** [Design Audit Findings](./design-audit-findings.md)
-
-**Note:** WP7 (string joins in piece_builder, track_builder, encoder) and WP8 (logic bugs) overlap with the test PRs — fix alongside test work.
 
 ---
 
@@ -499,6 +504,12 @@ git commit -m "refactor: add postponed annotations to all modules"
 | 2026-03-17 | Phase 6 complete | Split `generating/utils.py` into `file_io.py`, `validation.py`, `visualization.py`; replaced `WriteTextMidiToFile` class with function; deleted unused `get_max_time()` |
 | 2026-03-18 | Phase 7 complete | Split `embedding/encoder.py` into `time_processing.py`, `bar_processing.py`, `section_building.py`; converted 10 staticmethods to functions; replaced `chain()` with explicit pipeline; deleted unused methods and backward compat alias |
 | 2026-03-18 | Phase 8 complete | Split `embedding/decoder.py` into `text_parsing.py`, `event_processing.py`; converted 11 methods to module functions; deleted `__main__` block; no caller changes needed |
+| 2026-03-18 | Phase 9-10 complete | Naming fixes, examples reorganized |
+| 2026-03-19 | Phase 11 complete | Pre-commit hooks with interrogate, bandit, pip-audit, badges |
+| 2026-03-20 | Phase 13 complete | 149 tests, 68% coverage across 3 PRs |
+| 2026-03-21 | Phase 14 partial | WP1-5, WP8 done across PRs #20-24 |
+| 2026-03-25 | Phase 12 complete | GitHub Pages with Jekyll, encoding guide, embedding explorer |
+| 2026-03-27 | Phase 12b complete | Analysis module with plotly charts, smoke tests (PR #29) |
 
 ---
 
@@ -513,6 +524,6 @@ git commit -m "refactor: add postponed annotations to all modules"
 
 ## Continuation Prompt
 
-**Last completed:** Phase 8 (Split `embedding/decoder.py`)
-**Next step:** Phase 11 (Pre-commit Hook Enhancements)
-**Notes:** All ruff checks pass. 22 tests pass. On `refactor/split-embedding-decoder` branch.
+**Last completed:** Phase 12b (Analysis module, PR #29)
+**Next step:** Phase 14 remaining (WP6, WP7, WP9, WP10) or Phase 15 (HuggingFace Space)
+**Notes:** 149 tests, 68% coverage. All ruff checks pass. On `main`.
