@@ -94,7 +94,7 @@ class TestReplaceInstrumentInText:
 class TestReplaceInFile:
     """Tests for Familizer.replace_in_file."""
 
-    def testreplace_in_file_modifies_content(self, tmp_path: Path) -> None:
+    def test_replace_in_file_modifies_content(self, tmp_path: Path) -> None:
         """Test that instrument tokens in a file are replaced in place."""
         f = Familizer()
         txt = tmp_path / "track.txt"
