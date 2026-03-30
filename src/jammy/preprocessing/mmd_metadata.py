@@ -70,7 +70,7 @@ class MetadataExtractor:
         title_artist = self.names_df["title_artist"].apply(self.get_single_artist_title)
         self.names_df["artist"] = title_artist.apply(lambda x: x[0])
         self.names_df["title"] = title_artist.apply(lambda x: x[1])
-        self.names_df.drop("title_artist", axis=1, inplace=True)
+        self.names_df = self.names_df.drop("title_artist", axis=1)
 
     def get_genre(self) -> None:
         """Extract genre from the genre dataframe."""
@@ -158,8 +158,8 @@ class MetadataExtractor:
 
     def deduplicate_artists(self) -> None:
         """Find and replace duplicate artist names."""
-        self.stats.rename(columns={"artist": "artist_old"}, inplace=True)
-        self.stats.rename(columns={"title": "title_old"}, inplace=True)
+        self.stats = self.stats.rename(columns={"artist": "artist_old"})
+        self.stats = self.stats.rename(columns={"title": "title_old"})
 
         unique_artists = self.stats["artist_old"].unique()
         similar_artists = self.find_and_replace_duplicates(unique_artists)
@@ -174,7 +174,7 @@ class MetadataExtractor:
         self.stats["genre"] = self.stats.groupby("artist")["genre"].transform(
             lambda x: x.value_counts().index[0],
         )
-        self.stats.drop_duplicates(subset=["md5"], inplace=True)
+        self.stats = self.stats.drop_duplicates(subset=["md5"])
 
     def deduplicate_titles(self) -> None:
         """Find and replace duplicate song titles per artist."""
@@ -194,7 +194,7 @@ class MetadataExtractor:
         self.deduplicate_artists()
         self.deduplicate_genre()
         self.deduplicate_titles()
-        self.stats.drop(columns=["artist_old", "title_old"], inplace=True)
+        self.stats = self.stats.drop(columns=["artist_old", "title_old"])
 
     def extract(self, threshold: int = 75) -> None:
         """Extract and process metadata from MMD scraped data.

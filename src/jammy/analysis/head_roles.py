@@ -29,6 +29,43 @@ class HeadRoles(TypedDict):
     n_heads: int
 
 
+def _accumulate_attention(
+    attentions: tuple,
+    token_cats: list[str],
+    category_names: list[str],
+    weights_sum: list[list[list[float]]],
+) -> None:
+    """Add attention weights by category to the running sum.
+
+    Args:
+        attentions: Model attention outputs (n_layers,).
+        token_cats: Category for each token in the sequence.
+        category_names: Ordered list of category names.
+        weights_sum: Mutable accumulator (n_layers x n_heads x n_categories).
+    """
+    for layer_idx in range(len(attentions)):
+        attn = attentions[layer_idx][0].detach().numpy()
+        for head_idx in range(attn.shape[0]):
+            avg_attn = attn[head_idx].mean(axis=0)
+            for tok_idx, cat in enumerate(token_cats):
+                cat_idx = category_names.index(cat)
+                weights_sum[layer_idx][head_idx][cat_idx] += avg_attn[tok_idx]
+
+
+def _normalize_weights(weights: list[list[list[float]]]) -> None:
+    """Normalize each head's category weights to sum to 1.
+
+    Args:
+        weights: Mutable weights (n_layers x n_heads x n_categories).
+    """
+    for layer in weights:
+        for head in layer:
+            total = sum(head)
+            if total > 0:
+                for i in range(len(head)):
+                    head[i] /= total
+
+
 def analyze_head_roles(
     model: GPT2LMHeadModel,
     tokenizer: PreTrainedTokenizerFast,
@@ -51,16 +88,13 @@ def analyze_head_roles(
     """
     category_names = TOKEN_CATEGORY_ORDER
     n_categories = len(category_names)
-
     weights_sum = None
-    count = 0
     n_layers = 0
     n_heads = 0
 
     for sequence in sequences:
         inputs = tokenizer.encode(sequence, return_tensors="pt")
-        token_list = [tokenizer.decode(t) for t in inputs[0]]
-        token_cats = [categorize_token(t) for t in token_list]
+        token_cats = [categorize_token(tokenizer.decode(t)) for t in inputs[0]]
 
         with torch.no_grad():
             outputs = model(inputs, output_attentions=True)
@@ -76,29 +110,14 @@ def analyze_head_roles(
         attentions = outputs.attentions
         n_layers = len(attentions)
         n_heads = attentions[0].shape[1]
-        seq_len = len(token_list)
 
         if weights_sum is None:
             weights_sum = [[[0.0] * n_categories for _ in range(n_heads)] for _ in range(n_layers)]
 
-        for layer_idx in range(n_layers):
-            attn = attentions[layer_idx][0].detach().numpy()
-            for head_idx in range(n_heads):
-                head_attn = attn[head_idx]
-                avg_attn = head_attn.mean(axis=0)
-                for tok_idx in range(seq_len):
-                    cat_idx = category_names.index(token_cats[tok_idx])
-                    weights_sum[layer_idx][head_idx][cat_idx] += avg_attn[tok_idx]
+        _accumulate_attention(attentions, token_cats, category_names, weights_sum)
 
-        count += 1
-
-    if weights_sum and count > 0:
-        for layer in weights_sum:
-            for head in layer:
-                total = sum(head)
-                if total > 0:
-                    for i in range(n_categories):
-                        head[i] /= total
+    if weights_sum:
+        _normalize_weights(weights_sum)
 
     return {
         "weights": weights_sum or [],

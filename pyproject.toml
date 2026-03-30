@@ -63,9 +63,6 @@ ignore = [
 "test/**/*.py" = ["S101", "PLR2004"]
 "app/**/*.py" = ["INP001", "PLR0913"]
 "examples/**/*.py" = ["INP001"]
-"src/jammy/preprocessing/**/*.py" = ["PD002"]
-"src/jammy/midi_codec.py" = ["PLR0911"]
-"src/jammy/analysis/head_roles.py" = ["C901"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"

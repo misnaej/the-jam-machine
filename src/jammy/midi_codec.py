@@ -148,15 +148,12 @@ def get_text(event: Event, instrument: str = "drums") -> str:
 
     # Special cases requiring custom logic
     if event.type == "Instrument":
-        if str(event.value).lower() == "drums":
-            return f"{INST}={DRUMS} "
-        return f"{INST}={event.value} "
+        value = DRUMS if str(event.value).lower() == "drums" else event.value
+        return f"{INST}={value} "
 
     if event.type == "Time-Shift":
         delta = int_dec_base_to_delta(event.value, instrument)
-        if delta == 0:
-            return ""  # skip zero time shifts (sub-quantization rounding)
-        return f"{TIME_DELTA}={delta} "
+        return f"{TIME_DELTA}={delta} " if delta else ""
 
     return ""
 
