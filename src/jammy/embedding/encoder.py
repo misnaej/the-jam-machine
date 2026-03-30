@@ -30,7 +30,7 @@ class MIDIEncoder:
         familized: Whether to familize instruments.
     """
 
-    def __init__(self, tokenizer: MIDILike, familized: bool = False) -> None:
+    def __init__(self, tokenizer: MIDILike, *, familized: bool = False) -> None:
         """Initialize the MIDI encoder.
 
         Args:
@@ -113,7 +113,7 @@ def events_to_text(events: list[Event]) -> str:
     return "".join(parts)
 
 
-def from_midi_to_sectioned_text(midi_filename: str, familized: bool = False) -> str:
+def from_midi_to_sectioned_text(midi_filename: str, *, familized: bool = False) -> str:
     """Convert a MIDI file to a MidiText input prompt.
 
     Args:

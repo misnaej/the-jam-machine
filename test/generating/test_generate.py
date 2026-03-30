@@ -65,7 +65,7 @@ def test_set_n_bars_generated(model: GPT2LMHeadModel, tokenizer: GPT2TokenizerFa
 def test_set_force_sequence_length(model: GPT2LMHeadModel, tokenizer: GPT2TokenizerFast) -> None:
     """Test that set_force_sequence_length updates config."""
     gen = GenerateMidiText(model, tokenizer)
-    gen.set_force_sequence_length(False)
+    gen.set_force_sequence_length(force_sequence_length=False)
     assert gen.config.force_sequence_length is False
 
 

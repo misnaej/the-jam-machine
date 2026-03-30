@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any, NamedTuple
 
 import gradio as gr
-import matplotlib
+import matplotlib as mpl
 import numpy as np  # noqa: TC002 - needed at runtime for Gradio type introspection
 from matplotlib import pylab
 from matplotlib.figure import (
@@ -26,7 +26,7 @@ from jammy.logging_config import setup_logging
 from jammy.tokens import PIECE_START
 from jammy.utils import get_miditok
 
-matplotlib.use("Agg")
+mpl.use("Agg")
 
 # Configure logging - logs will be saved to ./output/logs/
 setup_logging(output_dir="./output")
@@ -133,6 +133,7 @@ def _build_output(
     instrument: str,
     state: list[dict[str, Any]],
     track: dict[str, Any],
+    *,
     regenerate: bool,
 ) -> GeneratorResult:
     """Build the output after generation: MIDI files, audio, piano roll.
@@ -178,12 +179,13 @@ def _build_output(
 
 def _generator(
     label: int,
-    regenerate: bool,
     temp: float,
     density: int,
     instrument: str,
     state: list[dict[str, Any]],
     piece_by_track: list[dict[str, Any]],
+    *,
+    regenerate: bool,
     add_bars: bool = False,
     add_bar_count: int = 1,
 ) -> GeneratorResult:
@@ -191,12 +193,12 @@ def _generator(
 
     Args:
         label: Track label/index.
-        regenerate: Whether to regenerate an existing track.
         temp: Temperature for generation.
         density: Note density level.
         instrument: Instrument name.
         state: Current state of all tracks.
         piece_by_track: Piece data by track.
+        regenerate: Whether to regenerate an existing track.
         add_bars: Whether to add bars instead of new track.
         add_bar_count: Number of bars to add.
 
@@ -223,7 +225,7 @@ def _generator(
     else:
         genesis.generate_n_more_bars(add_bar_count)
 
-    return _build_output(genesis, inst_index, instrument, state, track, regenerate)
+    return _build_output(genesis, inst_index, instrument, state, track, regenerate=regenerate)
 
 
 def _generated_text_from_state(state: list[dict[str, Any]]) -> str:
@@ -271,7 +273,15 @@ def _instrument_col(default_inst: str, col_id: int) -> None:
         )
 
     gen_btn.click(
-        fn=_generator,
+        fn=lambda lbl, regen, t, d, ins, st, pbt: _generator(
+            lbl,
+            t,
+            d,
+            ins,
+            st,
+            pbt,
+            regenerate=regen,
+        ),
         inputs=[inst_label, regenerate, temp, density, inst, state, piece_by_track],
         outputs=[
             output_txt,
@@ -329,7 +339,3 @@ with gr.Blocks() as demo:
         _instrument_col("Synth Lead Square", 2)
 
 demo.launch(debug=True, server_name="0.0.0.0", share=False)  # noqa: S104  # nosec B104
-
-# TODO: add improvise button
-# TODO: cleanup input output of generator
-# TODO: add a way to add bars

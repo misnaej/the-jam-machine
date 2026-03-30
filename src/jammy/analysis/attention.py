@@ -99,7 +99,7 @@ def plot_attention_comparison(
                 x=token_list,
                 y=token_list,
                 colorscale="Blues",
-                showscale=col == 2,
+                showscale=col == 2,  # noqa: PLR2004 - second subplot
                 hovertemplate=("From: %{y}<br>To: %{x}<br>Weight: %{z:.3f}<extra></extra>"),
             ),
             row=1,

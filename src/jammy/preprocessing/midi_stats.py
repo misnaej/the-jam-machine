@@ -593,6 +593,7 @@ def single_file_statistics(midi_file: str | Path) -> dict[str, Any] | None:
 
 def get_stats(
     input_directory: str | Path,
+    *,
     recursive: bool = False,
     n_jobs: int = -1,
 ) -> list[dict[str, Any]]:

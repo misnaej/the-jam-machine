@@ -15,16 +15,15 @@ Read `.plans/MASTER-PLAN.md` — the central reference with ordered phases.
 | Plan | Purpose |
 |------|---------|
 | `MASTER-PLAN.md` | Phase order, status, decisions |
-| `design-audit-findings.md` | Remaining design issues (WP6, WP7, WP9, WP10) |
 | `ci-badges.md` | CI workflow and badges plan |
 | `audit-genre-prediction.md` | Genre prediction cleanup (optional) |
 
-## Current Status (2026-03-27)
+## Current Status (2026-03-30)
 
-- **Phases 1–13 complete** (refactoring, examples, hooks, pages, analysis, tests)
-- **Phase 14 in progress** — WP1-5, WP8 done; WP6-7, WP9-10 remaining
+- **Phases 1–14 complete** (refactoring, tests, docs, analysis, design audit)
 - **149 tests passing, 68% coverage**
-- Next: Phase 14 remaining (DRY, idioms, testability, cleanup) or Phase 15 (HuggingFace Space)
+- **Ruff:** `select = ["ALL"]`, 2 global ignores (ISC001, COM812 — formatter conflicts)
+- Next: Phase 15 (HuggingFace Space) or Phase 16 (Docker)
 
 ## Commands
 
