@@ -92,6 +92,37 @@ class MetadataExtractor:
         string = re.sub(r"\.\d+", "", string)
         return re.sub(r"(?<!^)(?=[A-Z])", " ", string)
 
+    def _is_excluded(self, s: str) -> bool:
+        """Check if a string matches exclusion keywords.
+
+        Args:
+            s: Cleaned string to check.
+
+        Returns:
+            True if the string contains excluded keywords or commas.
+        """
+        excluded = ["karaoke", "reprise", "solo", "acoustic"]
+        if "," in s:
+            return True
+        return any(fuzz.partial_ratio(s, kw) > self.threshold for kw in excluded)
+
+    def _find_similar(
+        self,
+        s: str,
+        str_list: list[str],
+        similar_strs: list[str | None],
+    ) -> None:
+        """Mark strings similar to s in the result list.
+
+        Args:
+            s: Canonical string to compare against.
+            str_list: Full list of cleaned strings.
+            similar_strs: Mutable result list (None = not yet matched).
+        """
+        for j, other in enumerate(str_list):
+            if similar_strs[j] is None and fuzz.token_sort_ratio(s, other) > self.threshold:
+                similar_strs[j] = s
+
     def find_and_replace_duplicates(self, str_list: list[str]) -> list[str]:
         """Compare strings and replace duplicates with canonical versions.
 
@@ -105,15 +136,8 @@ class MetadataExtractor:
         similar_strs: list[str | None] = [None] * len(str_list)
 
         for i, s in enumerate(str_list):
-            wrong_strs = ["karaoke", "reprise", "solo", "acoustic"]
-            has_wrong_str = any(
-                fuzz.partial_ratio(s, wrong_str) > self.threshold for wrong_str in wrong_strs
-            )
-            if similar_strs[i] is None and "," not in s and not has_wrong_str:
-                for j, other_strs in enumerate(str_list):
-                    is_similar = fuzz.token_sort_ratio(s, other_strs) > self.threshold
-                    if similar_strs[j] is None and is_similar:
-                        similar_strs[j] = s
+            if similar_strs[i] is None and not self._is_excluded(s):
+                self._find_similar(s, str_list, similar_strs)
 
         return [s if s is not None else str_list[i] for i, s in enumerate(similar_strs)]
 

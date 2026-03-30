@@ -20,10 +20,6 @@ from jammy.utils import compute_list_average
 if TYPE_CHECKING:
     import pandas as pd
 
-# TODO: add data enrichment
-# TODO: count most common combinations of instruments / instrument families
-#       (pairwise and trackwise)
-
 logger = logging.getLogger(__name__)
 
 

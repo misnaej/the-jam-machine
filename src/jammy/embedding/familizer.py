@@ -28,9 +28,6 @@ class Familizer:
     Attributes:
         n_jobs: Number of parallel jobs.
         reference_programs: Mapping from family numbers to program numbers.
-        input_directory: Set dynamically by ``replace_tokens``.
-        output_directory: Set dynamically by ``replace_tokens``.
-        operation: Set dynamically by ``replace_tokens`` ("family" or "program").
     """
 
     def __init__(self, n_jobs: int = -1, arbitrary: bool = False) -> None:
@@ -92,58 +89,61 @@ class Familizer:
             raise KeyError(msg)
         return self.reference_programs[family_number]
 
-    def replace_instrument_token(self, token: str) -> str:
+    def replace_instrument_token(self, token: str, operation: str) -> str:
         """Replace a MIDI program number token with family/program number.
-
-        Requires ``self.operation`` to be set (via ``replace_tokens``)
-        to either ``"family"`` or ``"program"`` before calling.
 
         Args:
             token: Token like 'INST=86'.
+            operation: Either 'family' or 'program'.
 
         Returns:
-            Converted token like 'INST=10'.
+            Converted token, or the original token if operation is unknown.
         """
         inst_number = int(token.split("=")[1])
-        if self.operation == "family":
+        if operation == "family":
             return f"{INST}={self.get_family_number(inst_number)}"
-        if self.operation == "program":
+        if operation == "program":
             return f"{INST}={self.get_program_number(inst_number)}"
         return token
 
-    def replace_instrument_in_text(self, text: str) -> str:
-        """Replace all instrument tokens in text with family number tokens.
+    def replace_instrument_in_text(self, text: str, operation: str) -> str:
+        """Replace all instrument tokens in text.
 
         Args:
             text: Text containing INST= tokens.
+            operation: Either 'family' or 'program'.
 
         Returns:
             Text with replaced instrument tokens.
         """
         return " ".join(
-            [
-                self.replace_instrument_token(token)
-                if token.startswith(f"{INST}=") and token != f"{INST}={DRUMS}"
-                else token
-                for token in text.split(" ")
-            ],
+            self.replace_instrument_token(token, operation)
+            if token.startswith(f"{INST}=") and token != f"{INST}={DRUMS}"
+            else token
+            for token in text.split(" ")
         )
 
-    def replace_instruments_in_file(self, file: Path) -> None:
+    def replace_in_file(self, file: Path, operation: str) -> None:
         """Replace instrument tokens in a text file.
 
         Args:
             file: Path to the text file.
+            operation: Either 'family' or 'program'.
         """
         text = file.read_text()
-        file.write_text(self.replace_instrument_in_text(text))
+        file.write_text(self.replace_instrument_in_text(text, operation))
 
     @timeit
-    def replace_instruments(self) -> None:
-        """Replace instrument tokens in all text files in output directory."""
-        files = get_files(self.output_directory, extension="txt")
+    def _replace_all(self, output_directory: Path, operation: str) -> None:
+        """Replace instrument tokens in all text files in a directory.
+
+        Args:
+            output_directory: Directory containing text files.
+            operation: Either 'family' or 'program'.
+        """
+        files = get_files(output_directory, extension="txt")
         Parallel(n_jobs=self.n_jobs)(
-            delayed(self.replace_instruments_in_file)(file) for file in files
+            delayed(self.replace_in_file)(file, operation) for file in files
         )
 
     def replace_tokens(self, input_directory: Path, output_directory: Path, operation: str) -> None:
@@ -154,16 +154,11 @@ class Familizer:
             output_directory: Directory for output zip files.
             operation: Either 'family' or 'program'.
         """
-        self.input_directory = input_directory
-        self.output_directory = output_directory
-        self.operation = operation
-
-        # Uncompress files, replace tokens, compress files
-        fc = FileCompressor(self.input_directory, self.output_directory, self.n_jobs)
+        fc = FileCompressor(input_directory, output_directory, self.n_jobs)
         fc.unzip()
-        self.replace_instruments()
+        self._replace_all(output_directory, operation)
         fc.zip()
-        logger.info("%s complete", self.operation)
+        logger.info("%s complete", operation)
 
     def to_family(self, input_directory: Path, output_directory: Path) -> None:
         """Convert instrument tokens to family number tokens.
@@ -197,10 +192,3 @@ if __name__ == "__main__":
 
     # familize files
     familizer.to_family(input_directory, output_directory)
-
-    # Choose directory to process for family
-    # input_directory = Path(".../encoded_samples/validate/family").resolve()
-    # output_directory = input_directory.parent / "program"
-
-    # # programize files
-    # familizer.to_program(input_directory, output_directory)

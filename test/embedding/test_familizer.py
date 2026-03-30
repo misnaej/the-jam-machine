@@ -54,15 +54,13 @@ class TestReplaceInstrumentToken:
     def test_replace_instrument_token_to_family(self) -> None:
         """Test converting a program token to family token."""
         f = Familizer()
-        f.operation = "family"
-        result = f.replace_instrument_token(f"{INST}=33")
+        result = f.replace_instrument_token(f"{INST}=33", "family")
         assert result == f"{INST}=4"  # program 33 → family 4 (bass)
 
     def test_replace_instrument_token_to_program(self) -> None:
         """Test converting a family token to program token."""
         f = Familizer(arbitrary=True)
-        f.operation = "program"
-        result = f.replace_instrument_token(f"{INST}=4")
+        result = f.replace_instrument_token(f"{INST}=4", "program")
         # Should return a valid program in the bass family (32-39)
         program = int(result.split("=")[1])
         assert 32 <= program < 40
@@ -70,9 +68,8 @@ class TestReplaceInstrumentToken:
     def test_replace_instrument_token_unknown_operation(self) -> None:
         """Test that unknown operation returns token unchanged."""
         f = Familizer()
-        f.operation = "unknown"
         token = f"{INST}=33"
-        assert f.replace_instrument_token(token) == token
+        assert f.replace_instrument_token(token, "unknown") == token
 
 
 class TestReplaceInstrumentInText:
@@ -81,31 +78,28 @@ class TestReplaceInstrumentInText:
     def test_replace_instrument_in_text_replaces_inst_tokens(self) -> None:
         """Test that INST tokens in text are replaced."""
         f = Familizer()
-        f.operation = "family"
         text = f"TRACK_START {INST}=33 DENSITY=2 BAR_START NOTE_ON=40 BAR_END TRACK_END"
-        result = f.replace_instrument_in_text(text)
+        result = f.replace_instrument_in_text(text, "family")
         assert f"{INST}=4" in result
         assert f"{INST}=33" not in result
 
     def test_replace_instrument_in_text_drums_passthrough(self) -> None:
         """Test that DRUMS token is not modified."""
         f = Familizer()
-        f.operation = "family"
         text = f"TRACK_START {INST}=DRUMS DENSITY=3 BAR_START BAR_END TRACK_END"
-        result = f.replace_instrument_in_text(text)
+        result = f.replace_instrument_in_text(text, "family")
         assert f"{INST}=DRUMS" in result
 
 
-class TestReplaceInstrumentsInFile:
-    """Tests for Familizer.replace_instruments_in_file."""
+class TestReplaceInFile:
+    """Tests for Familizer.replace_in_file."""
 
-    def test_replace_instruments_in_file_modifies_content(self, tmp_path: Path) -> None:
+    def test_replace_in_file_modifies_content(self, tmp_path: Path) -> None:
         """Test that instrument tokens in a file are replaced in place."""
         f = Familizer()
-        f.operation = "family"
         txt = tmp_path / "track.txt"
         txt.write_text(f"TRACK_START {INST}=33 DENSITY=2 BAR_START NOTE_ON=40 BAR_END TRACK_END")
-        f.replace_instruments_in_file(txt)
+        f.replace_in_file(txt, "family")
         result = txt.read_text()
         assert f"{INST}=4" in result
         assert f"{INST}=33" not in result
