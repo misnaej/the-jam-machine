@@ -337,6 +337,24 @@ Set up GitHub Actions CI with pytest + coverage (Codecov), docstring coverage (i
 
 ---
 
+### Phase 22: Improvise Button (Optional)
+**Effort:** TBD | **Risk:** Low | **Impact:** UX
+
+Add an "improvise" button to the Gradio UI that randomizes generation parameters (instrument, density, temperature) for quick exploration. Needs design: which params to randomize, what ranges, whether to auto-generate or just set sliders.
+
+*Developer-driven — requires UX decisions before implementation.*
+
+---
+
+### Phase 23: Add Bars to Existing Generation (Optional)
+**Effort:** TBD | **Risk:** Medium | **Impact:** UX
+
+Allow users to append bars to an existing generation instead of starting from scratch. Needs design: how to handle context window limits, whether to regenerate the full piece or just append, UI flow for selecting which track gets new bars.
+
+*Developer-driven — requires UX and architecture decisions before implementation.*
+
+---
+
 ## Phase 1: Postponed Annotations (Detailed)
 
 ### Goal

@@ -60,7 +60,7 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "test/**/*.py" = ["S101", "PLR2004"]
-"app/**/*.py" = ["TD002", "TD003", "FIX002", "INP001", "PLR0913"]
+"app/**/*.py" = ["INP001", "PLR0913"]
 "examples/**/*.py" = ["INP001"]
 "src/jammy/preprocessing/**/*.py" = ["PD002"]
 "src/jammy/midi_codec.py" = ["PLR0911"]

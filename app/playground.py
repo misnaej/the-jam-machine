@@ -339,6 +339,3 @@ with gr.Blocks() as demo:
         _instrument_col("Synth Lead Square", 2)
 
 demo.launch(debug=True, server_name="0.0.0.0", share=False)  # noqa: S104  # nosec B104
-
-# TODO: add improvise button
-# TODO: add a way to add bars
