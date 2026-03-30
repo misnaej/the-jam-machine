@@ -22,7 +22,7 @@ def setup_logging(
 
     Args:
         output_dir: Directory for log files. If None, uses './output/logs'.
-        level: Logging level (default: INFO).
+        level: Console logging level (default: INFO). File handler always captures DEBUG.
         log_to_console: Whether to log to console.
         log_to_file: Whether to log to file.
 

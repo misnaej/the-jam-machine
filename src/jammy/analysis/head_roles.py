@@ -62,8 +62,7 @@ def _normalize_weights(weights: list[list[list[float]]]) -> None:
         for head in layer:
             total = sum(head)
             if total > 0:
-                for i in range(len(head)):
-                    head[i] /= total
+                head[:] = [w / total for w in head]
 
 
 def analyze_head_roles(

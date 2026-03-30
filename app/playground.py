@@ -193,12 +193,12 @@ def _generator(
 
     Args:
         label: Track label/index.
-        regenerate: Whether to regenerate an existing track.
         temp: Temperature for generation.
         density: Note density level.
         instrument: Instrument name.
         state: Current state of all tracks.
         piece_by_track: Piece data by track.
+        regenerate: Whether to regenerate an existing track.
         add_bars: Whether to add bars instead of new track.
         add_bar_count: Number of bars to add.
 

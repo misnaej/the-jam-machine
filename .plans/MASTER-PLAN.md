@@ -11,7 +11,7 @@ This document is the **central reference** for all refactoring and improvement w
 
 ---
 
-## Current State (updated 2026-03-27)
+## Current State (updated 2026-03-30)
 
 | Area | Status | Notes |
 |------|--------|-------|
@@ -20,9 +20,9 @@ This document is the **central reference** for all refactoring and improvement w
 | GitHub Pages (Phase 12) | ✅ Complete | Landing page, encoding guide, embedding explorer |
 | Analysis module (Phase 12b) | ✅ Complete | Interactive plotly visualizations, smoke tests |
 | Unit tests (Phase 13) | ✅ Complete | 149 tests, 68% coverage |
-| Design audit (Phase 14) | ⚠️ Partial | WP1–5, WP8 done; WP6–7, WP9–10 remaining |
+| Design audit (Phase 14) | ✅ Complete | All WPs done, ruff: 2 global ignores + 3 per-file |
 | Claude Code setup | ✅ Complete | Skills, agents, hooks configured |
-| Code quality | ✅ All ruff rules | `select = ["ALL"]` with targeted ignores |
+| Code quality | ✅ All ruff rules | `select = ["ALL"]`, only ISC001+COM812 ignored (formatter) |
 
 ---
 
@@ -31,7 +31,7 @@ This document is the **central reference** for all refactoring and improvement w
 | # | Plan | Status | Purpose |
 |---|------|--------|---------|
 | 1 | [Test Plan](./test-plan.md) | ✅ Complete | Unit tests (3 PRs merged) |
-| 2 | [Design Audit Findings](./design-audit-findings.md) | ⚠️ In progress | WP1-5, WP8 done; WP6-7, WP9-10 remaining |
+| 2 | [Design Audit Findings](./design-audit-findings.md) | ✅ Complete | All WPs done, ruff ignores minimized |
 | 3 | [GitHub Pages](./github-pages.md) | ✅ Complete | Documentation site live |
 | 4 | [Analysis Module](./analysis-module.md) | ✅ Complete | Interactive plotly visualizations |
 | 5 | [CI Badges](./ci-badges.md) | ⚠️ Partial | Hooks done, GitHub Actions not yet |
@@ -242,20 +242,14 @@ Added unit tests across all core modules. 149 tests passing, 68% coverage (up fr
 
 ---
 
-### Phase 14: Design Audit Fixes ⚠️ In Progress
+### Phase 14: Design Audit Fixes ✅
 **Effort:** ~6-8 hours (multiple PRs) | **Risk:** Medium | **Impact:** Code quality, security, correctness
 
 Fix 43 findings from the full codebase design audit. Grouped into 10 work packages.
 
-**Completed:** PRs #20 (ruff all rules), #21 (WP1 security + WP2 side effects + WP3 error handling), #22 (WP5 classes→functions), #23 (WP4 complexity), #24 (WP8 logic bugs), #28 (dependency security)
+**Completed:** PRs #20 (ruff all rules), #21 (WP1-3), #22 (WP5), #23 (WP4), #24 (WP8), #28 (deps), #30 (dynamic attrs, global state, hardcoded paths), #31 (ruff ignore cleanup: keyword-only booleans, verbose→debug, docstrings, import aliases, complexity reduction)
 
-**Remaining:**
-- WP6: DRY violations (instrument lookup, repeated guards)
-- WP7: Pythonic idioms (string joins, list comprehensions)
-- WP9: Testability improvements (matplotlib global state, hardcoded filenames)
-- WP10: Cleanup (commented code, duplicated constants)
-
-**Details:** [Design Audit Findings](./design-audit-findings.md)
+**Final ruff state:** 2 global ignores (ISC001, COM812 — both formatter conflicts) + 3 per-file-ignores (tests, app, examples).
 
 ---
 
@@ -528,6 +522,7 @@ git commit -m "refactor: add postponed annotations to all modules"
 | 2026-03-21 | Phase 14 partial | WP1-5, WP8 done across PRs #20-24 |
 | 2026-03-25 | Phase 12 complete | GitHub Pages with Jekyll, encoding guide, embedding explorer |
 | 2026-03-27 | Phase 12b complete | Analysis module with plotly charts, smoke tests (PR #29) |
+| 2026-03-30 | Phase 14 complete | PRs #30-31: dynamic attrs, global state, hardcoded paths, keyword-only booleans, verbose→debug, ruff ignores 14→2 |
 
 ---
 
@@ -542,6 +537,6 @@ git commit -m "refactor: add postponed annotations to all modules"
 
 ## Continuation Prompt
 
-**Last completed:** Phase 12b (Analysis module, PR #29)
-**Next step:** Phase 14 remaining (WP6, WP7, WP9, WP10) or Phase 15 (HuggingFace Space)
-**Notes:** 149 tests, 68% coverage. All ruff checks pass. On `main`.
+**Last completed:** Phase 14 (Design audit, PR #31)
+**Next step:** Phase 15 (HuggingFace Space deployment)
+**Notes:** 149 tests, 68% coverage. Ruff: 2 global ignores (formatter conflicts only). On `main`.
