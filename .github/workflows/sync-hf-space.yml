@@ -8,6 +8,9 @@ on:
       - "src/jammy/**"
       - "pyproject.toml"
 
+env:
+  HF_SPACE_ID: JammyMachina/the-jam-machine-staging
+
 jobs:
   sync:
     runs-on: ubuntu-latest
@@ -18,19 +21,18 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          # Configure git
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
 
           # Clone the HF Space repo
-          git clone https://user:${HF_TOKEN}@huggingface.co/spaces/JammyMachina/the-jam-machine-staging /tmp/hf-space
+          git clone "https://user:${HF_TOKEN}@huggingface.co/spaces/${HF_SPACE_ID}" /tmp/hf-space
 
-          # Replace contents with hf_space/ from this repo
-          rm -rf /tmp/hf-space/*
-          cp hf_space/* /tmp/hf-space/
-
-          # Push to HF Space
+          # Replace contents with hf_space/ (preserve .git)
           cd /tmp/hf-space
+          find . -maxdepth 1 -not -name '.git' -not -name '.gitattributes' -not -name '.' -delete 2>/dev/null || true
+          cp "$GITHUB_WORKSPACE"/hf_space/* .
+
+          # Push if changed
           git add -A
           git diff --cached --quiet || git commit -m "Sync from GitHub $(date -u +%Y-%m-%dT%H:%M:%SZ)"
           git push
