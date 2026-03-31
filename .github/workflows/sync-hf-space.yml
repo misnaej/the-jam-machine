@@ -1,0 +1,38 @@
+name: Sync to HuggingFace Space
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "hf_space/**"
+      - "src/jammy/**"
+      - "pyproject.toml"
+
+env:
+  HF_SPACE_ID: JammyMachina/the-jam-machine-staging
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Push hf_space/ to HuggingFace Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+
+          # Clone the HF Space repo
+          git clone "https://user:${HF_TOKEN}@huggingface.co/spaces/${HF_SPACE_ID}" /tmp/hf-space
+
+          # Replace contents with hf_space/ (preserve .git)
+          cd /tmp/hf-space
+          find . -maxdepth 1 -not -name '.git' -not -name '.gitattributes' -not -name '.' -delete 2>/dev/null || true
+          cp "$GITHUB_WORKSPACE"/hf_space/* .
+
+          # Push if changed
+          git add -A
+          git diff --cached --quiet || git commit -m "Sync from GitHub $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git push

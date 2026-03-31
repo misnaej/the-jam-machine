@@ -30,6 +30,6 @@ Read `.plans/MASTER-PLAN.md` — the central reference with ordered phases.
 ```bash
 pipenv run pytest test/ -v           # Run tests (149 pass)
 pipenv run ruff check src/ test/     # Lint
-pipenv run python app/playground.py  # Run app
+pipenv run python -m jammy.app.playground  # Run app
 ./scripts/run-tests.sh               # Tests + coverage + badges
 ```

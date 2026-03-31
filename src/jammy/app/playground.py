@@ -338,4 +338,5 @@ with gr.Blocks() as demo:
         _instrument_col("Synth Bass 1", 1)
         _instrument_col("Synth Lead Square", 2)
 
-demo.launch(debug=True, server_name="0.0.0.0", share=False)  # noqa: S104  # nosec B104
+if __name__ == "__main__":
+    demo.launch(debug=True, server_name="0.0.0.0", share=False)  # noqa: S104  # nosec B104
