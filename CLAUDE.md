@@ -45,12 +45,13 @@ Custom skills (slash commands) and agents are the standard workflow tools. **Use
 
 ```
 src/jammy/                 # Main package
+├── app/                   # Gradio web interface
 ├── embedding/             # MIDI <-> text token encoding/decoding
 ├── generating/            # Music generation engine (GPT-2)
 ├── preprocessing/         # Model loading from HuggingFace
 └── training/              # Model training pipelines
 
-app/playground.py          # Gradio web interface
+hf_space/                  # HuggingFace Space deployment files
 examples/                  # Example scripts
 test/                      # Test suite
 .claude/                   # Claude Code config (agents, skills, hooks)
@@ -500,5 +501,5 @@ This ensures work can resume smoothly after context resets.
 | Format code | `pipenv run ruff format src/ test/` |
 | Security audit | `pipenv run pip-audit` |
 | Enable git hooks | `git config core.hooksPath .githooks` |
-| Run Gradio app | `pipenv run python app/playground.py` |
+| Run Gradio app | `pipenv run python -m jammy.app.playground` |
 | Run example | `pipenv run python examples/generate.py` |

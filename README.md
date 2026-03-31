@@ -128,7 +128,7 @@ pipenv shell
 #### Run the App
 
 ```bash
-pipenv run python app/playground.py
+pipenv run python -m jammy.app.playground
 ```
 
 Open the URL shown in your terminal (usually http://localhost:7860).
