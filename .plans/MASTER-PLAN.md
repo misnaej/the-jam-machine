@@ -30,12 +30,9 @@ This document is the **central reference** for all refactoring and improvement w
 
 | # | Plan | Status | Purpose |
 |---|------|--------|---------|
-| 1 | [Test Plan](./test-plan.md) | ✅ Complete | Unit tests (3 PRs merged) |
-| 2 | [Design Audit Findings](./design-audit-findings.md) | ✅ Complete | All WPs done, ruff ignores minimized |
-| 3 | [GitHub Pages](./github-pages.md) | ✅ Complete | Documentation site live |
-| 4 | [Analysis Module](./analysis-module.md) | ✅ Complete | Interactive plotly visualizations |
-| 5 | [CI Badges](./ci-badges.md) | ⚠️ Partial | Hooks done, GitHub Actions not yet |
-| 6 | [Genre Prediction Audit](./audit-genre-prediction.md) | 📋 Reference | Separate system (optional) |
+| 1 | [CI Badges](./ci-badges.md) | ⚠️ Partial | Hooks done, GitHub Actions not yet |
+| 2 | [Genre Prediction Audit](./audit-genre-prediction.md) | 📋 Reference | Separate system (optional) |
+| 3 | [Dependency Tree](./dependency-tree.md) | 📋 Reference | Internal import relationships |
 
 ---
 
