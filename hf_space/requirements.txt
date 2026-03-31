@@ -1,1 +1,1 @@
-the-jam-machine @ git+https://github.com/misnaej/the-jam-machine.git@feature/hf-space-deployment
+the-jam-machine @ git+https://github.com/misnaej/the-jam-machine.git@main
