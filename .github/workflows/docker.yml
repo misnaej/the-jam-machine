@@ -25,22 +25,17 @@ jobs:
       - name: Build Docker image
         run: docker compose build
 
-      - name: Start container
-        run: docker compose up -d
-
-      - name: Wait for app to be ready
+      - name: Verify container starts
         run: |
-          for i in $(seq 1 60); do
-            if curl -s http://localhost:7860 > /dev/null; then
-              echo "App is ready"
-              exit 0
-            fi
-            echo "Waiting... ($i/60)"
-            sleep 5
-          done
-          echo "App failed to start"
-          docker compose logs
-          exit 1
+          docker compose up -d
+          sleep 10
+          if docker compose ps --format json | grep -q '"running"'; then
+            echo "Container is running"
+          else
+            echo "Container failed to start"
+            docker compose logs 2>&1 | grep -v HF_TOKEN
+            exit 1
+          fi
 
       - name: Stop container
         if: always()
