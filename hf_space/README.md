@@ -1,12 +1,12 @@
 ---
-title: The Jam Machine (Staging)
+title: The Jam Machine
 emoji: 🎹
 colorFrom: purple
 colorTo: blue
 sdk: gradio
 python_version: "3.11"
 app_file: app.py
-pinned: false
+pinned: true
 license: mit
 ---
 

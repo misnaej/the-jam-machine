@@ -139,11 +139,11 @@ def piece_to_inst_events(piece_events: list[Event]) -> list[dict[str, Any]]:
         and 'events' keys for one instrument.
     """
     inst_events: list[dict[str, Any]] = []
-    current_track = -1  # so does not start before Track-Start is encountered
+    current_track: int = -1  # so does not start before Track-Start is encountered
     for event in piece_events:
         if event.type == "Track-Start":
-            current_track = event.value
-            if len(inst_events) == event.value:
+            current_track = int(event.value)
+            if len(inst_events) == current_track:
                 inst_events.append({})
                 inst_events[current_track]["channel"] = current_track
                 inst_events[current_track]["events"] = []

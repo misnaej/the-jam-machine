@@ -43,7 +43,7 @@ def add_bars(midi_events: list[list[Event]]) -> list[list[Event]]:
 
             # keeping track of the beat count within the bar
             if event.type == "Time-Shift":
-                beat_count += int_dec_base_to_beat(event.value)
+                beat_count += int_dec_base_to_beat(str(event.value))
                 if beat_count == BEATS_PER_BAR:
                     beat_count = 0
                     bar_end = True
