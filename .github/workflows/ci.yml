@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pipenv"
+
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libfluidsynth3
+
+      - name: Install pipenv and dependencies
+        run: |
+          pip install pipenv
+          pipenv install -e ".[ci]"
+
+      - name: Ruff lint
+        run: pipenv run ruff check src/ test/ examples/ hf_space/
+
+      - name: Ruff format check
+        run: pipenv run ruff format --check src/ test/ examples/ hf_space/
+
+      - name: Docstring coverage
+        run: pipenv run interrogate src/jammy/ --fail-under 95 -v
+
+      - name: Security scan
+        run: pipenv run bandit -r src/ -c pyproject.toml -q
+
+      - name: Tests
+        run: pipenv run pytest test/ -v --tb=short

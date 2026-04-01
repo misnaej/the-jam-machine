@@ -2,6 +2,7 @@
 
 **A Generative AI that composes MIDI music**
 
+[![CI](https://github.com/misnaej/the-jam-machine/actions/workflows/ci.yml/badge.svg)](https://github.com/misnaej/the-jam-machine/actions/workflows/ci.yml)
 [![Try it on HuggingFace](https://img.shields.io/badge/🤗-Try%20Demo-yellow)](https://huggingface.co/spaces/JammyMachina/the-jam-machine-app)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
