@@ -17,5 +17,6 @@ tmp/
 *.pyc
 *.mid
 .DS_Store
+.env
 Pipfile
 Pipfile.lock
