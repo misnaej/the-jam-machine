@@ -253,7 +253,7 @@ def _instrument_col(default_inst: str, col_id: int) -> None:
     with gr.Column(scale=1, min_width=100):
         gr.Markdown(f"""## TRACK {col_id + 1}""")
         inst = gr.Dropdown(
-            [*sorted(str(inst["transfer_to"]) for inst in INSTRUMENT_TRANSFER_CLASSES), "Drums"],
+            [*sorted(inst["transfer_to"] for inst in INSTRUMENT_TRANSFER_CLASSES), "Drums"],
             value=default_inst,
             label="Instrument",
         )

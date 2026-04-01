@@ -6,11 +6,36 @@ from typing import TypedDict
 
 
 class InstrumentClass(TypedDict):
-    """Type definition for instrument class dictionaries."""
+    """Type for entries in INSTRUMENT_CLASSES.
+
+    Attributes:
+        name: Instrument family name (e.g. "Piano", "Bass").
+        program_range: MIDI program number range for this family.
+        family_number: General MIDI family index (0-15).
+    """
 
     name: str
     program_range: range
     family_number: int
+
+
+class InstrumentTransferClass(TypedDict):
+    """Type for entries in INSTRUMENT_TRANSFER_CLASSES.
+
+    Maps each family to a specific program number and instrument name
+    used when decoding back to MIDI.
+
+    Attributes:
+        name: Instrument family name.
+        program_range: Program numbers for this family (list or range).
+        family_number: General MIDI family index (0-15).
+        transfer_to: Target instrument name for decoding.
+    """
+
+    name: str
+    program_range: list[int] | range
+    family_number: int
+    transfer_to: str
 
 
 # fmt: off
@@ -36,7 +61,7 @@ INSTRUMENT_CLASSES: list[InstrumentClass] = [
 # fmt: on
 
 # Instrument mapping for decoding our midi sequence into midi instruments of our choice
-INSTRUMENT_TRANSFER_CLASSES = [
+INSTRUMENT_TRANSFER_CLASSES: list[InstrumentTransferClass] = [
     {
         "name": "Piano",
         "program_range": [4],

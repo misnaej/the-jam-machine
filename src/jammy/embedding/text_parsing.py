@@ -69,6 +69,8 @@ def text_to_events(text: str) -> list[Event]:
             inst_event = get_event(_event[0], value)
             if inst_event is not None:
                 instrument = str(inst_event.value)
+            else:
+                logger.debug("Unknown instrument token: %s", value)
             max_cumul_time_delta = get_beat_resolution(instrument) * 4
 
         if _event[0] == BAR_START:

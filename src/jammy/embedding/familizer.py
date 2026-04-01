@@ -9,11 +9,16 @@ from __future__ import annotations
 import logging
 import random
 from pathlib import Path
-from typing import Any
 
 from joblib import Parallel, delayed
 
-from jammy.constants import INSTRUMENT_CLASSES, INSTRUMENT_TRANSFER_CLASSES, get_instrument_class
+from jammy.constants import (
+    INSTRUMENT_CLASSES,
+    INSTRUMENT_TRANSFER_CLASSES,
+    InstrumentClass,
+    InstrumentTransferClass,
+    get_instrument_class,
+)
 from jammy.file_utils import FileCompressor, get_files, timeit
 from jammy.tokens import DRUMS, INST
 
@@ -62,8 +67,8 @@ class Familizer:
         Args:
             arbitrary: Whether to use transfer classes.
         """
-        int_class: list[dict[str, Any]] = (
-            INSTRUMENT_TRANSFER_CLASSES if arbitrary else INSTRUMENT_CLASSES  # type: ignore[assignment]
+        int_class: list[InstrumentClass] | list[InstrumentTransferClass] = (
+            INSTRUMENT_TRANSFER_CLASSES if arbitrary else INSTRUMENT_CLASSES
         )
 
         self.reference_programs: dict[int, int] = {}
