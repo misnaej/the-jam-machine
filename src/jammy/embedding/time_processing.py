@@ -44,7 +44,7 @@ def normalize_timeshifts(midi_events: list[list[Event]]) -> list[list[Event]]:
             if event.type == "Time-Shift":
                 # split_dots returns [integer_part, decimal_part, base]
                 # Convert integer beats into decimal units: e.g., 1.2.8 -> 0.10.8
-                values = split_dots(event.value)
+                values = split_dots(str(event.value))
                 values[1] += values[0] * values[2]
                 values[0] = 0
                 # generating and appending new time-shift events
@@ -74,7 +74,7 @@ def combine_timeshifts_in_bar(midi_events: list[list[Event]]) -> list[list[Event
         for event in inst_events:
             # aggregating adjacent time-shifts and skipping them
             if event.type == "Time-Shift":
-                aggregated_beats += int_dec_base_to_beat(event.value)
+                aggregated_beats += int_dec_base_to_beat(str(event.value))
                 continue
             # writing the aggregated time shift as a new event
             if aggregated_beats > 0:

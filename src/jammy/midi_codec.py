@@ -152,7 +152,7 @@ def get_text(event: Event, instrument: str = "drums") -> str:
         return f"{INST}={value} "
 
     if event.type == "Time-Shift":
-        delta = int_dec_base_to_delta(event.value, instrument)
+        delta = int_dec_base_to_delta(str(event.value), instrument)
         return f"{TIME_DELTA}={delta} " if delta else ""
 
     return ""
@@ -222,13 +222,11 @@ def get_event(text: str, value: str | None = None, instrument: str = "drums") ->
     """
     # Simple mappings (value passed through unchanged)
     if text in _TEXT_TO_EVENT_TYPE:
-        return Event(_TEXT_TO_EVENT_TYPE[text], value)
+        return Event(_TEXT_TO_EVENT_TYPE[text], value or 0)
 
     # Special cases requiring custom logic
-    if text == INST:
-        if value == DRUMS:
-            value = "Drums"
-        return Event("Instrument", value)
+    if text == INST and value is not None:
+        return Event("Instrument", "Drums" if value == DRUMS else value)
 
     if text == TIME_DELTA:
         if value is not None and int(value) == 0:

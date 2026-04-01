@@ -9,6 +9,7 @@ plotly = "*"
 
 [dev-packages]
 mypy = "*"
+ty = "*"
 
 [requires]
 python_version = "3.11"

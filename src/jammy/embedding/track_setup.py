@@ -97,7 +97,7 @@ def make_sections(
         for ev_idx, event in enumerate(inst_events):
             section.append(event)
             if ev_idx == len(inst_events) - 1 or (
-                event.type == "Bar-End" and int(event.value + 1) % n_bar == 0
+                event.type == "Bar-End" and (int(event.value) + 1) % n_bar == 0
             ):
                 section, track_index = terminate_track_in_section(section, track_index)
                 inst_section.append(section)
