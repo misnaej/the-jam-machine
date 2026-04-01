@@ -35,7 +35,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-ci = ["ruff", "pytest", "pytest-cov", "pytest-html", "pip-audit", "bandit", "interrogate"]
+ci = ["ruff", "pytest", "pytest-cov", "pytest-html", "pip-audit", "bandit", "interrogate", "mypy"]
 notebooks = ["bertviz", "ipykernel", "scikit-learn", "nbconvert"]
 
 [tool.setuptools.packages.find]
