@@ -90,7 +90,7 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "jammy.training.*"
-ignore_errors = true
+ignore_errors = true  # transformers stubs are outdated (GPT2Config kwargs, TrainingArguments renames)
 
 [tool.pytest.ini_options]
 testpaths = ["test"]
