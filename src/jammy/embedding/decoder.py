@@ -26,11 +26,6 @@ class TextDecoder:
         tokenizer: MidiTok tokenizer instance.
         familized: Whether to use familized instrument mapping.
 
-    Example:
-        >>> decoder = TextDecoder(tokenizer)
-        >>> midi = decoder.get_midi(
-        ...     "PIECE_START TRACK_START INST=25 DENSITY=2 BAR_START..."
-        ... )
     """
 
     def __init__(self, tokenizer: MIDILike, *, familized: bool = True) -> None:

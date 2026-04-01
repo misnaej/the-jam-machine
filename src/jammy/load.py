@@ -29,12 +29,6 @@ def load_model_and_tokenizer(
     Raises:
         FileNotFoundError: If local path does not exist or tokenizer.json is missing.
 
-    Example:
-        >>> model, tokenizer = load_model_and_tokenizer(
-        ...     "JammyMachina/elec-gmusic-familized-model-13-12__17-35-53",
-        ...     from_huggingface=True,
-        ...     revision="95b3c0905f6a97fdc147776a5b53edaf651916e4",
-        ... )
     """
     if not from_huggingface and not Path(path).exists():
         msg = f"Model path does not exist: {path}"
