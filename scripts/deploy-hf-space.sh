@@ -2,8 +2,8 @@
 # Deploy hf_space/ contents to a HuggingFace Space.
 #
 # Usage:
-#   ./scripts/deploy-hf-space.sh                          # deploy to staging
-#   ./scripts/deploy-hf-space.sh JammyMachina/the-jam-machine-app  # deploy to production
+#   ./scripts/deploy-hf-space.sh                                    # deploy to production
+#   ./scripts/deploy-hf-space.sh JammyMachina/other-space-name     # deploy to a different space
 #
 # Requires: huggingface-hub python package and valid HF login (huggingface-cli login)
 

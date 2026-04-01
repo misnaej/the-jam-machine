@@ -222,7 +222,7 @@ def get_event(text: str, value: str | None = None, instrument: str = "drums") ->
     """
     # Simple mappings (value passed through unchanged)
     if text in _TEXT_TO_EVENT_TYPE:
-        return Event(_TEXT_TO_EVENT_TYPE[text], value or 0)
+        return Event(_TEXT_TO_EVENT_TYPE[text], value if value is not None else 0)
 
     # Special cases requiring custom logic
     if text == INST and value is not None:
