@@ -64,16 +64,16 @@ def _plot_instrument_subplot(
         plt.axvline(bar, color="grey", linewidth=0.5)
     octaves = np.arange(0, 128, 12)
     for octave in octaves:
-        plt.axhline(octave, color="grey", linewidth=0.5)
+        plt.axhline(float(octave), color="grey", linewidth=0.5)
     plt.yticks(octaves, visible=False)
 
-    note_time = []
-    note_pitch = []
+    note_time_list: list[list[float]] = []
+    note_pitch_list: list[list[int]] = []
     for note in inst.notes:
-        note_time.append([note.start, note.end])
-        note_pitch.append([note.pitch, note.pitch])
-    note_pitch = np.array(note_pitch)
-    note_time = np.array(note_time)
+        note_time_list.append([note.start, note.end])
+        note_pitch_list.append([note.pitch, note.pitch])
+    note_pitch = np.array(note_pitch_list)
+    note_time = np.array(note_time_list)
 
     plt.plot(
         note_time.T,
@@ -88,7 +88,7 @@ def _plot_instrument_subplot(
     plt.ylim(max([note_pitch.min() - 5, 0]), note_pitch.max() + 5)
     plt.xticks(
         xticks + 0.5 * BEATS_PER_BAR * _SEC_PER_BEAT,
-        labels=xticks.argsort() + 1,
+        labels=[str(x) for x in xticks.argsort() + 1],
         visible=False,
     )
     plt.text(

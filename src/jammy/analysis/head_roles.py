@@ -93,7 +93,7 @@ def analyze_head_roles(
 
     for sequence in sequences:
         inputs = tokenizer.encode(sequence, return_tensors="pt")
-        token_cats = [categorize_token(tokenizer.decode(t)) for t in inputs[0]]
+        token_cats = [categorize_token(str(tokenizer.decode(t))) for t in inputs[0]]
 
         with torch.no_grad():
             outputs = model(inputs, output_attentions=True)
@@ -208,4 +208,4 @@ def plot_head_comparison(
         height=350,
         template="plotly_white",
     )
-    return fig.to_html(full_html=False, include_plotlyjs=PLOTLY_JS)
+    return str(fig.to_html(full_html=False, include_plotlyjs=PLOTLY_JS))

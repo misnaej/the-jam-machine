@@ -9,6 +9,7 @@ from __future__ import annotations
 import logging
 import random
 from pathlib import Path
+from typing import Any
 
 from joblib import Parallel, delayed
 
@@ -61,11 +62,13 @@ class Familizer:
         Args:
             arbitrary: Whether to use transfer classes.
         """
-        int_class = INSTRUMENT_TRANSFER_CLASSES if arbitrary else INSTRUMENT_CLASSES
+        int_class: list[dict[str, Any]] = (
+            INSTRUMENT_TRANSFER_CLASSES if arbitrary else INSTRUMENT_CLASSES  # type: ignore[assignment]
+        )
 
         self.reference_programs: dict[int, int] = {}
         for family in int_class:
-            self.reference_programs[family["family_number"]] = random.choice(  # noqa: S311
+            self.reference_programs[int(family["family_number"])] = random.choice(  # noqa: S311
                 family["program_range"],
             )
 

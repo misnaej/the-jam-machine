@@ -121,10 +121,12 @@ def _resolve_instrument_family(instrument: str) -> str:
     Returns:
         Family number string (e.g. "DRUMS", "4").
     """
-    return next(
-        (inst for inst in INSTRUMENT_TRANSFER_CLASSES if inst["transfer_to"] == instrument),
-        {"family_number": "DRUMS"},
-    )["family_number"]
+    return str(
+        next(
+            (inst for inst in INSTRUMENT_TRANSFER_CLASSES if inst["transfer_to"] == instrument),
+            {"family_number": "DRUMS"},
+        )["family_number"]
+    )
 
 
 def _build_output(
@@ -205,7 +207,7 @@ def _generator(
     Returns:
         GeneratorResult with generated text, audio, piano roll, and updated state.
     """
-    genesis = GenerateMidiText(model, tokenizer, piece_by_track)
+    genesis = GenerateMidiText(model, tokenizer, piece_by_track)  # type: ignore[arg-type]
     state = list(state)  # work on a copy to avoid mutating Gradio's state
     track = {"label": label, "instrument": instrument, "temperature": temp, "density": density}
     inst = _resolve_instrument_family(instrument)
@@ -251,7 +253,7 @@ def _instrument_col(default_inst: str, col_id: int) -> None:
     with gr.Column(scale=1, min_width=100):
         gr.Markdown(f"""## TRACK {col_id + 1}""")
         inst = gr.Dropdown(
-            [*sorted(inst["transfer_to"] for inst in INSTRUMENT_TRANSFER_CLASSES), "Drums"],
+            [*sorted(str(inst["transfer_to"]) for inst in INSTRUMENT_TRANSFER_CLASSES), "Drums"],
             value=default_inst,
             label="Instrument",
         )

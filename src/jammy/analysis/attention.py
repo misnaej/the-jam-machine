@@ -43,7 +43,7 @@ def _get_attention(
         RuntimeError: If the model doesn't return attention weights.
     """
     inputs = tokenizer.encode(sequence, return_tensors="pt")
-    token_list = [tokenizer.decode(t) for t in inputs[0]]
+    token_list = [str(tokenizer.decode(t)) for t in inputs[0]]
 
     with torch.no_grad():
         outputs = model(inputs, output_attentions=True)
@@ -112,7 +112,7 @@ def plot_attention_comparison(
         height=500,
         template="plotly_white",
     )
-    return fig.to_html(full_html=False, include_plotlyjs=PLOTLY_JS)
+    return str(fig.to_html(full_html=False, include_plotlyjs=PLOTLY_JS))
 
 
 def plot_layer_flow(
@@ -169,7 +169,7 @@ def plot_layer_flow(
         template="plotly_white",
         xaxis={"side": "bottom"},
     )
-    return fig.to_html(full_html=False, include_plotlyjs=PLOTLY_JS)
+    return str(fig.to_html(full_html=False, include_plotlyjs=PLOTLY_JS))
 
 
 def plot_early_vs_late_attention(
@@ -241,4 +241,4 @@ def plot_early_vs_late_attention(
         height=450,
         template="plotly_white",
     )
-    return fig.to_html(full_html=False, include_plotlyjs=PLOTLY_JS)
+    return str(fig.to_html(full_html=False, include_plotlyjs=PLOTLY_JS))

@@ -50,7 +50,7 @@ def _compute_instrument_stats(
         total_duration = sum(n.end - n.start for n in inst.notes)
         result["coverage"].append(100 * (total_duration / max_tick) if max_tick else 0)
 
-        unique_ticks = set()
+        unique_ticks: set[int] = set()
         for note in inst.notes:
             unique_ticks.update(range(note.start, note.end))
         result["coverage_true"].append(100 * (len(unique_ticks) / max_tick) if max_tick else 0)
@@ -136,7 +136,7 @@ def stats_on_track(
 
             if output_dir:
                 Path(output_dir).mkdir(parents=True, exist_ok=True)
-                safe_name = unique_name.replace(" ", "_").lower()
+                safe_name = str(unique_name).replace(" ", "_").lower()
                 fig_path = Path(output_dir) / f"split_{safe_name}.png"
                 fig.savefig(fig_path, bbox_inches="tight")
                 logger.info("Saved plot: %s", fig_path)

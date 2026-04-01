@@ -2,9 +2,20 @@
 
 from __future__ import annotations
 
+from typing import TypedDict
+
+
+class InstrumentClass(TypedDict):
+    """Type definition for instrument class dictionaries."""
+
+    name: str
+    program_range: range
+    family_number: int
+
+
 # fmt: off
 # Instrument mapping and mapping functions
-INSTRUMENT_CLASSES = [
+INSTRUMENT_CLASSES: list[InstrumentClass] = [
     {"name": "Piano", "program_range": range(8), "family_number": 0},
     {"name": "Chromatic Percussion", "program_range": range(8, 16), "family_number": 1},
     {"name": "Organ", "program_range": range(16, 24), "family_number": 2},
@@ -125,7 +136,7 @@ INSTRUMENT_TRANSFER_CLASSES = [
 ]
 
 
-def get_instrument_class(program_number: int) -> dict | None:
+def get_instrument_class(program_number: int) -> InstrumentClass | None:
     """Look up the instrument class for a MIDI program number.
 
     Args:

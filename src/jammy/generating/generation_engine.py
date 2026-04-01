@@ -60,7 +60,7 @@ class GenerationEngine:
             Tokenized prompt as a tensor.
         """
         logger.debug("Tokenizing input_prompt...")
-        return self.tokenizer.encode(prompt, return_tensors="pt")
+        return self.tokenizer.encode(prompt, return_tensors="pt")  # type: ignore[no-any-return, return-value]
 
     def generate_ids(
         self,
@@ -77,7 +77,7 @@ class GenerationEngine:
             Generated token IDs as a tensor.
         """
         logger.debug("Generating a token_id sequence...")
-        return self.model.generate(
+        return self.model.generate(  # type: ignore[misc, return-value]
             input_ids,
             max_length=self.max_length,
             do_sample=True,
@@ -96,7 +96,7 @@ class GenerationEngine:
             Decoded text string.
         """
         logger.debug("Converting token sequence to MidiText...")
-        return self.tokenizer.decode(token_ids[0])
+        return str(self.tokenizer.decode(token_ids[0]))
 
     def generate(self, prompt: str, temperature: float) -> str:
         """Full generation pipeline: tokenize -> generate -> decode.

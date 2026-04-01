@@ -53,10 +53,10 @@ def add_missing_timeshifts_in_bar(
         new_inst_events[index]["channel"] = index
         new_inst_events[index]["events"] = []
 
-        beat_count = 0
+        beat_count: float = 0
         for event in inst_event["events"]:
             if event.type == "Bar-Start":
-                beat_count = 0
+                beat_count = 0.0
 
             if event.type == "Time-Shift":
                 beat_count += int_dec_base_to_beat(event.value)
@@ -138,7 +138,7 @@ def aggregate_timeshifts(
         Modified list with aggregated time shifts.
     """
     for inst_index, inst_event in enumerate(events):
-        new_inst_event = []
+        new_inst_event: list[Event] = []
         for event in inst_event["events"]:
             if (
                 event.type == "Time-Shift"
