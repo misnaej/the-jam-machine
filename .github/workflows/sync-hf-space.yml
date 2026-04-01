@@ -9,7 +9,7 @@ on:
       - "pyproject.toml"
 
 env:
-  HF_SPACE_ID: JammyMachina/the-jam-machine-staging
+  HF_SPACE_ID: JammyMachina/the-jam-machine-app
 
 jobs:
   sync:

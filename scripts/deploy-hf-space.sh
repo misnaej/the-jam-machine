@@ -9,7 +9,7 @@
 
 set -euo pipefail
 
-SPACE_ID="${1:-JammyMachina/the-jam-machine-staging}"
+SPACE_ID="${1:-JammyMachina/the-jam-machine-app}"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 HF_SPACE_DIR="$REPO_ROOT/hf_space"
