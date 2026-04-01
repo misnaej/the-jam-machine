@@ -1,0 +1,42 @@
+name: Docker Build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Dockerfile"
+      - "docker-compose.yml"
+      - "src/jammy/**"
+      - "pyproject.toml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "Dockerfile"
+      - "docker-compose.yml"
+      - "src/jammy/**"
+      - "pyproject.toml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker compose build
+
+      - name: Verify container starts
+        run: |
+          docker compose up -d
+          sleep 10
+          if docker compose ps --format json | grep -q '"running"'; then
+            echo "Container is running"
+          else
+            echo "Container failed to start"
+            docker compose logs 2>&1 | grep -v HF_TOKEN
+            exit 1
+          fi
+
+      - name: Stop container
+        if: always()
+        run: docker compose down
