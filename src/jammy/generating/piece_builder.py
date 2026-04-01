@@ -89,7 +89,7 @@ class PieceBuilder:
         Returns:
             List of bar strings.
         """
-        return self.piece_by_track[track_id]["bars"]
+        return list(self.piece_by_track[track_id]["bars"])
 
     def get_track_temperature(self, track_id: int) -> float:
         """Get the temperature for a track.
@@ -100,7 +100,7 @@ class PieceBuilder:
         Returns:
             Temperature value.
         """
-        return self.piece_by_track[track_id]["temperature"]
+        return float(self.piece_by_track[track_id]["temperature"])
 
     def get_track_config(self, track_id: int) -> TrackConfig:
         """Get the TrackConfig for a track.

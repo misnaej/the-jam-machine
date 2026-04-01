@@ -12,7 +12,13 @@ from pathlib import Path
 
 from joblib import Parallel, delayed
 
-from jammy.constants import INSTRUMENT_CLASSES, INSTRUMENT_TRANSFER_CLASSES, get_instrument_class
+from jammy.constants import (
+    INSTRUMENT_CLASSES,
+    INSTRUMENT_TRANSFER_CLASSES,
+    InstrumentClass,
+    InstrumentTransferClass,
+    get_instrument_class,
+)
 from jammy.file_utils import FileCompressor, get_files, timeit
 from jammy.tokens import DRUMS, INST
 
@@ -61,11 +67,13 @@ class Familizer:
         Args:
             arbitrary: Whether to use transfer classes.
         """
-        int_class = INSTRUMENT_TRANSFER_CLASSES if arbitrary else INSTRUMENT_CLASSES
+        int_class: list[InstrumentClass] | list[InstrumentTransferClass] = (
+            INSTRUMENT_TRANSFER_CLASSES if arbitrary else INSTRUMENT_CLASSES
+        )
 
         self.reference_programs: dict[int, int] = {}
         for family in int_class:
-            self.reference_programs[family["family_number"]] = random.choice(  # noqa: S311
+            self.reference_programs[int(family["family_number"])] = random.choice(  # noqa: S311
                 family["program_range"],
             )
 

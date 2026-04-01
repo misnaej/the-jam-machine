@@ -233,6 +233,8 @@ def get_event(text: str, value: str | None = None, instrument: str = "drums") ->
     if text == TIME_DELTA:
         if value is not None and int(value) == 0:
             return None  # skip zero time shifts
+        if value is None:
+            return None
         return Event("Time-Shift", time_delta_to_int_dec_base(value, instrument))
 
     return None

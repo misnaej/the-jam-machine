@@ -35,7 +35,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-ci = ["ruff", "pytest", "pytest-cov", "pytest-html", "pip-audit", "bandit", "interrogate"]
+ci = ["ruff", "pytest", "pytest-cov", "pytest-html", "pip-audit", "bandit", "interrogate", "mypy"]
 notebooks = ["bertviz", "ipykernel", "scikit-learn", "nbconvert"]
 
 [tool.setuptools.packages.find]
@@ -81,6 +81,16 @@ ignore-init-module = true
 fail-under = 95
 exclude = ["test/", "examples/"]
 verbose = 1
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "jammy.training.*"
+ignore_errors = true  # transformers stubs are outdated (GPT2Config kwargs, TrainingArguments renames)
 
 [tool.pytest.ini_options]
 testpaths = ["test"]

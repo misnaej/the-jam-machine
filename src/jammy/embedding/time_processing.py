@@ -70,7 +70,7 @@ def combine_timeshifts_in_bar(midi_events: list[list[Event]]) -> list[list[Event
     new_midi_events = []
     for inst_events in midi_events:
         new_inst_events = []
-        aggregated_beats = 0
+        aggregated_beats: float = 0
         for event in inst_events:
             # aggregating adjacent time-shifts and skipping them
             if event.type == "Time-Shift":

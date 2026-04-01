@@ -24,7 +24,8 @@ def add_bars(midi_events: list[list[Event]]) -> list[list[Event]]:
     new_midi_events = []
     for inst_events in midi_events:
         new_inst_events = [Event("Bar-Start", 0)]
-        bar_index, beat_count = 0, 0
+        bar_index = 0
+        beat_count: float = 0
         bar_end = False
         for i, event in enumerate(inst_events):
             # when bar_end reached, adding the remainder note-off events

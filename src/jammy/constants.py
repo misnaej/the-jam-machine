@@ -2,9 +2,45 @@
 
 from __future__ import annotations
 
+from typing import TypedDict
+
+
+class InstrumentClass(TypedDict):
+    """Type for entries in INSTRUMENT_CLASSES.
+
+    Attributes:
+        name: Instrument family name (e.g. "Piano", "Bass").
+        program_range: MIDI program number range for this family.
+        family_number: General MIDI family index (0-15).
+    """
+
+    name: str
+    program_range: range
+    family_number: int
+
+
+class InstrumentTransferClass(TypedDict):
+    """Type for entries in INSTRUMENT_TRANSFER_CLASSES.
+
+    Maps each family to a specific program number and instrument name
+    used when decoding back to MIDI.
+
+    Attributes:
+        name: Instrument family name.
+        program_range: Program numbers for this family (list or range).
+        family_number: General MIDI family index (0-15).
+        transfer_to: Target instrument name for decoding.
+    """
+
+    name: str
+    program_range: list[int] | range
+    family_number: int
+    transfer_to: str
+
+
 # fmt: off
 # Instrument mapping and mapping functions
-INSTRUMENT_CLASSES = [
+INSTRUMENT_CLASSES: list[InstrumentClass] = [
     {"name": "Piano", "program_range": range(8), "family_number": 0},
     {"name": "Chromatic Percussion", "program_range": range(8, 16), "family_number": 1},
     {"name": "Organ", "program_range": range(16, 24), "family_number": 2},
@@ -25,7 +61,7 @@ INSTRUMENT_CLASSES = [
 # fmt: on
 
 # Instrument mapping for decoding our midi sequence into midi instruments of our choice
-INSTRUMENT_TRANSFER_CLASSES = [
+INSTRUMENT_TRANSFER_CLASSES: list[InstrumentTransferClass] = [
     {
         "name": "Piano",
         "program_range": [4],
@@ -125,7 +161,7 @@ INSTRUMENT_TRANSFER_CLASSES = [
 ]
 
 
-def get_instrument_class(program_number: int) -> dict | None:
+def get_instrument_class(program_number: int) -> InstrumentClass | None:
     """Look up the instrument class for a MIDI program number.
 
     Args:

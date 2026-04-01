@@ -67,7 +67,7 @@ def plot_top_predictions(
     for pos, _token in enumerate(tokens):
         position_probs = probs[pos].detach().numpy()
         top_indices = position_probs.argsort()[-top_k:][::-1]
-        top_tokens = [tokenizer.decode(idx) for idx in top_indices]
+        top_tokens = [str(tokenizer.decode(idx)) for idx in top_indices]
         top_probs = [float(position_probs[idx]) for idx in top_indices]
         colors = [TOKEN_COLORS[categorize_token(t)] for t in top_tokens]
 
@@ -95,7 +95,7 @@ def plot_top_predictions(
     for i in range(1, n_positions + 1):
         fig.update_xaxes(range=[0, 1], row=i, col=1)
 
-    return fig.to_html(full_html=False, include_plotlyjs=PLOTLY_JS)
+    return str(fig.to_html(full_html=False, include_plotlyjs=PLOTLY_JS))
 
 
 def plot_prediction_comparison(
@@ -147,7 +147,7 @@ def plot_prediction_comparison(
         for pos in range(n_positions):
             position_probs = probs[pos].detach().numpy()
             top_indices = position_probs.argsort()[-top_k:][::-1]
-            top_tokens = [tokenizer.decode(idx) for idx in top_indices]
+            top_tokens = [str(tokenizer.decode(idx)) for idx in top_indices]
             top_probs = [float(position_probs[idx]) for idx in top_indices]
             colors = [TOKEN_COLORS[categorize_token(t)] for t in top_tokens]
 
@@ -175,4 +175,4 @@ def plot_prediction_comparison(
         for col in range(1, 3):
             fig.update_xaxes(range=[0, 1], row=row, col=col)
 
-    return fig.to_html(full_html=False, include_plotlyjs=PLOTLY_JS)
+    return str(fig.to_html(full_html=False, include_plotlyjs=PLOTLY_JS))

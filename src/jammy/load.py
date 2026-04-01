@@ -43,7 +43,7 @@ def load_model_and_tokenizer(
 
     logger.info("Loading model from %s (revision=%s)", path, revision)
 
-    model = GPT2LMHeadModel.from_pretrained(path, revision=revision)
-    tokenizer = PreTrainedTokenizerFast.from_pretrained(path, revision=revision)
+    model = GPT2LMHeadModel.from_pretrained(path, revision=revision)  # type: ignore[arg-type]
+    tokenizer = PreTrainedTokenizerFast.from_pretrained(path, revision=revision)  # type: ignore[arg-type]
 
     return model, tokenizer

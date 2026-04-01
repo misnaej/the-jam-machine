@@ -28,7 +28,7 @@ def _get_embedding(model: GPT2LMHeadModel) -> np.ndarray:
     Returns:
         Numpy array of shape (vocab_size, embedding_dim).
     """
-    return model.get_input_embeddings().state_dict()["weight"].detach().numpy()
+    return model.get_input_embeddings().state_dict()["weight"].detach().numpy()  # type: ignore[no-any-return]
 
 
 def _get_token_list(tokenizer: PreTrainedTokenizerFast) -> list[str]:
@@ -40,7 +40,7 @@ def _get_token_list(tokenizer: PreTrainedTokenizerFast) -> list[str]:
     Returns:
         List of token strings, indexed by token ID.
     """
-    return [tokenizer.decode(i) for i in range(tokenizer.vocab_size)]
+    return [str(tokenizer.decode(i)) for i in range(tokenizer.vocab_size)]
 
 
 def _sort_by_category(

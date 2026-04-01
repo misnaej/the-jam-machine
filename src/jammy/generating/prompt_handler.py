@@ -81,7 +81,7 @@ class PromptHandler:
                     pre_prompt += f"{TRACK_END} "
 
         # Build main prompt from track to extend
-        processed_prompt = track_bars[0]  # Track initialization
+        processed_prompt: str = track_bars[0]  # Track initialization
         logger.debug(
             "Adding bars - %d selected from MAIN track: %d for prompt",
             len(track_bars[-(self.n_bars - 1) :]),
