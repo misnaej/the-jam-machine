@@ -10,10 +10,12 @@ WORKDIR /app
 COPY pyproject.toml .
 COPY src/ src/
 
-# CPU-only torch (~200MB vs ~2GB with CUDA) — sufficient for inference
+# CPU-only torch first (isolated to avoid hash conflicts with PyPI deps)
 RUN pip install --no-cache-dir --timeout 300 \
-    torch --index-url https://download.pytorch.org/whl/cpu \
-    && pip install --no-cache-dir --timeout 300 .
+    torch --index-url https://download.pytorch.org/whl/cpu
+
+# Then install the rest from PyPI
+RUN pip install --no-cache-dir --timeout 300 .
 
 EXPOSE 7860
 
