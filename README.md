@@ -134,6 +134,15 @@ pipenv run python -m jammy.app.playground
 
 Open the URL shown in your terminal (usually http://localhost:7860).
 
+#### Run with Docker (CPU only)
+
+```bash
+docker compose up
+```
+
+Open http://localhost:7860. Generated output is available in `./output/` on the host.
+The image uses CPU-only PyTorch (~2.5GB) and works on both amd64 and arm64.
+
 ---
 
 ## Usage Guide

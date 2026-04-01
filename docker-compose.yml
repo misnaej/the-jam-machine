@@ -1,0 +1,11 @@
+services:
+  app:
+    build: .
+    ports:
+      - "7860:7860"
+    volumes:
+      - ./output:/app/output
+      - hf-cache:/root/.cache/huggingface
+
+volumes:
+  hf-cache:
