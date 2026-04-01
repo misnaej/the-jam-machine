@@ -4,7 +4,7 @@ services:
     ports:
       - "7860:7860"
     environment:
-      - HF_TOKEN=${HF_TOKEN:-}
+      - HF_TOKEN
     volumes:
       - ./output:/app/output
       - hf-cache:/root/.cache/huggingface
