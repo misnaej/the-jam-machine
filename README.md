@@ -137,6 +137,9 @@ Open the URL shown in your terminal (usually http://localhost:7860).
 #### Run with Docker (CPU only)
 
 ```bash
+# Optional: set HF token for faster model downloads
+export HF_TOKEN=hf_your_token_here
+
 docker compose up
 ```
 
