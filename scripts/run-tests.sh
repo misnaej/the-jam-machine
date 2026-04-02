@@ -70,15 +70,13 @@ fi
 
 # --- Docstring coverage report ---
 echo ""
-echo "=== Docstring Coverage ==="
-pipenv run interrogate src/jammy/ -v > "$REPORT_DIR/docstring-coverage.txt" 2>&1
-cat "$REPORT_DIR/docstring-coverage.txt"
+scripts/docstring-coverage.sh || true
 
 echo ""
 echo "Reports: $REPORT_DIR/"
 echo "  - coverage/index.html (open in browser)"
 echo "  - docstring-coverage.txt"
 echo "Log: $LOG_FILE"
-echo "Badges: $BADGE_DIR/tests.svg, $BADGE_DIR/coverage.svg"
+echo "Badges: $BADGE_DIR/"
 
 exit $FAILED

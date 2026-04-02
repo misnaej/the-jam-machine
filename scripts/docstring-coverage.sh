@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Generate docstring coverage report.
+# Generate docstring coverage report and badge.
 #
 # Usage:
 #   ./scripts/docstring-coverage.sh
@@ -9,23 +9,27 @@
 #   - Summary to terminal
 #   - Full report to output/reports/docstring-coverage.txt
 #   - Badge SVG to .githooks/badges/docstring-coverage.svg
+#
+# Exits with code 1 if coverage is below 95%.
 
 set -e
 
 REPORT_DIR="output/reports"
 BADGE_DIR=".githooks/badges"
+FAIL_UNDER=95
+
 mkdir -p "$REPORT_DIR" "$BADGE_DIR"
 
-echo "=== Docstring Coverage ==="
+# Generate report
 pipenv run interrogate src/jammy/ -v | tee "$REPORT_DIR/docstring-coverage.txt"
 
 # Generate badge
-COV_PCT=$(grep "TOTAL" "$REPORT_DIR/docstring-coverage.txt" | awk '{print $NF}' | tr -d '%')
-if [ -n "$COV_PCT" ]; then
-    curl -s "https://img.shields.io/badge/docstring%20coverage-${COV_PCT}%25-brightgreen" \
-        -o "$BADGE_DIR/docstring-coverage.svg" 2>/dev/null || true
-    echo ""
-    echo "Badge: $BADGE_DIR/docstring-coverage.svg"
-fi
+pipenv run interrogate src/jammy/ --generate-badge "$BADGE_DIR/docstring-coverage.svg" -q 2>/dev/null || true
 
-echo "Report: $REPORT_DIR/docstring-coverage.txt"
+# Check threshold
+if ! pipenv run interrogate src/jammy/ --fail-under "$FAIL_UNDER" -q 2>/dev/null; then
+    echo ""
+    echo "ERROR: Docstring coverage below ${FAIL_UNDER}%."
+    grep "MISS" "$REPORT_DIR/docstring-coverage.txt" || true
+    exit 1
+fi
