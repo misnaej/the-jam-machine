@@ -46,15 +46,19 @@ Custom skills (slash commands) and agents are the standard workflow tools. **Use
 ```
 src/jammy/                 # Main package
 ├── app/                   # Gradio web interface
+├── analysis/              # Model visualization tools
 ├── embedding/             # MIDI <-> text token encoding/decoding
 ├── generating/            # Music generation engine (GPT-2)
-├── preprocessing/         # Model loading from HuggingFace
+├── preprocessing/         # Data preprocessing and MIDI statistics
 └── training/              # Model training pipelines
 
 hf_space/                  # HuggingFace Space deployment files
 examples/                  # Example scripts
-test/                      # Test suite
+test/                      # Test suite (149 tests)
+scripts/                   # Build, test, deploy scripts
+docs/                      # GitHub Pages site
 .claude/                   # Claude Code config (agents, skills, hooks)
+.plans/                    # Refactoring plans
 ```
 
 ## Environment Setup
@@ -477,7 +481,7 @@ Example:
 - Phase 2 in progress: fixing encoder.py
 
 ## Next Steps
-1. Fix remaining type hints in `src/the_jam_machine/embedding/encoder.py:145-200`
+1. Fix remaining type hints in `src/jammy/embedding/encoder.py:145-200`
 2. Run tests to verify changes
 3. Update MASTER-PLAN.md with completion status
 
