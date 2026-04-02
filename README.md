@@ -88,6 +88,17 @@ The GPT-2 model learns patterns from 5000 songs and generates new, coherent sequ
 
 ---
 
+## Documentation
+
+**[Full documentation on GitHub Pages](https://misnaej.github.io/the-jam-machine/)**
+
+| Page | Description |
+|------|-------------|
+| [Encoding & Decoding Guide](https://misnaej.github.io/the-jam-machine/encoding-decoding) | Step-by-step walkthrough of the MIDI-to-text pipeline, token vocabulary, quantization, and a worked example using The Strokes' *Reptilia* |
+| [Embedding Explorer](https://misnaej.github.io/the-jam-machine/exploring_the_embedding) | Interactive visualizations of how the GPT-2 model represents MIDI tokens — embedding space, attention patterns, and head specialization |
+
+---
+
 ## Quick Start
 
 ### Option 1: Try Online (No Installation)
@@ -278,10 +289,9 @@ See [CLAUDE.md](CLAUDE.md) for full development guidelines.
 
 ## Resources
 
-- **[Documentation](https://misnaej.github.io/the-jam-machine/)** — Encoding guide, pipeline walkthrough, examples
 - **[Live Demo](https://huggingface.co/spaces/JammyMachina/the-jam-machine-app)**
-- **[Presentation](https://pitch.com/public/417162a8-88b0-4472-a651-c66bb89428be)**
 - **[Model on HuggingFace](https://huggingface.co/JammyMachina/elec-gmusic-familized-model-13-12__17-35-53)**
+- **[Presentation](https://pitch.com/public/417162a8-88b0-4472-a651-c66bb89428be)**
 
 ---
 
