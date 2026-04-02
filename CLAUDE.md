@@ -500,10 +500,28 @@ This ensures work can resume smoothly after context resets.
 | Setup environment | `./scripts/setup-env.sh` |
 | Install dependencies | `pipenv install -e ".[ci]"` |
 | Activate environment | `pipenv shell` |
-| Run tests | `pipenv run pytest test/` |
+| Run tests + coverage | `./scripts/run-tests.sh` |
+| Run tests only | `pipenv run pytest test/` |
+| Docstring coverage | `./scripts/docstring-coverage.sh` |
 | Lint code | `pipenv run ruff check src/ test/` |
 | Format code | `pipenv run ruff format src/ test/` |
+| Type check | `pipenv run mypy src/jammy/` |
 | Security audit | `pipenv run pip-audit` |
+| Deploy HF Space | `./scripts/deploy-hf-space.sh` |
 | Enable git hooks | `git config core.hooksPath .githooks` |
 | Run Gradio app | `pipenv run python -m jammy.app.playground` |
 | Run example | `pipenv run python examples/generate.py` |
+
+### Reports and Logs
+
+| Report | Location |
+|--------|----------|
+| Pre-commit hook logs | `.githooks/logs/latest.log` |
+| Test coverage (HTML) | `output/reports/coverage/index.html` |
+| Docstring coverage | `output/reports/docstring-coverage.txt` |
+| Badges (SVG) | `.githooks/badges/` |
+
+**If a pre-commit hook fails**, read the log:
+```bash
+cat .githooks/logs/latest.log
+```
