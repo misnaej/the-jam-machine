@@ -20,16 +20,8 @@ FAIL_UNDER=95
 
 mkdir -p "$REPORT_DIR" "$BADGE_DIR"
 
-# Generate report
-pipenv run interrogate src/jammy/ -v | tee "$REPORT_DIR/docstring-coverage.txt"
-
-# Generate badge
-pipenv run interrogate src/jammy/ --generate-badge "$BADGE_DIR/docstring-coverage.svg" -q 2>/dev/null || true
-
-# Check threshold
-if ! pipenv run interrogate src/jammy/ --fail-under "$FAIL_UNDER" -q 2>/dev/null; then
-    echo ""
-    echo "ERROR: Docstring coverage below ${FAIL_UNDER}%."
-    grep "MISS" "$REPORT_DIR/docstring-coverage.txt" || true
-    exit 1
-fi
+# Single interrogate run: verbose report + badge + threshold check
+pipenv run interrogate src/jammy/ -v \
+    --fail-under "$FAIL_UNDER" \
+    --generate-badge "$BADGE_DIR/docstring-coverage.svg" \
+    | tee "$REPORT_DIR/docstring-coverage.txt"
