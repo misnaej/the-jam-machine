@@ -208,20 +208,18 @@ Output goes to `output/examples/`. See [examples/README.md](examples/README.md) 
 
 ```
 the-jam-machine/
-├── app/
-│   └── playground.py          # Gradio web interface
 ├── src/jammy/                 # Main package
+│   ├── app/                   # Gradio web interface
+│   ├── analysis/              # Model visualization tools
 │   ├── embedding/             # MIDI ↔ text conversion
 │   ├── generating/            # Music generation (GPT-2)
-│   ├── preprocessing/         # Model loading
-│   ├── midi_codec.py          # Token encoding/decoding
-│   ├── file_utils.py          # File I/O utilities
-│   ├── tokens.py              # Token vocabulary constants
-│   └── constants.py           # Configuration constants
+│   ├── preprocessing/         # Data preprocessing
+│   └── training/              # Model training
+├── hf_space/                  # HuggingFace Space deployment
 ├── examples/                  # Runnable example scripts
-├── test/                      # Test suite
-├── .claude/                   # Claude Code config (agents, skills, hooks)
-└── .plans/                    # Refactoring plans and audits
+├── test/                      # Test suite (149 tests)
+├── docs/                      # GitHub Pages site
+└── scripts/                   # Build, test, deploy scripts
 ```
 
 ---
