@@ -8,7 +8,8 @@
 #
 # Output:
 #   - Test results to terminal + .githooks/logs/test-<timestamp>.log
-#   - Coverage report to terminal
+#   - Coverage HTML report to output/reports/coverage/
+#   - Docstring coverage report to output/reports/docstring-coverage.txt
 #   - Badge SVGs to .githooks/badges/
 #
 # This script can be called manually, by /check, or by a CI workflow.
@@ -30,9 +31,13 @@ echo "=== Test run: $(date) ==="
 echo "Test path: $TEST_PATH"
 echo ""
 
+# --- Reports directory ---
+REPORT_DIR="output/reports"
+mkdir -p "$REPORT_DIR"
+
 # --- Run tests with coverage ---
 FAILED=0
-TEST_OUTPUT=$(pipenv run pytest "$TEST_PATH" -v --tb=short --cov=jammy --cov-report=term-missing 2>&1)
+TEST_OUTPUT=$(pipenv run pytest "$TEST_PATH" -v --tb=short --cov=jammy --cov-report=term-missing --cov-report=html:"$REPORT_DIR/coverage" 2>&1)
 TEST_EXIT=$?
 echo "$TEST_OUTPUT"
 
@@ -63,7 +68,16 @@ else
     curl -s "https://img.shields.io/badge/tests-failing-red" -o "$BADGE_DIR/tests.svg" 2>/dev/null || true
 fi
 
+# --- Docstring coverage report ---
 echo ""
+echo "=== Docstring Coverage ==="
+pipenv run interrogate src/jammy/ -v > "$REPORT_DIR/docstring-coverage.txt" 2>&1
+cat "$REPORT_DIR/docstring-coverage.txt"
+
+echo ""
+echo "Reports: $REPORT_DIR/"
+echo "  - coverage/index.html (open in browser)"
+echo "  - docstring-coverage.txt"
 echo "Log: $LOG_FILE"
 echo "Badges: $BADGE_DIR/tests.svg, $BADGE_DIR/coverage.svg"
 
