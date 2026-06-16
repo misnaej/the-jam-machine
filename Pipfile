@@ -4,8 +4,8 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-the-jam-machine = {extras = ["ci"], file = ".", editable = true}
 plotly = "*"
+the-jam-machine = {extras = ["ci"], file = ".", editable = true}
 
 [dev-packages]
 mypy = "*"
