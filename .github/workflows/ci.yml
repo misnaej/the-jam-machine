@@ -12,6 +12,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # forge-precommit diffs changed files vs main
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v5

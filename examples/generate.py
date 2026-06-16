@@ -27,6 +27,7 @@ from jammy.load import load_model_and_tokenizer
 from jammy.logging_config import setup_logging
 from jammy.utils import get_miditok
 
+
 logger = logging.getLogger(__name__)
 
 # Instrument family numbers: see INSTRUMENT_CLASSES in jammy/constants.py

@@ -45,6 +45,7 @@ from jammy.generating.visualization import plot_piano_roll
 from jammy.logging_config import setup_logging
 from jammy.utils import get_miditok
 
+
 logger = logging.getLogger(__name__)
 
 MIDI_INPUT = Path("midi/the_strokes-reptilia.mid")
