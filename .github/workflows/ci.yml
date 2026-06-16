@@ -42,5 +42,11 @@ jobs:
       - name: Type check
         run: pipenv run mypy src/jammy/
 
-      - name: Tests
-        run: pipenv run pytest test/ -v --tb=short
+      - name: Forge pre-commit gate
+        run: pipenv run forge-precommit
+
+      - name: Forge FOUNDATION drift check
+        run: pipenv run install-forge-claude-md --check
+
+      # Tests are intentionally NOT run in GitHub CI — the suite is long and is
+      # run locally instead (`pipenv run pytest test/`). See CLAUDE.md.

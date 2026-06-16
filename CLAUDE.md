@@ -103,6 +103,20 @@ The live app is deployed to a HuggingFace Space (`JammyMachina/the-jam-machine-a
 via the `sync-hf-space.yml` GitHub workflow; deployment files live in
 `hf_space/`. Docker build (`docker.yml`) uses CPU-only PyTorch.
 
+## Continuous integration
+
+`.github/workflows/ci.yml` runs on push/PR to `main`: ruff lint + format,
+docstring coverage, bandit, mypy, the **forge pre-commit gate**
+(`pipenv run forge-precommit`), and a FOUNDATION drift check.
+
+**The test suite is deliberately NOT run in GitHub CI** — it is long, so it is
+run **locally** instead (`pipenv run pytest test/`) before pushing. Don't add a
+pytest job to CI.
+
+`.github/workflows/forge-upgrade.yml` re-syncs forge-scripts from the `@dev`
+channel on a weekly cron and opens a PR on any change (the version trigger).
+`docker.yml` and `sync-hf-space.yml` are build/deploy, unrelated to test CI.
+
 ## Plan documents
 
 Session-to-session continuation uses forge's protocol (FOUNDATION §10):
