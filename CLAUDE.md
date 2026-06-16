@@ -105,17 +105,16 @@ via the `sync-hf-space.yml` GitHub workflow; deployment files live in
 
 ## Plan documents
 
-Long / multi-phase work is tracked in `.plans/`:
+Session-to-session continuation uses forge's protocol (FOUNDATION §10):
+`.plan/CONTINUATION.md` — singular, **gitignored**, auto-appended by the forge
+git hooks. This is the live "what was just done / what's next" log.
 
-- `.plans/MASTER-PLAN.md` — central reference: current state, phase order,
-  decision log. Mark phases complete (✅); record decisions with rationale.
-- `.plans/CONTINUATION-PROMPT.md` — current branch + purpose, what was just
-  done, what's next (with file/function references), blockers/open questions.
-  Update after every significant action, not just at session end.
+Longer-lived project planning lives in committed `.plans/` (plural):
+- `.plans/MASTER-PLAN.md` — refactoring master plan: phase order, decision log.
+- `.plans/ci-badges.md`, `.plans/dependency-tree.md` — reference notes.
 
-> Note: FOUNDATION §10 also defines a continuation protocol at
-> `.plan/CONTINUATION.md` (singular, gitignored). This repo predates it and
-> uses the committed `.plans/` docs above; reconcile if/when convenient.
+> Mind the one-character difference: `.plan/` (gitignored, transient
+> continuation log) vs `.plans/` (committed, durable plans).
 
 ## Claude Code skills & agents
 
