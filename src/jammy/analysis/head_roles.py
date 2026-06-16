@@ -174,6 +174,7 @@ def plot_head_comparison(
     colors = [TOKEN_COLORS[c] for c in categories]
 
     def _describe(w: list[float]) -> str:
+        """Summarize which category a head focuses on."""
         top_idx = int(np.argmax(w))
         top_pct = w[top_idx] * 100
         return f"Focuses on {categories[top_idx]} ({top_pct:.0f}%)"

@@ -32,6 +32,7 @@ def timeit(func: Callable[..., T]) -> Callable[..., T]:
 
     @functools.wraps(func)
     def wrapper(*args: object, **kwargs: object) -> T:
+        """Timed wrapper that logs execution duration."""
         start = perf_counter()
         result = func(*args, **kwargs)
         end = perf_counter()
