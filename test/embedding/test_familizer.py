@@ -9,6 +9,7 @@ import pytest
 from jammy.embedding.familizer import Familizer
 from jammy.tokens import INST
 
+
 if TYPE_CHECKING:
     from pathlib import Path
 

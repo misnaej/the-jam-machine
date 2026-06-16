@@ -11,6 +11,7 @@ from jammy.embedding.encoder import MIDIEncoder
 from jammy.file_utils import write_to_file
 from jammy.utils import get_miditok
 
+
 logger = logging.getLogger(__name__)
 
 

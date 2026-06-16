@@ -11,6 +11,7 @@ from miditok import Event
 
 from jammy.constants import get_instrument_class
 
+
 if TYPE_CHECKING:
     from miditoolkit import Instrument
 

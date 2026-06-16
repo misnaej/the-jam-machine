@@ -14,6 +14,7 @@ from jammy.file_utils import (
     write_to_file,
 )
 
+
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -102,7 +103,15 @@ class TestTimeit:
 
         @timeit
         def add(a: int, b: int) -> int:
-            """Add two numbers."""
+            """Add two numbers.
+
+            Args:
+                a: First number.
+                b: Second number.
+
+            Returns:
+                The sum of a and b.
+            """
             return a + b
 
         assert add(2, 3) == 5

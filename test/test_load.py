@@ -8,6 +8,7 @@ import pytest
 
 from jammy.load import load_model_and_tokenizer
 
+
 if TYPE_CHECKING:
     from pathlib import Path
 

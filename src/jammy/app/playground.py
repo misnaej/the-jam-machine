@@ -26,6 +26,7 @@ from jammy.logging_config import setup_logging
 from jammy.tokens import PIECE_START
 from jammy.utils import get_miditok
 
+
 mpl.use("Agg")
 
 # Configure logging - logs will be saved to ./output/logs/

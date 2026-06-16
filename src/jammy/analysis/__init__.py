@@ -6,6 +6,7 @@ represents and generates MIDI music.
 
 from __future__ import annotations
 
+
 TOKEN_COLORS: dict[str, str] = {
     "structure": "#9C27B0",  # purple
     "instrument": "#2196F3",  # blue

@@ -10,6 +10,7 @@ from jammy.tokens import BAR_START, PIECE_START, TRACK_END
 
 from .track_builder import extract_tracks
 
+
 if TYPE_CHECKING:
     from .piece_builder import PieceBuilder
 

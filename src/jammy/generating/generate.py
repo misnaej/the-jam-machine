@@ -14,6 +14,7 @@ from .prompt_handler import PromptHandler
 from .track_builder import extract_new_bar, get_last_track, get_new_content
 from .validation import bar_count_check, force_bar_count
 
+
 if TYPE_CHECKING:
     from transformers import GPT2LMHeadModel, GPT2Tokenizer
 

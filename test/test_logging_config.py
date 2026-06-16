@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 from jammy.logging_config import get_logger, setup_logging
 
+
 if TYPE_CHECKING:
     from pathlib import Path
 

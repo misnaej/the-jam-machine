@@ -14,6 +14,7 @@ from jammy.embedding import bar_processing, time_processing, track_setup
 from jammy.midi_codec import get_text
 from jammy.utils import get_miditok
 
+
 if TYPE_CHECKING:
     from miditok import Event, MIDILike
 

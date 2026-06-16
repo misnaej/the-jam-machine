@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 
 import pandas as pd
 
+
 if TYPE_CHECKING:
     from pathlib import Path
 from fuzzywuzzy import fuzz

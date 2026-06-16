@@ -8,6 +8,7 @@ from typing import Any
 from jammy.constants import INSTRUMENT_CLASSES
 from jammy.tokens import BAR_END, INST, TRACK_END
 
+
 logger = logging.getLogger(__name__)
 
 

@@ -47,34 +47,6 @@ where = ["src"]
 [tool.setuptools.package-data]
 jammy = ["*.csv", "*.json"]
 
-[tool.ruff]
-target-version = "py311"
-line-length = 100
-src = ["src", "test"]
-
-[tool.ruff.lint]
-select = ["ALL"]
-ignore = [
-    "ISC001",  # implicit string concat — conflicts with ruff formatter
-    "COM812",  # trailing comma — conflicts with ruff formatter (ruff warns about this)
-]
-
-[tool.ruff.lint.per-file-ignores]
-"test/**/*.py" = ["S101", "PLR2004"]  # assert is expected in tests; magic values are test data
-"src/jammy/app/**/*.py" = ["PLR0913"]  # Gradio callbacks have many args
-"examples/**/*.py" = ["INP001"]  # examples/ is not a package
-"hf_space/**/*.py" = ["INP001"]  # HF Space shim, not a package
-
-[tool.ruff.lint.pydocstyle]
-convention = "google"
-
-[tool.ruff.lint.isort]
-known-first-party = ["jammy"]
-
-[tool.ruff.format]
-quote-style = "double"
-indent-style = "space"
-
 [tool.bandit]
 skips = ["B101", "B311", "B105", "B106"]
 

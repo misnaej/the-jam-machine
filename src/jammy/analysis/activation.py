@@ -21,6 +21,7 @@ from jammy.analysis import (
     categorize_token,
 )
 
+
 if TYPE_CHECKING:
     from transformers import GPT2LMHeadModel, PreTrainedTokenizerFast
 

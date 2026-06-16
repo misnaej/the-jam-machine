@@ -34,6 +34,7 @@ from jammy.analysis.head_roles import (
 from jammy.constants import MODEL_REPO, MODEL_REVISION
 from jammy.logging_config import setup_logging
 
+
 logger = logging.getLogger(__name__)
 
 OUTPUT_PATH = Path("docs/exploring_the_embedding.html")

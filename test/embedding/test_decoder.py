@@ -12,6 +12,7 @@ from jammy.generating.playback import get_music
 from jammy.generating.visualization import plot_piano_roll
 from test.conftest import USE_FAMILIZED_MODEL
 
+
 if TYPE_CHECKING:
     from pathlib import Path
 

@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING
 
 from miditok import MIDILike
 
+
 if TYPE_CHECKING:
     from collections.abc import Sequence
 

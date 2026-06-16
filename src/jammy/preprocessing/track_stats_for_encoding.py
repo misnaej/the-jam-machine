@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING
 import matplotlib.pyplot as plt
 from miditoolkit import MidiFile
 
+
 if TYPE_CHECKING:
     from miditoolkit import Instrument
 

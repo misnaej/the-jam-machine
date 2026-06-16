@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 from examples import encode_decode, generate
 
+
 if TYPE_CHECKING:
     from pathlib import Path
 

@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 from jammy.tokens import TRACK_END
 
+
 if TYPE_CHECKING:
     import torch
     from transformers import GPT2LMHeadModel, GPT2Tokenizer
