@@ -143,26 +143,33 @@ Longer-lived project planning lives in committed `.plans/` (plural):
 
 ## Claude Code skills & agents
 
-> Migration note: these are the **bespoke** agents/skills predating forge.
-> They are being replaced by the forge plugin's `forge:*` agents and
-> `/forge:*` skills. Until that phase lands, the local ones below apply.
+Agents and skills come from the **forge plugin** (`forge@forge`). The bespoke
+local ones predating forge have been removed. Use the `forge:*` agents and
+`/forge:*` skills; see FOUNDATION §3 (mandatory delegation) for the workflow
+orders. Add a repo-specific **wrapper** (non-shadowing name, e.g.
+`design-checker-jam`) only when jam-machine needs extra rules on top of a forge
+agent — see FOUNDATION §16.
 
 | Skill | What it does |
 |-------|-------------|
-| `/check` | Run tests + lint + format |
-| `/lint` | Run ruff check + format |
-| `/commit` | Lint, commit, and push to current branch |
-| `/review` | design-reviewer + docs-reviewer agents in parallel |
-| `/pr` | pr-reviewer agent → squash merge message |
-| `/next` | Sync main, clean stale branches, start next task |
+| `/forge:fix` | Clear pre-commit failures (precommit-fixer) |
+| `/forge:commit` | precommit-fixer → git-commit-push |
+| `/forge:pr` | Full PR finalization + squash message |
+| `/forge:review` | Address PR review comments |
+| `/forge:next` | Sync main, prune branches, pick next task |
+| `/forge:triage` | Prioritize the GitHub backlog |
 
 | Agent | Use for |
 |-------|---------|
-| `design-reviewer` | SOLID, DRY, YAGNI, KISS checks |
-| `docs-reviewer` | Docstrings, type hints, comments |
-| `test-writer` | Write tests + review test quality |
-| `pr-reviewer` | PR wrap-up + squash merge message |
-| `git-workflow` | Git operations |
+| `forge:design-checker` | SOLID, DRY, YAGNI, KISS checks (reports) |
+| `forge:docs-types-checker` | Docstrings, type hints |
+| `forge:test-advisor` / `forge:test-writer` | Plan / write tests |
+| `forge:pr-manager` | PR lifecycle + squash message |
+| `forge:git-commit-push` | Commit + push (runs pre-commit) |
+| `forge:security-checker` | Security review (reports) |
+
+> Run tests locally before pushing: `pipenv run pytest test/` (no forge skill
+> bundles the full local check the way the old `/check` did).
 
 ## Quick Reference
 
