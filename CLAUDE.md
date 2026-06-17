@@ -143,33 +143,16 @@ Longer-lived project planning lives in committed `.plans/` (plural):
 
 ## Claude Code skills & agents
 
-Agents and skills come from the **forge plugin** (`forge@forge`). The bespoke
-local ones predating forge have been removed. Use the `forge:*` agents and
-`/forge:*` skills; see FOUNDATION §3 (mandatory delegation) for the workflow
-orders. Add a repo-specific **wrapper** (non-shadowing name, e.g.
-`design-checker-jam`) only when jam-machine needs extra rules on top of a forge
-agent — see FOUNDATION §16.
+Agents and skills come from the **forge plugin** (`forge@forge`); the bespoke
+local ones predating forge have been removed. The canonical agent roster and
+the mandatory-delegation workflow orders live in **FOUNDATION §3** — use the
+`forge:*` agents and `/forge:*` skills from there; don't re-list them here.
+Add a repo-specific **wrapper** (non-shadowing name, e.g. `design-checker-jam`)
+only when jam-machine needs extra rules on top of a forge agent (FOUNDATION §16).
 
-| Skill | What it does |
-|-------|-------------|
-| `/forge:fix` | Clear pre-commit failures (precommit-fixer) |
-| `/forge:commit` | precommit-fixer → git-commit-push |
-| `/forge:pr` | Full PR finalization + squash message |
-| `/forge:review` | Address PR review comments |
-| `/forge:next` | Sync main, prune branches, pick next task |
-| `/forge:triage` | Prioritize the GitHub backlog |
-
-| Agent | Use for |
-|-------|---------|
-| `forge:design-checker` | SOLID, DRY, YAGNI, KISS checks (reports) |
-| `forge:docs-types-checker` | Docstrings, type hints |
-| `forge:test-advisor` / `forge:test-writer` | Plan / write tests |
-| `forge:pr-manager` | PR lifecycle + squash message |
-| `forge:git-commit-push` | Commit + push (runs pre-commit) |
-| `forge:security-checker` | Security review (reports) |
-
-> Run tests locally before pushing: `pipenv run pytest test/` (no forge skill
-> bundles the full local check the way the old `/check` did).
+Jam-machine-specific note: run the (long) test suite locally before pushing —
+`pipenv run pytest test/`. No forge skill bundles the full local check the way
+the old `/check` did.
 
 ## Quick Reference
 
