@@ -50,5 +50,8 @@ jobs:
       - name: Forge FOUNDATION drift check
         run: pipenv run install-forge-claude-md --check
 
-      # Tests are intentionally NOT run in GitHub CI — the suite is long and is
-      # run locally instead (`pipenv run pytest test/`). See CLAUDE.md.
+      # Tests run in CI for now (during forge adoption) to catch dependency-
+      # resolution regressions the static gates miss. Revisit once the migration
+      # is complete — the suite is long and is otherwise run locally.
+      - name: Tests
+        run: pipenv run pytest test/ -q

@@ -115,11 +115,14 @@ via the `sync-hf-space.yml` GitHub workflow; deployment files live in
 
 `.github/workflows/ci.yml` runs on push/PR to `main`: ruff lint + format,
 docstring coverage, bandit, mypy, the **forge pre-commit gate**
-(`pipenv run forge-precommit`), and a FOUNDATION drift check.
+(`pipenv run forge-precommit`), a FOUNDATION drift check, and the **test suite**
+(`pipenv run pytest test/`). Tests run last (after the fast gates) so quick
+failures surface first.
 
-**The test suite is deliberately NOT run in GitHub CI** — it is long, so it is
-run **locally** instead (`pipenv run pytest test/`) before pushing. Don't add a
-pytest job to CI.
+> **Tests in CI are temporary** — kept on during the forge adoption to catch
+> dependency-resolution regressions the static gates miss. Once the migration
+> is complete, revisit: the suite is long and is otherwise run locally before
+> pushing.
 
 `.github/workflows/forge-upgrade.yml` re-syncs forge-scripts from the `@dev`
 channel on a weekly cron and opens a PR on any change (the version trigger).
