@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "e8ddd1f0f3f116e12d3a2a96ad334ad67740f94677078dee07b49a8c92189ccc"
+            "sha256": "98fb5b0be8c58080fee2b2f32c2a82f8f0a06aca58b2b202ea94c97dac2ef307"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -4178,7 +4178,7 @@
         },
         "forge-scripts": {
             "git": "https://github.com/misnaej/forge.git",
-            "ref": "1aa0767cec764d31ccf85322b8080ba5af3d2867"
+            "ref": "1325e8bd5b221c86b307fc628d3cc844b131e33f"
         }
     },
     "develop": {

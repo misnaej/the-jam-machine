@@ -124,7 +124,7 @@ failures surface first.
 > is complete, revisit: the suite is long and is otherwise run locally before
 > pushing.
 
-`.github/workflows/forge-upgrade.yml` re-syncs forge-scripts from the `@dev`
+`.github/workflows/forge-upgrade.yml` re-syncs forge-scripts from the `@main`
 channel on a weekly cron and opens a PR on any change (the version trigger).
 `docker.yml` and `sync-hf-space.yml` are build/deploy, unrelated to test CI.
 

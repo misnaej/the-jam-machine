@@ -1,6 +1,6 @@
 name: forge-upgrade
 
-# Scheduled re-sync of forge-scripts from the pinned channel (@dev). On any
+# Scheduled re-sync of forge-scripts from the pinned channel (@main). On any
 # change to managed artifacts (FOUNDATION.md, .githooks/, generated docs) this
 # opens a PR, whose pull_request event runs the CI gate above. This is the
 # version trigger: every forge release is exercised against this repo.
@@ -33,7 +33,7 @@ jobs:
       - name: Run forge-upgrade --apply
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: pipenv run forge-upgrade --apply --channel dev
+        run: pipenv run forge-upgrade --apply --channel main
 
       - name: Open PR if anything changed
         uses: peter-evans/create-pull-request@v6
@@ -41,7 +41,7 @@ jobs:
           commit-message: "chore: forge-upgrade (automated)"
           title: "chore: forge-upgrade"
           body: |
-            Automated forge-scripts re-sync from the @dev channel. Review the
+            Automated forge-scripts re-sync from the @main channel. Review the
             diff for `FOUNDATION.md`, `.githooks/`, and any generated docs.
           branch: forge-upgrade/automated
           delete-branch: true
