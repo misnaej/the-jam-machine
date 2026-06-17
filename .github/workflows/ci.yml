@@ -29,6 +29,13 @@ jobs:
           pip install pipenv
           pipenv sync --dev   # install lock verbatim; never re-resolve (deps are unpinned)
 
+      - name: Install CPU-only torch
+        # This is a CPU-only project — PyPI's default `torch` is the CUDA build,
+        # which fails to `import` without CUDA libs on the runner. Reinstall the
+        # CPU build (same as the Dockerfile). `pipenv sync` alone installs the
+        # CUDA build from the lock without the nvidia libs.
+        run: pipenv run pip install "torch==2.11.0" --index-url https://download.pytorch.org/whl/cpu
+
       - name: Ruff lint
         run: pipenv run ruff check src/ test/ examples/ hf_space/
 
