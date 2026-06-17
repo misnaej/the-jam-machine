@@ -27,7 +27,7 @@ jobs:
       - name: Install pipenv and dependencies
         run: |
           pip install pipenv
-          pipenv install -e ".[ci]"
+          pipenv sync --dev   # install lock verbatim; never re-resolve (deps are unpinned)
 
       - name: Ruff lint
         run: pipenv run ruff check src/ test/ examples/ hf_space/

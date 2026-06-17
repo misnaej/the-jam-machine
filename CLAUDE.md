@@ -49,9 +49,17 @@ sudo apt install fluidsynth  # Linux
 
 ```bash
 pip install pipenv
-pipenv install -e ".[ci]"    # includes dev/test tooling + forge-scripts
+pipenv sync --dev    # install Pipfile.lock verbatim (deps + dev tooling + forge-scripts)
 pipenv shell
 ```
+
+> **Use `pipenv sync`, not `pipenv install`.** The runtime deps are unpinned in
+> `pyproject.toml`, so `pipenv install` / `pipenv lock` re-resolve them to the
+> latest releases — which has broken the build before (e.g. transformers 5.12
+> breaks `GPT2LMHeadModel`). `pipenv sync` installs the committed lock exactly.
+> Only re-lock deliberately, and re-run the test suite when you do.
+> `forge-scripts` is declared in the `Pipfile` (not the pyproject `ci` extra) so
+> it locks without dragging the runtime deps along.
 
 ## pipenv + forge (important)
 
@@ -157,7 +165,7 @@ Longer-lived project planning lives in committed `.plans/` (plural):
 
 | Task | Command |
 |------|---------|
-| Install dependencies | `pipenv install -e ".[ci]"` |
+| Install dependencies | `pipenv sync --dev` |
 | Activate environment | `pipenv shell` |
 | Run tests + coverage | `./scripts/run-tests.sh` |
 | Run tests only | `pipenv run pytest test/` |

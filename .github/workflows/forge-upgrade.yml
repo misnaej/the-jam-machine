@@ -28,7 +28,7 @@ jobs:
       - name: Install pipenv + project + forge-scripts
         run: |
           pip install pipenv
-          pipenv install -e ".[ci]"
+          pipenv sync --dev   # install lock verbatim; the upgrade step below re-resolves intentionally
 
       - name: Run forge-upgrade --apply
         env:

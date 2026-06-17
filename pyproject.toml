@@ -35,10 +35,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-ci = [
-    "forge-scripts @ git+https://github.com/misnaej/forge.git@dev",
-    "ruff", "pytest", "pytest-cov", "pytest-html", "pip-audit", "bandit", "interrogate", "mypy",
-]
+ci = ["ruff", "pytest", "pytest-cov", "pytest-html", "pip-audit", "bandit", "interrogate", "mypy"]
 notebooks = ["bertviz", "ipykernel", "scikit-learn", "nbconvert"]
 
 [tool.setuptools.packages.find]

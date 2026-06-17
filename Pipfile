@@ -6,6 +6,10 @@ name = "pypi"
 [packages]
 plotly = "*"
 the-jam-machine = {extras = ["ci"], file = ".", editable = true}
+# Forge dev tooling (Option A: pipenv-native). Declared here rather than in the
+# pyproject `ci` extra so `pipenv install` locks it without re-resolving (and
+# bumping) the runtime deps.
+forge-scripts = {git = "https://github.com/misnaej/forge.git", ref = "dev"}
 
 [dev-packages]
 mypy = "*"
