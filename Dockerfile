@@ -10,9 +10,11 @@ WORKDIR /app
 COPY pyproject.toml .
 COPY src/ src/
 
-# CPU-only torch first (isolated to avoid hash conflicts with PyPI deps)
+# CPU-only torch first (isolated to avoid hash conflicts with PyPI deps).
+# Version kept in range with the `torch~=2.11.0` pin in pyproject so the
+# subsequent `pip install .` doesn't try to swap in the CUDA build.
 RUN pip install --no-cache-dir --timeout 300 \
-    torch --index-url https://download.pytorch.org/whl/cpu
+    "torch~=2.11.0" --index-url https://download.pytorch.org/whl/cpu
 
 # Then install the rest from PyPI
 RUN pip install --no-cache-dir --timeout 300 .
