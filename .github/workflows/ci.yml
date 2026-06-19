@@ -47,8 +47,10 @@ jobs:
       - name: Forge FOUNDATION drift check
         run: pipenv run install-forge-claude-md --check
 
-      # forge's ruff only scopes src/test/scripts; lint the remaining dirs here
-      # (check-only: fail, don't auto-fix).
+      # forge's ruff uses a hardcoded candidate dir list and ignores
+      # [tool.forge].source_dirs (forge issue misnaej/forge#70), so examples/
+      # and hf_space/ fall outside its scope. Lint them explicitly until that's
+      # fixed upstream (check-only: fail, don't auto-fix).
       - name: Ruff — examples + hf_space
         run: |
           pipenv run ruff check examples/ hf_space/

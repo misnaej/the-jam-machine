@@ -69,7 +69,7 @@ def _compute_instrument_stats(
 def stats_on_track(
     midi_filename: str = "the_strokes-reptilia",
     output_dir: str | None = None,
-) -> dict[str, int | float | list[int] | list[float]]:
+) -> dict[str, int | float | list[str | int | float]]:
     """Analyze track statistics for MIDI encoding.
 
     Args:

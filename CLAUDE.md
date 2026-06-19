@@ -115,11 +115,12 @@ via the `sync-hf-space.yml` GitHub workflow; deployment files live in
 
 `.github/workflows/ci.yml` runs on push/PR to `main`. The quality gate is
 delegated to the **forge pre-commit gate** (`pipenv run forge-precommit`) —
-ruff, docstrings, pyrefly typecheck (advisory), pip-audit — configured in
+ruff, docstrings, pyrefly typecheck (blocking), pip-audit — configured in
 `[tool.forge]`. CI adds only: a FOUNDATION drift check, an explicit ruff pass
 for `examples/`+`hf_space/` (outside forge's source dirs), and the **test suite**
-(`pipenv run pytest test/`). No standalone ruff/interrogate/bandit/mypy steps —
-forge owns them (mypy is superseded by pyrefly).
+(`pipenv run pytest test/`). No standalone ruff/interrogate/bandit/mypy steps:
+forge runs ruff (+ interrogate) and pyrefly; ruff's `S` rules cover SAST (so
+bandit is dropped); mypy is superseded by pyrefly.
 
 > **Tests in CI are temporary** — kept on during the forge adoption to catch
 > dependency-resolution regressions the static gates miss. Once the migration
@@ -167,7 +168,7 @@ the old `/check` did.
 | Docstring coverage | `./scripts/docstring-coverage.sh` |
 | Lint code | `pipenv run ruff check src/ test/` |
 | Format code | `pipenv run ruff format src/ test/` |
-| Type check | `pipenv run pyrefly check src test` (forge's checker; advisory) |
+| Type check | `pipenv run pyrefly check src test` (forge's checker; blocking) |
 | Security audit | `pipenv run pip-audit` |
 | Forge pre-commit (full gate) | `pipenv run forge-precommit` |
 | Deploy HF Space | `./scripts/deploy-hf-space.sh` |

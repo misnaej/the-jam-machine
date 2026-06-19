@@ -42,7 +42,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-ci = ["ruff", "pytest", "pytest-cov", "pytest-html", "pip-audit", "bandit", "interrogate", "mypy"]
+# ruff + interrogate come transitively via forge-scripts; pyrefly via its
+# `typecheck` extra; bandit is dropped (ruff's S rules cover SAST). pip-audit
+# stays — forge runs the pip_audit step but doesn't ship the CLI (forge#71).
+ci = ["pytest", "pytest-cov", "pytest-html", "pip-audit"]
 notebooks = ["bertviz", "ipykernel", "scikit-learn", "nbconvert"]
 
 [tool.setuptools.packages.find]
@@ -60,13 +63,8 @@ test_dirs = ["test"]
 enable = ["typecheck"]  # opt in pyrefly (forge's type checker — supersedes mypy)
 
 [tool.forge.typecheck]
-paths = ["src", "test"]   # type-check package + tests (pyrefly reads [tool.mypy] below)
-# Advisory (forge's default): pyrefly is stricter than mypy and currently
-# surfaces ~23 findings to clean up — runs and reports, but does not block.
-blocking = false
-
-[tool.bandit]
-skips = ["B101", "B311", "B105", "B106"]
+paths = ["src", "test"]   # type-check package + tests (config in [tool.pyrefly])
+blocking = true           # hard-fail on type errors (replaces the old mypy gate)
 
 [tool.interrogate]
 ignore-init-method = true
@@ -74,16 +72,6 @@ ignore-init-module = true
 fail-under = 95
 exclude = ["test/", "examples/"]
 verbose = 1
-
-[tool.mypy]
-python_version = "3.11"
-warn_return_any = true
-warn_unused_configs = true
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = "jammy.training.*"
-ignore_errors = true  # transformers stubs are outdated (GPT2Config kwargs, TrainingArguments renames)
 
 [tool.pytest.ini_options]
 testpaths = ["test"]
@@ -94,4 +82,13 @@ filterwarnings = [
     "ignore::DeprecationWarning",
     "ignore::PendingDeprecationWarning",
 ]
+
+[tool.pyrefly]
+python-version = "3.11.0"
+preset = "legacy"
+ignore-missing-imports = ["*"]
+# Treat imperfect third-party types as Any — miditok and transformers ship
+# partial/outdated types that produce false positives (the old [tool.mypy]
+# had ignore_missing_imports + a jammy.training.* ignore for the same reason).
+replace-imports-with-any = ["miditok", "miditok.*", "transformers", "transformers.*"]
 

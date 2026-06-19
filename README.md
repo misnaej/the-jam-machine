@@ -10,7 +10,6 @@
 ![Tests](.githooks/badges/tests.svg)
 ![Coverage](.githooks/badges/coverage.svg)
 ![Docstring Coverage](.githooks/badges/docstring-coverage.svg)
-![Security](.githooks/badges/bandit.svg)
 ![Claude Code](https://img.shields.io/badge/Claude_Code-555?logo=claude)
 
 ---
@@ -260,7 +259,7 @@ Processes forge owns (configured in `[tool.forge]`, `pyproject.toml`):
 |---|---|
 | Lint + format | ruff (`src/`, `test/`, `scripts/`) — format + check, self-healing |
 | Docstrings (presence / accuracy / coverage) | ruff D-rules + `verify-forge-docstrings` + interrogate |
-| Type checking | **pyrefly** (advisory; reads `[tool.mypy]`) — supersedes mypy |
+| Type checking | **pyrefly** (blocking; config in `[tool.pyrefly]`) — supersedes mypy |
 | Dependency CVE audit | `pip-audit` |
 | FOUNDATION drift / test-naming / repo structure | `verify-forge-*` |
 
