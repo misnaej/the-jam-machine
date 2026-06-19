@@ -24,7 +24,10 @@ dependencies = [
     "pretty-midi~=0.2.11",
     "note-seq~=0.0.5",
     "huggingface-hub~=1.8.0",
-    "pyFluidSynth~=1.3.4",
+    # `~=1.3` (not `~=1.3.4`): 1.3.4 declares a `pyaudio` dependency (a C
+    # extension that needs gcc/portaudio to build — absent in python:3.11-slim,
+    # breaking the Docker build). 1.4.x dropped it; allow the minor bump.
+    "pyFluidSynth~=1.3",
     "pydub~=0.25.1",
     "ffmpeg~=1.4",
     "wandb~=0.25.1",

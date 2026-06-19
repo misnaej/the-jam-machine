@@ -133,7 +133,7 @@ cd the-jam-machine
 
 # Option B: Manual setup
 pip install pipenv
-pipenv install -e ".[ci]"
+pipenv sync --dev    # install the lock verbatim — do NOT use `pipenv install` (re-resolves unpinned deps)
 pipenv shell
 ```
 

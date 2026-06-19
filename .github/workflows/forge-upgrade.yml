@@ -47,7 +47,9 @@ jobs:
           pipenv run install-forge-claude-md --check  # fail if it still drifts
 
       - name: Open PR if anything changed
-        uses: peter-evans/create-pull-request@v6
+        # SHA-pinned (not @v6): this action runs with contents+PR write; a
+        # mutable tag could be force-pushed to inject code.
+        uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c  # v6.1.0
         with:
           commit-message: "chore: forge-upgrade (automated)"
           title: "chore: forge-upgrade (@main)"
