@@ -12,6 +12,7 @@ from zipfile import ZIP_DEFLATED, ZipFile
 
 from joblib import Parallel, delayed
 
+
 if TYPE_CHECKING:
     from collections.abc import Callable
 
@@ -32,7 +33,15 @@ def timeit(func: Callable[..., T]) -> Callable[..., T]:
 
     @functools.wraps(func)
     def wrapper(*args: object, **kwargs: object) -> T:
-        """Timed wrapper that logs execution duration."""
+        """Timed wrapper that logs execution duration.
+
+        Args:
+            *args: Positional arguments to pass to the wrapped function.
+            **kwargs: Keyword arguments to pass to the wrapped function.
+
+        Returns:
+            The return value of the wrapped function.
+        """
         start = perf_counter()
         result = func(*args, **kwargs)
         end = perf_counter()

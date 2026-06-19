@@ -1,0 +1,28 @@
+target-version = "py311"
+line-length = 100
+src = ["src", "test"]
+
+[lint]
+select = ["ALL"]
+ignore = [
+    "ISC001",  # implicit string concat — conflicts with ruff formatter
+    "COM812",  # trailing comma — conflicts with ruff formatter (ruff warns about this)
+]
+
+[lint.per-file-ignores]
+"test/**/*.py" = ["S101", "PLR2004"]  # assert is expected in tests; magic values are test data
+"src/jammy/app/**/*.py" = ["PLR0913"]  # Gradio callbacks have many args
+"examples/**/*.py" = ["INP001"]  # examples/ is not a package
+"hf_space/**/*.py" = ["INP001"]  # HF Space shim, not a package
+"scripts/**/*.py" = ["INP001"]  # standalone scripts, not a package
+
+[lint.pydocstyle]
+convention = "google"
+
+[lint.isort]
+known-first-party = ["jammy"]
+lines-after-imports = 2  # forge convention (FOUNDATION §5)
+
+[format]
+quote-style = "double"
+indent-style = "space"

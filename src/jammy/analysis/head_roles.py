@@ -16,6 +16,7 @@ from plotly.subplots import make_subplots
 
 from jammy.analysis import PLOTLY_JS, TOKEN_CATEGORY_ORDER, TOKEN_COLORS, categorize_token
 
+
 if TYPE_CHECKING:
     from transformers import GPT2LMHeadModel, PreTrainedTokenizerFast
 
@@ -174,7 +175,14 @@ def plot_head_comparison(
     colors = [TOKEN_COLORS[c] for c in categories]
 
     def _describe(w: list[float]) -> str:
-        """Summarize which category a head focuses on."""
+        """Summarize which category a head focuses on.
+
+        Args:
+            w: Weights or scores for each category.
+
+        Returns:
+            A string describing the category with the highest weight.
+        """
         top_idx = int(np.argmax(w))
         top_pct = w[top_idx] * 100
         return f"Focuses on {categories[top_idx]} ({top_pct:.0f}%)"

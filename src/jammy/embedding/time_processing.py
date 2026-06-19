@@ -8,6 +8,7 @@ from miditok import Event
 
 from jammy.midi_codec import beat_to_int_dec_base, int_dec_base_to_beat, split_dots
 
+
 logger = logging.getLogger(__name__)
 
 

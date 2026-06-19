@@ -8,6 +8,7 @@ from jammy.embedding.encoder import from_midi_to_sectioned_text
 from jammy.tokens import PIECE_START, TRACK_START
 from test.conftest import USE_FAMILIZED_MODEL
 
+
 if TYPE_CHECKING:
     from pathlib import Path
 

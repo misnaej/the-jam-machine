@@ -14,6 +14,7 @@ from tokenizers.pre_tokenizers import WhitespaceSplit
 from tokenizers.trainers import WordLevelTrainer
 from transformers import PreTrainedTokenizerFast
 
+
 if TYPE_CHECKING:
     from datasets import Dataset, DatasetDict
     from transformers import Trainer

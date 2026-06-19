@@ -6,6 +6,7 @@ match the model's tokenizer vocabulary.
 
 from __future__ import annotations
 
+
 # Structure tokens
 PIECE_START = "PIECE_START"
 TRACK_START = "TRACK_START"

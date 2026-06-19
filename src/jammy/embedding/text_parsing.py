@@ -5,11 +5,13 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any
 
+
 if TYPE_CHECKING:
     from miditok import Event
 
 from jammy.midi_codec import get_beat_resolution, get_event
 from jammy.tokens import BAR_START, INST, NOTE_ON, TIME_DELTA
+
 
 logger = logging.getLogger(__name__)
 

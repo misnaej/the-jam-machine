@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any
 from jammy.embedding import event_processing, text_parsing
 from jammy.embedding.familizer import Familizer
 
+
 if TYPE_CHECKING:
     from miditok import MIDILike
     from miditoolkit import MidiFile

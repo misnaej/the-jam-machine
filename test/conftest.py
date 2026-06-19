@@ -16,6 +16,7 @@ from jammy.constants import MODEL_REPO, MODEL_REVISION
 from jammy.load import load_model_and_tokenizer
 from jammy.utils import get_miditok
 
+
 if TYPE_CHECKING:
     from miditok import MIDILike
     from transformers import GPT2LMHeadModel, GPT2TokenizerFast

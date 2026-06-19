@@ -10,6 +10,7 @@ from jammy.generating.file_io import define_generation_dir, write_text_midi_to_f
 from jammy.generating.generate import GenerateMidiText
 from jammy.tokens import PIECE_START, TRACK_END
 
+
 if TYPE_CHECKING:
     from transformers import GPT2LMHeadModel, GPT2TokenizerFast
 

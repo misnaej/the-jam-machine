@@ -16,6 +16,7 @@ from plotly.subplots import make_subplots
 
 from jammy.analysis import DEFAULT_SEQUENCE_LONG, PLOTLY_JS, TOKEN_COLORS, categorize_token
 
+
 if TYPE_CHECKING:
     from transformers import GPT2LMHeadModel, PreTrainedTokenizerFast
 

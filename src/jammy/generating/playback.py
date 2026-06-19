@@ -9,6 +9,7 @@ import librosa.display
 import matplotlib.pyplot as plt
 from pretty_midi import PrettyMIDI
 
+
 if TYPE_CHECKING:
     import numpy as np
 
@@ -19,7 +20,14 @@ logger = logging.getLogger(__name__)
 
 
 def get_music(midi_file: str) -> tuple[PrettyMIDI, np.ndarray]:
-    """Load a MIDI file and return the PrettyMIDI object and the audio signal."""
+    """Load a MIDI file and return the PrettyMIDI object and the audio signal.
+
+    Args:
+        midi_file: Path to the MIDI file to load.
+
+    Returns:
+        A tuple containing the PrettyMIDI object and the synthesized audio waveform.
+    """
     logger.info("Getting MIDI music from: %s", midi_file)
     music = PrettyMIDI(midi_file=midi_file)
     waveform = music.fluidsynth()

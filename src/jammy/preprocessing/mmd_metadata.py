@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 
 import pandas as pd
 
+
 if TYPE_CHECKING:
     from pathlib import Path
 from fuzzywuzzy import fuzz
@@ -162,7 +163,7 @@ class MetadataExtractor:
         self.stats = self.stats.rename(columns={"title": "title_old"})
 
         unique_artists = self.stats["artist_old"].unique()
-        similar_artists = self.find_and_replace_duplicates(unique_artists)
+        similar_artists = self.find_and_replace_duplicates(list(unique_artists))
 
         df_artists = pd.DataFrame({"artist_old": unique_artists, "artist_new": similar_artists})
         self.stats["artist"] = self.stats["artist_old"].replace(

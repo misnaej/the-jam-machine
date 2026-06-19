@@ -16,6 +16,7 @@ from __future__ import annotations
 from jammy.logging_config import setup_logging
 from jammy.preprocessing.track_stats_for_encoding import stats_on_track
 
+
 DEFAULT_OUTPUT_DIR = "output/examples/track_stats"
 
 

@@ -32,6 +32,7 @@ from jammy.tokens import (
     TRACK_START,
 )
 
+
 # --- Encoding mappings (Event type → text token) ---
 
 # Event types that produce a bare token with no value (e.g. "PIECE_START ")

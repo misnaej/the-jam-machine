@@ -6,12 +6,17 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read  # CI only reads the repo; least privilege for GITHUB_TOKEN
+
 jobs:
   ci:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # forge-precommit diffs changed files (docstrings, test-naming) vs main
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
@@ -25,22 +30,30 @@ jobs:
       - name: Install pipenv and dependencies
         run: |
           pip install pipenv
-          pipenv install -e ".[ci]"
+          pipenv sync --dev   # install the lock verbatim (includes forge-scripts[typecheck,audit])
 
-      - name: Ruff lint
-        run: pipenv run ruff check src/ test/ examples/ hf_space/
+      - name: Install CPU-only torch
+        # CPU-only project; PyPI's default torch is the CUDA build, which fails to
+        # import without CUDA libs. Keep in range with torch~=2.11.0 (pyproject +
+        # Dockerfile) — bump all three together.
+        run: pipenv run pip install "torch==2.11.0" --index-url https://download.pytorch.org/whl/cpu
 
-      - name: Ruff format check
-        run: pipenv run ruff format --check src/ test/ examples/ hf_space/
+      # Forge owns the quality gate (config in [tool.forge], pyproject.toml):
+      # ruff format+check (src/test/scripts), docstring verify + coverage,
+      # pyrefly typecheck (advisory), and pip_audit. See README "Delegated to forge".
+      - name: Forge pre-commit gate
+        run: pipenv run forge-precommit
 
-      - name: Docstring coverage
-        run: pipenv run interrogate src/jammy/ --fail-under 95 -v
+      - name: Forge FOUNDATION drift check
+        run: pipenv run install-forge-claude-md --check
 
-      - name: Security scan
-        run: pipenv run bandit -r src/ -c pyproject.toml -q
+      # NOTE: forge's ruff only scans a hardcoded candidate dir list, so
+      # examples/ and hf_space/ aren't linted by the gate yet — tracked in
+      # forge#70 (forge should honor [tool.forge].source_dirs). No separate
+      # ruff step here: ruff is forge's job.
 
-      - name: Type check
-        run: pipenv run mypy src/jammy/
-
+      # Tests run in CI for now (during forge adoption) to catch dependency-
+      # resolution regressions the static gates miss. Revisit once the migration
+      # is complete — the suite is long and is otherwise run locally.
       - name: Tests
-        run: pipenv run pytest test/ -v --tb=short
+        run: pipenv run pytest test/ -q

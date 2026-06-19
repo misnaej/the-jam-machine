@@ -14,6 +14,7 @@ from sklearn.manifold import TSNE
 
 from jammy.analysis import PLOTLY_JS, TOKEN_CATEGORY_ORDER, TOKEN_COLORS, categorize_token
 
+
 if TYPE_CHECKING:
     import numpy as np
     from transformers import GPT2LMHeadModel, PreTrainedTokenizerFast

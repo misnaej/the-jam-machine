@@ -17,6 +17,7 @@ from jammy.constants import get_instrument_class
 from jammy.file_utils import get_files
 from jammy.utils import compute_list_average
 
+
 if TYPE_CHECKING:
     import pandas as pd
 

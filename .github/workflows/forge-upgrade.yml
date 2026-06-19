@@ -1,0 +1,61 @@
+name: forge-upgrade
+
+# Scheduled re-sync of forge-scripts from the pinned channel (@main). Re-resolves
+# forge-scripts (Pipfile git ref) to the latest @main commit and regenerates the
+# forge-managed artifacts; on any change (Pipfile.lock, FOUNDATION.md) it opens a
+# PR, whose pull_request event runs the CI gate. This is the version trigger:
+# every forge @main release is exercised against this repo.
+#
+# Note: we do NOT use `forge-upgrade --apply` — it rewrites a pyproject pin, but
+# our forge-scripts pin lives in the Pipfile (Option A). `pipenv update` is the
+# pipenv-native equivalent, and is safe because the runtime deps are pinned
+# (`~=`) in pyproject, so the re-resolve can't bump them into a breaking minor.
+
+on:
+  schedule:
+    - cron: "0 5 * * 1"  # every Monday 05:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pipenv"
+
+      - name: Install pipenv + project
+        run: |
+          pip install pipenv
+          pipenv sync --dev
+
+      - name: Re-resolve forge-scripts from @main
+        # Updates only the forge-scripts git ref in Pipfile.lock to latest @main.
+        # Runtime deps stay within their pyproject `~=` pins (safe re-resolve).
+        run: pipenv update forge-scripts
+
+      - name: Re-sync forge-managed artifacts
+        run: |
+          pipenv run install-forge-claude-md          # regenerate FOUNDATION.md
+          pipenv run install-forge-claude-md --check  # fail if it still drifts
+
+      - name: Open PR if anything changed
+        # SHA-pinned (not @v6): this action runs with contents+PR write; a
+        # mutable tag could be force-pushed to inject code.
+        uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c  # v6.1.0
+        with:
+          commit-message: "chore: forge-upgrade (automated)"
+          title: "chore: forge-upgrade (@main)"
+          body: |
+            Automated forge-scripts re-sync from the `@main` channel. Review the
+            diff for `Pipfile.lock` (forge-scripts ref) and `FOUNDATION.md`.
+            CI runs the full gate (forge-precommit, drift check, tests) on this PR.
+          branch: forge-upgrade/automated
+          delete-branch: true

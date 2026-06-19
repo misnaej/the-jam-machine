@@ -10,6 +10,7 @@ import numpy as np
 
 from jammy.constants import BEATS_PER_BAR
 
+
 if TYPE_CHECKING:
     import pretty_midi
 
