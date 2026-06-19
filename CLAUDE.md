@@ -116,11 +116,11 @@ via the `sync-hf-space.yml` GitHub workflow; deployment files live in
 `.github/workflows/ci.yml` runs on push/PR to `main`. The quality gate is
 delegated to the **forge pre-commit gate** (`pipenv run forge-precommit`) —
 ruff, docstrings, pyrefly typecheck (blocking), pip-audit — configured in
-`[tool.forge]`. CI adds only: a FOUNDATION drift check, an explicit ruff pass
-for `examples/`+`hf_space/` (outside forge's source dirs), and the **test suite**
+`[tool.forge]`. CI adds only a FOUNDATION drift check and the **test suite**
 (`pipenv run pytest test/`). No standalone ruff/interrogate/bandit/mypy steps:
 forge runs ruff (+ interrogate) and pyrefly; ruff's `S` rules cover SAST (so
-bandit is dropped); mypy is superseded by pyrefly.
+bandit is dropped); mypy is superseded by pyrefly. (`examples/`+`hf_space/`
+aren't in forge's ruff dir list yet — forge#70.)
 
 > **Tests in CI are temporary** — kept on during the forge adoption to catch
 > dependency-resolution regressions the static gates miss. Once the migration

@@ -263,7 +263,9 @@ Processes forge owns (configured in `[tool.forge]`, `pyproject.toml`):
 | Dependency CVE audit | `pip-audit` |
 | FOUNDATION drift / test-naming / repo structure | `verify-forge-*` |
 
-Not covered by forge's source dirs, so run explicitly (CI does this too):
+`examples/` and `hf_space/` fall outside forge's hardcoded ruff dir list
+([forge#70](https://github.com/misnaej/forge/issues/70)), so they aren't gated
+yet. Until that lands, lint them manually if you change them:
 
 ```bash
 pipenv run ruff check examples/ hf_space/

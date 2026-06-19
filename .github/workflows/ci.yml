@@ -47,14 +47,10 @@ jobs:
       - name: Forge FOUNDATION drift check
         run: pipenv run install-forge-claude-md --check
 
-      # forge's ruff uses a hardcoded candidate dir list and ignores
-      # [tool.forge].source_dirs (forge issue misnaej/forge#70), so examples/
-      # and hf_space/ fall outside its scope. Lint them explicitly until that's
-      # fixed upstream (check-only: fail, don't auto-fix).
-      - name: Ruff — examples + hf_space
-        run: |
-          pipenv run ruff check examples/ hf_space/
-          pipenv run ruff format --check examples/ hf_space/
+      # NOTE: forge's ruff only scans a hardcoded candidate dir list, so
+      # examples/ and hf_space/ aren't linted by the gate yet — tracked in
+      # forge#70 (forge should honor [tool.forge].source_dirs). No separate
+      # ruff step here: ruff is forge's job.
 
       # Tests run in CI for now (during forge adoption) to catch dependency-
       # resolution regressions the static gates miss. Revisit once the migration
