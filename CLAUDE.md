@@ -113,11 +113,13 @@ via the `sync-hf-space.yml` GitHub workflow; deployment files live in
 
 ## Continuous integration
 
-`.github/workflows/ci.yml` runs on push/PR to `main`: ruff lint + format,
-docstring coverage, bandit, mypy, the **forge pre-commit gate**
-(`pipenv run forge-precommit`), a FOUNDATION drift check, and the **test suite**
-(`pipenv run pytest test/`). Tests run last (after the fast gates) so quick
-failures surface first.
+`.github/workflows/ci.yml` runs on push/PR to `main`. The quality gate is
+delegated to the **forge pre-commit gate** (`pipenv run forge-precommit`) —
+ruff, docstrings, pyrefly typecheck (advisory), pip-audit — configured in
+`[tool.forge]`. CI adds only: a FOUNDATION drift check, an explicit ruff pass
+for `examples/`+`hf_space/` (outside forge's source dirs), and the **test suite**
+(`pipenv run pytest test/`). No standalone ruff/interrogate/bandit/mypy steps —
+forge owns them (mypy is superseded by pyrefly).
 
 > **Tests in CI are temporary** — kept on during the forge adoption to catch
 > dependency-resolution regressions the static gates miss. Once the migration
@@ -165,9 +167,9 @@ the old `/check` did.
 | Docstring coverage | `./scripts/docstring-coverage.sh` |
 | Lint code | `pipenv run ruff check src/ test/` |
 | Format code | `pipenv run ruff format src/ test/` |
-| Type check | `pipenv run mypy src/jammy/` |
+| Type check | `pipenv run pyrefly check src test` (forge's checker; advisory) |
 | Security audit | `pipenv run pip-audit` |
-| Forge pre-commit | `pipenv run forge-precommit` |
+| Forge pre-commit (full gate) | `pipenv run forge-precommit` |
 | Deploy HF Space | `./scripts/deploy-hf-space.sh` |
 | Enable git hooks | `git config core.hooksPath .githooks` |
 | Run Gradio app | `pipenv run python -m jammy.app.playground` |
@@ -175,14 +177,11 @@ the old `/check` did.
 
 ### Reports and Logs
 
-| Report | Location |
-|--------|----------|
-| Pre-commit hook logs | `.githooks/logs/latest.log` |
-| Test coverage (HTML) | `output/reports/coverage/index.html` |
-| Docstring coverage | `output/reports/docstring-coverage.txt` |
-| Badges (SVG) | `.githooks/badges/` |
+Forge writes each pre-commit check's output to `code_health/<check>.log`
+(gitignored) — e.g. `ruff.log`, `typecheck.log`, `pip_audit.log`,
+`docstring_verification.log`. Read these to see why the gate failed:
 
-**If a pre-commit hook fails**, read the log:
 ```bash
-cat .githooks/logs/latest.log
+cat code_health/typecheck.log    # pyrefly findings
+cat code_health/ruff.log         # lint/format output
 ```

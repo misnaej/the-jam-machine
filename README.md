@@ -243,39 +243,49 @@ the-jam-machine/
 pipenv run pytest test/ -v
 ```
 
-### Code Quality
+### Quality gate (delegated to forge)
+
+Code quality is delegated to **[forge](https://github.com/misnaej/forge)**
+(`forge-scripts`, pinned in the `Pipfile` to the `@main` channel and installed
+with the `typecheck` + `audit` extras). One command runs the whole gate — the
+same one the pre-commit git hook and CI run:
 
 ```bash
-# Lint
-pipenv run ruff check src/ test/ app/ examples/
+pipenv run forge-precommit
+```
 
-# Format
-pipenv run ruff format src/ test/ app/ examples/
+Processes forge owns (configured in `[tool.forge]`, `pyproject.toml`):
 
-# Security audit
-pipenv run pip-audit
+| Process | How forge runs it |
+|---|---|
+| Lint + format | ruff (`src/`, `test/`, `scripts/`) — format + check, self-healing |
+| Docstrings (presence / accuracy / coverage) | ruff D-rules + `verify-forge-docstrings` + interrogate |
+| Type checking | **pyrefly** (advisory; reads `[tool.mypy]`) — supersedes mypy |
+| Dependency CVE audit | `pip-audit` |
+| FOUNDATION drift / test-naming / repo structure | `verify-forge-*` |
+
+Not covered by forge's source dirs, so run explicitly (CI does this too):
+
+```bash
+pipenv run ruff check examples/ hf_space/
+pipenv run ruff format --check examples/ hf_space/
 ```
 
 ### Contributing with Claude Code
 
-Development of this repository is supported by [Claude Code](https://claude.ai/claude-code). The project includes custom skills and agents for a structured workflow:
-
-| Skill | What it does |
-|-------|-------------|
-| `/check` | Run tests + lint + format |
-| `/lint` | Run ruff check + format |
-| `/commit` | Lint, commit, and push to current branch |
-| `/review` | Run design + docs review agents |
-| `/pr` | Generate squash merge message |
+Development uses [Claude Code](https://claude.ai/claude-code) with the **forge
+plugin** (`forge@forge`): the `forge:*` agents and `/forge:*` skills (e.g.
+`/forge:commit`, `/forge:pr`, `/forge:review`, `/forge:next`).
 
 **Workflow:**
 1. Create a feature branch from `main`
-2. Make changes, run `/check` to verify
-3. Run `/commit` to lint, commit, and push
-4. Create a PR, run `/pr` for review and merge message
-5. Squash and merge into `main`
+2. Make changes; `pipenv run forge-precommit` to verify
+3. `/forge:commit` to commit + push
+4. Open a PR; `/forge:pr` for the wrap-up + squash-merge message
+5. Squash-merge into `main`
 
-See [CLAUDE.md](CLAUDE.md) for full development guidelines.
+See [CLAUDE.md](CLAUDE.md) and [FOUNDATION.md](FOUNDATION.md) for the full
+guidelines and the agent roster (§3).
 
 ---
 

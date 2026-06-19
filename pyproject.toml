@@ -51,6 +51,20 @@ where = ["src"]
 [tool.setuptools.package-data]
 jammy = ["*.csv", "*.json"]
 
+# Forge config — single source of truth for what forge-precommit operates on.
+[tool.forge]
+source_dirs = ["src"]
+test_dirs = ["test"]
+
+[tool.forge.precommit]
+enable = ["typecheck"]  # opt in pyrefly (forge's type checker — supersedes mypy)
+
+[tool.forge.typecheck]
+paths = ["src", "test"]   # type-check package + tests (pyrefly reads [tool.mypy] below)
+# Advisory (forge's default): pyrefly is stricter than mypy and currently
+# surfaces ~23 findings to clean up — runs and reports, but does not block.
+blocking = false
+
 [tool.bandit]
 skips = ["B101", "B311", "B105", "B106"]
 

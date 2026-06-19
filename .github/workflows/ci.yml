@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # forge-precommit diffs changed files vs main
+          fetch-depth: 0  # forge-precommit diffs changed files (docstrings, test-naming) vs main
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
@@ -30,41 +30,29 @@ jobs:
       - name: Install pipenv and dependencies
         run: |
           pip install pipenv
-          pipenv sync --dev   # install lock verbatim; never re-resolve (deps are unpinned)
+          pipenv sync --dev   # install the lock verbatim (includes forge-scripts[typecheck,audit])
 
       - name: Install CPU-only torch
-        # This is a CPU-only project — PyPI's default `torch` is the CUDA build,
-        # which fails to `import` without CUDA libs on the runner. Reinstall the
-        # CPU build (same as the Dockerfile). `pipenv sync` alone installs the
-        # CUDA build from the lock without the nvidia libs.
-        # Exact pin must stay in range with `torch~=2.11.0` (pyproject.toml +
+        # CPU-only project; PyPI's default torch is the CUDA build, which fails to
+        # import without CUDA libs. Keep in range with torch~=2.11.0 (pyproject +
         # Dockerfile) — bump all three together.
         run: pipenv run pip install "torch==2.11.0" --index-url https://download.pytorch.org/whl/cpu
 
-      # The steps below run the linters/type-checker over the FULL tree
-      # (src/ test/ examples/ hf_space/). The forge-precommit gate further down
-      # only sees changed files (diff vs main) — these are complementary, not
-      # duplicates. mypy lives here because forge-precommit does not run it.
-      - name: Ruff lint
-        run: pipenv run ruff check src/ test/ examples/ hf_space/
-
-      - name: Ruff format check
-        run: pipenv run ruff format --check src/ test/ examples/ hf_space/
-
-      - name: Docstring coverage
-        run: pipenv run interrogate src/jammy/ --fail-under 95 -v
-
-      - name: Security scan
-        run: pipenv run bandit -r src/ -c pyproject.toml -q
-
-      - name: Type check
-        run: pipenv run mypy src/jammy/
-
+      # Forge owns the quality gate (config in [tool.forge], pyproject.toml):
+      # ruff format+check (src/test/scripts), docstring verify + coverage,
+      # pyrefly typecheck (advisory), and pip_audit. See README "Delegated to forge".
       - name: Forge pre-commit gate
         run: pipenv run forge-precommit
 
       - name: Forge FOUNDATION drift check
         run: pipenv run install-forge-claude-md --check
+
+      # forge's ruff only scopes src/test/scripts; lint the remaining dirs here
+      # (check-only: fail, don't auto-fix).
+      - name: Ruff — examples + hf_space
+        run: |
+          pipenv run ruff check examples/ hf_space/
+          pipenv run ruff format --check examples/ hf_space/
 
       # Tests run in CI for now (during forge adoption) to catch dependency-
       # resolution regressions the static gates miss. Revisit once the migration

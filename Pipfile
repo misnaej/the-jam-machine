@@ -9,7 +9,10 @@ the-jam-machine = {extras = ["ci"], file = ".", editable = true}
 # Forge dev tooling (Option A: pipenv-native). Declared here rather than in the
 # pyproject `ci` extra so `pipenv install` locks it without re-resolving (and
 # bumping) the runtime deps.
-forge-scripts = {git = "https://github.com/misnaej/forge.git", ref = "main"}
+# Extras wire forge's optional tooling into our env: `typecheck` (pyrefly, for
+# the opt-in forge-precommit typecheck step) and `audit` (vulture/jsonschema/
+# PyYAML, for the forge audit pack used by the review agents).
+forge-scripts = {git = "https://github.com/misnaej/forge.git", ref = "main", extras = ["typecheck", "audit"]}
 
 [dev-packages]
 mypy = "*"
